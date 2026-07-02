@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>CELL LA 25 - Sistema de Inventario</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        body {
+            background: #f5f7fb;
+            min-height: 100vh;
+            padding: 16px 12px 80px 12px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            padding: 16px 18px;
+            border-radius: 16px;
+            color: white;
+            margin-bottom: 18px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .header .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .nav button {
+            flex: 1;
+            min-width: 60px;
+            padding: 10px 6px;
+            border: none;
+            border-radius: 12px;
+            background: white;
+            color: #1a2a6c;
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            transition: 0.2s;
+            cursor: pointer;
+            border: 1px solid #e9edf4;
+        }
+        .nav button.active {
+            background: #1a2a6c;
+            color: white;
+            border-color: #1a2a6c;
+            box-shadow: 0 4px 12px rgba(26, 42, 108, 0.3);
+        }
+        .nav button:active {
+            transform: scale(0.95);
+        }
+        .panel {
+            display: none;
+            animation: fadeUp 0.25s ease;
+        }
+        .panel.active {
+            display: block;
+        }
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            border: 1px solid #eef2f8;
+        }
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a2a6c;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .input-group input,
+        .input-group select {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e7f0;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #fafbfc;
+            outline: none;
+            transition: 0.2s;
+        }
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: #1a2a6c;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
+        }
+        .btn {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #eef2f8;
+            color: #1a2a6c;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn-primary {
+            background: #1a2a6c;
+            color: white;
+            box-shadow: 0 4px 12px rgba(26, 42, 108, 0.25);
+        }
+        .btn-success {
+            background: #0f7b3a;
+            color: white;
+            box-shadow: 0 4px 12px rgba(15, 123, 58, 0.25);
+        }
+        .btn-danger {
+            background: #b21f1f;
+            color: white;
+            box-shadow: 0 4px 12px rgba(178, 31, 31, 0.25);
+        }
+        .btn-warning {
+            background: #d48c1c;
+            color: white;
+            box-shadow: 0 4px 12px rgba(212, 140, 28, 0.25);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #1a2a6c;
+            color: #1a2a6c;
+        }
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+            display: flex;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 8px 0 4px 0;
+            border-radius: 12px;
+            border: 1px solid #eef2f8;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 500px;
+        }
+        th {
+            background: #f5f7fb;
+            text-align: left;
+            padding: 10px 10px;
+            font-weight: 700;
+            color: #1a2a6c;
+            border-bottom: 2px solid #e2e7f0;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+        td {
+            padding: 9px 10px;
+            border-bottom: 1px solid #eef2f8;
+            vertical-align: middle;
+        }
+        .text-muted {
+            color: #8892a8;
+            font-size: 12px;
+        }
+        .text-success {
+            color: #0f7b3a;
+            font-weight: 700;
+        }
+        .text-danger {
+            color: #b21f1f;
+            font-weight: 700;
+        }
+        .badge-stock {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .badge-stock.alto {
+            background: #e1f5e8;
+            color: #0f7b3a;
+        }
+        .badge-stock.medio {
+            background: #fff3d6;
+            color: #b27c1a;
+        }
+        .badge-stock.bajo {
+            background: #fde1e1;
+            color: #b21f1f;
+        }
+        .scan-area {
+            background: #f0f4ff;
+            border: 2px dashed #1a2a6c;
+            border-radius: 16px;
+            padding: 30px 16px;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .scan-area input {
+            width: 100%;
+            padding: 16px;
+            font-size: 20px;
+            text-align: center;
+            border: 2px solid #1a2a6c;
+            border-radius: 12px;
+            background: white;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+        .scan-result {
+            background: #f8faff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            border-left: 4px solid #1a2a6c;
+        }
+        .flex {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .total-row {
+            background: #f5f7fb;
+            font-weight: 700;
+        }
+        .empty-state {
+            padding: 30px 10px;
+            text-align: center;
+            color: #8892a8;
+        }
+        .empty-state span {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2a6c;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            z-index: 999;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.success {
+            background: #0f7b3a;
+        }
+        .toast.error {
+            background: #b21f1f;
+        }
+        .codigo-badge {
+            background: #eef2f8;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #1a2a6c;
+        }
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 24px 20px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeUp 0.2s ease;
+        }
+        .modal h3 {
+            font-size: 18px;
+            color: #1a2a6c;
+            margin-bottom: 16px;
+        }
+        .modal label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a2a6c;
+            display: block;
+            margin-top: 10px;
+        }
+        .modal input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e7f0;
+            border-radius: 12px;
+            font-size: 15px;
+            margin-top: 4px;
+            background: #fafbfc;
+            outline: none;
+        }
+        .modal input:focus {
+            border-color: #1a2a6c;
+            background: white;
+        }
+        .modal .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .modal .btn-group .btn {
+            flex: 1;
+        }
+        .edit-btn {
+            background: none;
+            border: none;
+            color: #1a2a6c;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        .edit-btn:hover {
+            background: #eef2f8;
+        }
+        /* Ticket / Print */
+        .ticket {
+            display: none;
+            background: white;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        .ticket .center {
+            text-align: center;
+        }
+        .ticket .line {
+            border-top: 1px dashed #999;
+            margin: 8px 0;
+        }
+        .ticket .total {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .ticket .small {
+            font-size: 12px;
+            color: #666;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .ticket,
+            .ticket * {
+                visibility: visible;
+            }
+            .ticket {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                max-width: 300px;
+                padding: 20px;
+                margin: 0 auto;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 15px;
+            }
+            .nav button {
+                font-size: 10px;
+                padding: 8px 4px;
+                min-width: 48px;
+            }
+            .btn {
+                font-size: 13px;
+                padding: 10px 16px;
+            }
+            .input-group input,
+            .input-group select {
+                font-size: 14px;
+                padding: 10px 12px;
+            }
+            .card {
+                padding: 14px 12px;
+            }
+            table {
+                font-size: 12px;
+                min-width: 420px;
+            }
+            th,
+            td {
+                padding: 6px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>📦 CELL LA 25</h1>
+        <span class="badge">v2.2 · ES</span>
+    </div>
+
+    <!-- NAV -->
+    <div class="nav" id="mainNav">
+        <button class="active" data-panel="panel-inventario">📋 Inventario</button>
+        <button data-panel="panel-venta">🛒 Venta Rápida</button>
+        <button data-panel="panel-entrada">📥 Entrada</button>
+        <button data-panel="panel-salida">📤 Salida</button>
+        <button data-panel="panel-buscar">🔍 Buscar</button>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <!-- TICKET (para imprimir) -->
+    <div class="ticket" id="ticket">
+        <div class="center">
+            <strong>CELL LA 25</strong><br>
+            <span class="small">Tel: 0000-0000</span><br>
+            <span class="small" id="ticketFecha"></span>
+        </div>
+        <div class="line"></div>
+        <div id="ticketItems"></div>
+        <div class="line"></div>
+        <div class="center total">
+            Total: <span id="ticketTotal">$0.00</span>
+        </div>
+        <div class="line"></div>
+        <div class="center small">¡Gracias por tu compra!</div>
+    </div>
+
+    <!-- MODAL EDITAR -->
+    <div class="modal-overlay" id="modalEditar">
+        <div class="modal">
+            <h3>✏️ Editar Producto</h3>
+            <label>Código</label>
+            <input id="editCodigo" readonly style="background:#f0f2f6;">
+            <label>Nombre</label>
+            <input id="editNombre">
+            <label>Precio (venta)</label>
+            <input id="editPrecio" type="number" step="0.01">
+            <label>Costo</label>
+            <input id="editCosto" type="number" step="0.01">
+            <label>Stock</label>
+            <input id="editStock" type="number" step="1">
+            <div class="btn-group">
+                <button class="btn btn-success" id="editGuardar">💾 Guardar</button>
+                <button class="btn btn-danger" id="editEliminar">🗑 Eliminar</button>
+                <button class="btn btn-outline" id="editCancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR -->
+    <div class="modal-overlay" id="modalAgregar">
+        <div class="modal">
+            <h3>➕ Agregar Producto</h3>
+            <label>Código (deja vacío para auto-generar)</label>
+            <input id="agregarCodigo" placeholder="Ej: 1234567890123 o VF-999">
+            <label>Nombre *</label>
+            <input id="agregarNombre" placeholder="Nombre del producto">
+            <label>Precio (venta) *</label>
+            <input id="agregarPrecio" type="number" step="0.01" placeholder="0.00">
+            <label>Costo *</label>
+            <input id="agregarCosto" type="number" step="0.01" placeholder="0.00">
+            <label>Stock *</label>
+            <input id="agregarStock" type="number" step="1" placeholder="0">
+            <div class="btn-group">
+                <button class="btn btn-success" id="agregarGuardar">💾 Guardar</button>
+                <button class="btn btn-outline" id="agregarCancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== PANEL INVENTARIO ========== -->
+    <div class="panel active" id="panel-inventario">
+        <div class="card">
+            <div class="flex-between">
+                <div class="card-title">📊 Resumen</div>
+                <div>
+                    <span class="badge-stock alto" id="totalProductos">0</span>
+                    <span class="text-muted" style="margin-left:6px;">productos</span>
+                </div>
+            </div>
+            <div class="flex gap-8" style="font-size:14px;">
+                <span>💰 Valor inventario: <strong id="valorTotal">$0.00</strong></span>
+                <span style="margin-left:auto;">📦 <span id="totalUnidades">0</span> uds.</span>
+            </div>
+        </div>
+        <div class="card">
+            <div class="flex-between">
+                <div class="card-title">📦 Inventario Completo</div>
+                <button class="btn btn-success btn-sm" id="btnAbrirAgregar">➕ Agregar</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th style="text-align:center;">Stock</th>
+                            <th style="text-align:right;">Precio</th>
+                            <th style="text-align:right;">Costo</th>
+                            <th style="text-align:center;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventarioBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== PANEL VENTA RÁPIDA ========== -->
+    <div class="panel" id="panel-venta">
+        <div class="card">
+            <div class="card-title">📷 Escanear / Vender</div>
+            <div class="scan-area">
+                <p style="color:#1a2a6c;font-weight:600;margin-bottom:12px;">Escanea o escribe el código</p>
+                <input type="text" id="scanInput" placeholder="Código de barras o VF-xxx" autofocus>
+                <div style="margin-top:10px;font-size:13px;color:#8892a8;">
+                    ⚡ 1 segundo · solo 2 clics
+                </div>
+            </div>
+            <div id="scanResult" class="scan-result" style="display:none;">
+                <div id="productoEncontrado"></div>
+                <div class="flex mt-8">
+                    <button class="btn btn-success" id="btnVenderConfirm" style="flex:1;">✅ Vender (1 ud.)</button>
+                    <button class="btn btn-outline" id="btnVenderCancel">Cancelar</button>
+                </div>
+                <div class="flex mt-8">
+                    <input type="number" id="ventaCantidad" value="1" min="1" style="flex:1;padding:10px;border:1.5px solid #e2e7f0;border-radius:12px;font-size:15px;width:70px;">
+                    <button class="btn btn-primary" id="btnVenderMulti" style="flex:2;">Vender cantidad</button>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">🕐 Últimas ventas</div>
+            <div id="ultimasVentas" class="text-muted" style="padding:8px 0;">Sin ventas registradas</div>
+        </div>
+    </div>
+
+    <!-- ========== PANEL ENTRADA ========== -->
+    <div class="panel" id="panel-entrada">
+        <div class="card">
+            <div class="card-title">📥 Entrada de Mercancía</div>
+            <div class="input-group">
+                <input type="text" id="entradaCodigo" placeholder="Código (VF-xxx o barras)">
+                <input type="number" id="entradaCantidad" placeholder="Cantidad" value="1" min="1">
+            </div>
+            <button class="btn btn-success btn-block" id="btnEntrada">✅ Agregar Stock</button>
+        </div>
+        <div class="card">
+            <div class="card-title">📋 Últimos movimientos</div>
+            <div id="movimientosLista" class="text-muted" style="padding:8px 0;">Sin movimientos</div>
+        </div>
+    </div>
+
+    <!-- ========== PANEL SALIDA ========== -->
+    <div class="panel" id="panel-salida">
+        <div class="card">
+            <div class="card-title">📤 Salida / Ajuste</div>
+            <div class="input-group">
+                <input type="text" id="salidaCodigo" placeholder="Código (VF-xxx o barras)">
+                <input type="number" id="salidaCantidad" placeholder="Cantidad" value="1" min="1">
+            </div>
+            <button class="btn btn-danger btn-block" id="btnSalida">➖ Quitar Stock</button>
+        </div>
+    </div>
+
+    <!-- ========== PANEL BUSCAR ========== -->
+    <div class="panel" id="panel-buscar">
+        <div class="card">
+            <div class="card-title">🔍 Buscar Producto</div>
+            <div class="input-group">
+                <input type="text" id="buscarInput" placeholder="Escribe nombre o código...">
+            </div>
+            <div id="buscarResultados" class="text-muted" style="padding:8px 0;">Escribe para buscar</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        //  DATA: 71 productos importados
+        // ============================================
+        const productosBase = [
+            { codigo: "VF-001", nombre: "Aros de Luz 3D Sin Tirpode MJ-28", precio: 6, costo: 1, stock: 2 },
+            { codigo: "VF-002", nombre: "Aros de Luz 3D Sin Tirpode MJ-35", precio: 7, costo: 1, stock: 2 },
+            { codigo: "VF-003", nombre: "Aros de Luz 3D Sin Tirpode MJ-38", precio: 8, costo: 1, stock: 2 },
+            { codigo: "VF-004", nombre: "Luz para Celular AY-83", precio: 3, costo: 1, stock: 6 },
+            { codigo: "VF-005", nombre: "Trípode con Luz Marca VF AY-49D", precio: 3, costo: 1, stock: 6 },
+            { codigo: "VF-006", nombre: "Luz para Celular U60", precio: 5, costo: 1, stock: 3 },
+            { codigo: "VF-007", nombre: "Aro de Luz de Grabación para Celular NP-LS", precio: 15, costo: 1, stock: 2 },
+            { codigo: "VF-008", nombre: "Soporte para Aros de Luz 2.1M", precio: 2, costo: 1, stock: 30 },
+            { codigo: "VF-009", nombre: "Cable OTG VF V8-TypeC 2 en 1", precio: 0.75, costo: 1, stock: 10 },
+            { codigo: "VF-010", nombre: "Adaptador Auxiliar iPhone", precio: 1.25, costo: 1, stock: 6 },
+            { codigo: "VF-011", nombre: "Adaptador Auxiliar Tipo-C", precio: 1.25, costo: 1, stock: 6 },
+            { codigo: "VF-012", nombre: "Adaptador iPhone 2 en 1 (Carga + Audio)", precio: 2.25, costo: 1, stock: 5 },
+            { codigo: "VF-013", nombre: "Adaptador de Audífono VF Type C + 3.5mm AT2 #031", precio: 2.25, costo: 1,
+            stock: 5 },
+            { codigo: "VF-014", nombre: "Adaptador de Audífono Universal VF Doble TPC AT1 #032", precio: 2.25, costo: 1,
+                stock: 5 },
+            { codigo: "VF-015", nombre: "Cable Auxiliar Type-C a 3.5mm", precio: 1.5, costo: 1, stock: 5 },
+            { codigo: "VF-016", nombre: "Cable Auxiliar Lightning a 3.5mm", precio: 1.5, costo: 1, stock: 5 },
+            { codigo: "VF-017", nombre: "Mouse VF-M1", precio: 1.75, costo: 1, stock: 5 },
+            { codigo: "VF-018", nombre: "Mouse VF-MS121", precio: 1.75, costo: 1, stock: 5 },
+            { codigo: "VF-019", nombre: "Mouse con Luz VF-M3", precio: 2.5, costo: 1, stock: 5 },
+            { codigo: "VF-020", nombre: "Mouse Inalámbrico MOU-T1 (carga dual)", precio: 4, costo: 1, stock: 5 },
+            { codigo: "VF-021", nombre: "Mouse Inalámbrico MOT-T2", precio: 4.5, costo: 1, stock: 5 },
+            { codigo: "VF-022", nombre: "Mouse Inalámbrico MOU-X7", precio: 6.5, costo: 1, stock: 5 },
+            { codigo: "VF-023", nombre: "Teclado con Mouse VF-T6", precio: 5, costo: 1, stock: 6 },
+            { codigo: "VF-024", nombre: "Teclado con Mouse Onikuma 3+1 TZ3006", precio: 12, costo: 1, stock: 6 },
+            { codigo: "VF-025", nombre: "Cooling Fan para PS P55003", precio: 8, costo: 1, stock: 6 },
+            { codigo: "VF-026", nombre: "Multi Cargador para Bocina (2.25)", precio: 2.25, costo: 1, stock: 6 },
+            { codigo: "VF-027", nombre: "Multi Cargador para Bocina (3.5)", precio: 3.5, costo: 1, stock: 6 },
+            { codigo: "VF-028", nombre: "Smart Remote Control Air Mouse", precio: 3.5, costo: 1, stock: 6 },
+            { codigo: "VF-029", nombre: "Audífono Bluetooth Inalámbrico VF T8pods", precio: 9.5, costo: 1, stock: 3 },
+            { codigo: "VF-030", nombre: "Audífono Bluetooth Inalámbrico VF T7pods", precio: 7.5, costo: 1, stock: 3 },
+            { codigo: "VF-031", nombre: "Audífono Bluetooth Inalámbrico VF T5pods", precio: 7.5, costo: 1, stock: 3 },
+            { codigo: "VF-032", nombre: "Audífono Bluetooth Inalámbrico VF T4pods", precio: 6.5, costo: 1, stock: 3 },
+            { codigo: "VF-033", nombre: "Audífono con Micrófono VF 07", precio: 0.75, costo: 1, stock: 50 },
+            { codigo: "VF-034", nombre: "Audífono Type-C Universal VF ATC12", precio: 1.75, costo: 1, stock: 10 },
+            { codigo: "VF-035", nombre: "Micrófono Inalámbrico K9", precio: 4, costo: 1, stock: 5 },
+            { codigo: "VF-036", nombre: "Micrófono Inalámbrico K9 2 en 1", precio: 6, costo: 1, stock: 5 },
+            { codigo: "VF-037", nombre: "Trípode NP-60", precio: 17.5, costo: 1, stock: 2 },
+            { codigo: "VF-038", nombre: "Trípode NP-56", precio: 12, costo: 1, stock: 2 },
+            { codigo: "VF-039", nombre: "MagSafe Magnetic Fast Charger 15W #DS21", precio: 8.5, costo: 0.85, stock: 3 },
+            { codigo: "VF-040", nombre: "MagSafe Wireless Fast Charger 15W #DS28", precio: 15.5, costo: 0.85, stock: 2 },
+            { codigo: "VF-041", nombre: "Adaptador de Auto Doble Salida PD 50W Y64", precio: 3.5, costo: 0.85, stock: 5 },
+            { codigo: "VF-042", nombre: "Adaptador de Auto PD 45W Y67", precio: 3.95, costo: 0.85, stock: 5 },
+            { codigo: "VF-043", nombre: "Adaptador de Auto Doble Salida PD 30W Y68", precio: 4.5, costo: 0.85, stock: 5 },
+            { codigo: "VF-044", nombre: "Adaptador de Auto Doble Salida PD 30W Y69", precio: 4.95, costo: 0.85, stock: 5 },
+            { codigo: "VF-045", nombre: "Adaptador de Auto Triple Salida PD 60W Y50", precio: 6.5, costo: 0.85, stock: 3 },
+            { codigo: "VF-046", nombre: "Holder de Carro #C108", precio: 3.95, costo: 0.85, stock: 3 },
+            { codigo: "VF-047", nombre: "Holder de Carro #C251", precio: 2, costo: 0.85, stock: 10 },
+            { codigo: "VF-048", nombre: "Holder de Carro #C234", precio: 2.5, costo: 0.85, stock: 10 },
+            { codigo: "VF-049", nombre: "Holder de Carro #C267", precio: 2.5, costo: 0.85, stock: 10 },
+            { codigo: "VF-050", nombre: "Holder de Carro #C171", precio: 4.25, costo: 0.85, stock: 2 },
+            { codigo: "VF-051", nombre: "Holder de Carro #C172", precio: 3.95, costo: 0.85, stock: 3 },
+            { codigo: "VF-052", nombre: "Holder de Carro #C242", precio: 3.5, costo: 0.85, stock: 3 },
+            { codigo: "VF-053", nombre: "Holder para Celular #C228", precio: 6.5, costo: 0.85, stock: 10 },
+            { codigo: "VF-054", nombre: "Holder de Carro Yesido C333", precio: 4.5, costo: 0.85, stock: 3 },
+            { codigo: "VF-055", nombre: "Holder de Carro #C265", precio: 4.5, costo: 0.85, stock: 3 },
+            { codigo: "VF-056", nombre: "Holder de Carro #C275", precio: 4.75, costo: 0.85, stock: 5 },
+            { codigo: "VF-057", nombre: "Holder Meta para Celular #C296", precio: 9.5, costo: 0.85, stock: 2 },
+            { codigo: "VF-058", nombre: "Holder Meta para Celular #C295", precio: 18.95, costo: 0.85, stock: 2 },
+            { codigo: "VF-059", nombre: "Lámpara Recargable 20W Yesido DH14", precio: 2.25, costo: 0.85, stock: 5 },
+            { codigo: "VF-060", nombre: "Linterna LED Head Lamp #TC12", precio: 8.95, costo: 0.85, stock: 2 },
+            { codigo: "VF-061", nombre: "Cargador para Galaxy Smart Watch #CA162", precio: 4.5, costo: 0.85, stock: 5 },
+            { codigo: "VF-062", nombre: "Cargador para Apple Watch 2.5W Yesido DS32", precio: 4, costo: 0.85, stock: 5 },
+            { codigo: "VF-063", nombre: "Adaptador Type-C OTG #GS22", precio: 1, costo: 0.85, stock: 10 },
+            { codigo: "VF-064", nombre: "Adaptador Lightning OTG #GS03", precio: 1, costo: 0.85, stock: 10 },
+            { codigo: "VF-065", nombre: "Stylus Pen Yesido ST15", precio: 7.5, costo: 0.85, stock: 3 },
+            { codigo: "VF-066", nombre: "Smart Watch Inalámbrico Android/iOS #1023", precio: 14.99, costo: 0.85,
+            stock: 2 },
+            { codigo: "VF-067", nombre: "Smart Watch Inalámbrico Android/iOS #1027", precio: 22.95, costo: 0.85,
+            stock: 2 },
+            { codigo: "VF-068", nombre: "Smart Watch Inalámbrico Android/iOS #1029", precio: 19.99, costo: 0.85,
+            stock: 2 },
+            { codigo: "VF-069", nombre: "Proyector Ajustable HD con WiFi y Bluetooth #TV14", precio: 50, costo: 1,
+                stock: 2 },
+            { codigo: "VF-070", nombre: "Holder Laptop Yesido LP07", precio: 6.5, costo: 0.85, stock: 2 },
+            { codigo: "VF-071", nombre: "Linterna Yesido TC10", precio: 3.25, costo: 0.85, stock: 3 }
+        ];
+
+        // ============================================
+        //  STORAGE
+        // ============================================
+        let productos = [];
+        let ultimaVenta = null;
+
+        function loadData() {
+            const saved = localStorage.getItem('vf_inventario');
+            if (saved) {
+                try {
+                    productos = JSON.parse(saved);
+                    return;
+                } catch (e) {}
+            }
+            productos = JSON.parse(JSON.stringify(productosBase));
+            saveData();
+        }
+
+        function saveData() {
+            localStorage.setItem('vf_inventario', JSON.stringify(productos));
+            renderAll();
+        }
+
+        // ============================================
+        //  HELPERS
+        // ============================================
+        function findProducto(codigo) {
+            return productos.find(p => p.codigo === codigo || p.codigo === codigo.trim());
+        }
+
+        function formatMoneda(val) {
+            return '$' + val.toFixed(2);
+        }
+
+        function toast(msg, tipo) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast show ' + (tipo || '');
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => { el.className = 'toast'; }, 2500);
+        }
+
+        function getStockBadge(stock) {
+            if (stock >= 10) return '<span class="badge-stock alto">✓ Alto</span>';
+            if (stock >= 3) return '<span class="badge-stock medio">◉ Medio</span>';
+            return '<span class="badge-stock bajo">⚠ Bajo</span>';
+        }
+
+        // ============================================
+        //  TICKET (Imprimir)
+        // ============================================
+        function imprimirTicket(venta) {
+            const ticket = document.getElementById('ticket');
+            const fecha = new Date().toLocaleString('es-PA');
+            document.getElementById('ticketFecha').textContent = fecha;
+
+            let itemsHtml = '';
+            let total = 0;
+            venta.items.forEach(item => {
+                const subtotal = item.cantidad * item.precio;
+                total += subtotal;
+                itemsHtml +=
+                    `${item.nombre}<br>${item.cantidad} x ${formatMoneda(item.precio)} = ${formatMoneda(subtotal)}<br>`;
+            });
+            document.getElementById('ticketItems').innerHTML = itemsHtml;
+            document.getElementById('ticketTotal').textContent = formatMoneda(total);
+
+            ticket.style.display = 'block';
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => {
+                    ticket.style.display = 'none';
+                }, 500);
+            }, 300);
+        }
+
+        // ============================================
+        //  RENDER
+        // ============================================
+        function renderInventario() {
+            const tbody = document.getElementById('inventarioBody');
+            if (productos.length === 0) {
+                tbody.innerHTML =
+                '<tr><td colspan="6" class="empty-state"><span>📭</span>No hay productos</td></tr>';
+                return;
+            }
+            let html = '';
+            let totalValor = 0;
+            let totalUds = 0;
+            productos.forEach(p => {
+                const val = p.stock * p.precio;
+                totalValor += val;
+                totalUds += p.stock;
+                html += `<tr>
+                    <td><span class="codigo-badge">${p.codigo}</span></td>
+                    <td>${p.nombre}</td>
+                    <td style="text-align:center;">${p.stock} ${getStockBadge(p.stock)}</td>
+                    <td style="text-align:right;font-weight:600;">${formatMoneda(p.precio)}</td>
+                    <td style="text-align:right;color:#8892a8;">${formatMoneda(p.costo)}</td>
+                    <td style="text-align:center;">
+                        <button class="edit-btn" data-codigo="${p.codigo}" title="Editar">✏️</button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+            document.getElementById('totalProductos').textContent = productos.length;
+            document.getElementById('totalUnidades').textContent = totalUds;
+            document.getElementById('valorTotal').textContent = formatMoneda(totalValor);
+
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    abrirModal(this.dataset.codigo);
+                });
+            });
+        }
+
+        function renderUltimasVentas() {
+            const el = document.getElementById('ultimasVentas');
+            const ventas = JSON.parse(localStorage.getItem('vf_ventas') || '[]');
+            if (ventas.length === 0) {
+                el.innerHTML = '<span class="text-muted">Sin ventas registradas</span>';
+                return;
+            }
+            const ultimas = ventas.slice(-5).reverse();
+            el.innerHTML = ultimas.map(v =>
+                `<div style="padding:6px 0;border-bottom:1px solid #f0f2f6;font-size:13px;">
+                    <strong>${v.producto}</strong> · ${v.cantidad} uds · ${formatMoneda(v.total)} 
+                    <span class="text-muted" style="float:right;">${v.fecha}</span>
+                </div>`
+            ).join('');
+        }
+
+        function renderMovimientos() {
+            const el = document.getElementById('movimientosLista');
+            const movs = JSON.parse(localStorage.getItem('vf_movimientos') || '[]');
+            if (movs.length === 0) {
+                el.innerHTML = '<span class="text-muted">Sin movimientos</span>';
+                return;
+            }
+            const ultimos = movs.slice(-8).reverse();
+            el.innerHTML = ultimos.map(m =>
+                `<div style="padding:5px 0;border-bottom:1px solid #f0f2f6;font-size:13px;">
+                    ${m.tipo === 'entrada' ? '📥' : '📤'} <strong>${m.producto}</strong> 
+                    ${m.cantidad} uds · ${formatMoneda(m.total)} 
+                    <span class="text-muted" style="float:right;">${m.fecha}</span>
+                </div>`
+            ).join('');
+        }
+
+        function renderAll() {
+            renderInventario();
+            renderUltimasVentas();
+            renderMovimientos();
+        }
+
+        // ============================================
+        //  MODAL EDITAR
+        // ============================================
+        let editandoCodigo = null;
+
+        function abrirModal(codigo) {
+            const p = findProducto(codigo);
+            if (!p) return;
+            editandoCodigo = codigo;
+            document.getElementById('editCodigo').value = p.codigo;
+            document.getElementById('editNombre').value = p.nombre;
+            document.getElementById('editPrecio').value = p.precio;
+            document.getElementById('editCosto').value = p.costo;
+            document.getElementById('editStock').value = p.stock;
+            document.getElementById('modalEditar').classList.add('active');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalEditar').classList.remove('active');
+            editandoCodigo = null;
+        }
+
+        function guardarEdicion() {
+            if (!editandoCodigo) return;
+            const p = findProducto(editandoCodigo);
+            if (!p) return;
+            const nombre = document.getElementById('editNombre').value.trim();
+            const precio = parseFloat(document.getElementById('editPrecio').value);
+            const costo = parseFloat(document.getElementById('editCosto').value);
+            const stock = parseInt(document.getElementById('editStock').value);
+            if (!nombre) { toast('El nombre no puede estar vacío', 'error'); return; }
+            if (isNaN(precio) || precio < 0) { toast('Precio inválido', 'error'); return; }
+            if (isNaN(costo) || costo < 0) { toast('Costo inválido', 'error'); return; }
+            if (isNaN(stock) || stock < 0) { toast('Stock inválido', 'error'); return; }
+            p.nombre = nombre;
+            p.precio = precio;
+            p.costo = costo;
+            p.stock = stock;
+            saveData();
+            cerrarModal();
+            toast('✅ Producto actualizado', 'success');
+        }
+
+        function eliminarProducto() {
+            if (!editandoCodigo) return;
+            if (!confirm('¿Eliminar este producto permanentemente?')) return;
+            const idx = productos.findIndex(p => p.codigo === editandoCodigo);
+            if (idx === -1) return;
+            productos.splice(idx, 1);
+            saveData();
+            cerrarModal();
+            toast('🗑 Producto eliminado', 'success');
+        }
+
+        // ============================================
+        //  MODAL AGREGAR
+        // ============================================
+        function abrirAgregar() {
+            document.getElementById('agregarCodigo').value = '';
+            document.getElementById('agregarNombre').value = '';
+            document.getElementById('agregarPrecio').value = '';
+            document.getElementById('agregarCosto').value = '';
+            document.getElementById('agregarStock').value = '';
+            document.getElementById('modalAgregar').classList.add('active');
+            document.getElementById('agregarNombre').focus();
+        }
+
+        function cerrarAgregar() {
+            document.getElementById('modalAgregar').classList.remove('active');
+        }
+
+        function guardarAgregar() {
+            let codigo = document.getElementById('agregarCodigo').value.trim();
+            const nombre = document.getElementById('agregarNombre').value.trim();
+            const precio = parseFloat(document.getElementById('agregarPrecio').value);
+            const costo = parseFloat(document.getElementById('agregarCosto').value);
+            const stock = parseInt(document.getElementById('agregarStock').value);
+
+            if (!nombre) { toast('El nombre es obligatorio', 'error'); return; }
+            if (isNaN(precio) || precio < 0) { toast('Precio inválido', 'error'); return; }
+            if (isNaN(costo) || costo < 0) { toast('Costo inválido', 'error'); return; }
+            if (isNaN(stock) || stock < 0) { toast('Stock inválido', 'error'); return; }
+
+            if (!codigo) {
+                const maxNum = productos.reduce((max, p) => {
+                    const num = parseInt(p.codigo.replace('VF-', ''));
+                    return num > max ? num : max;
+                }, 0);
+                const next = String(maxNum + 1).padStart(3, '0');
+                codigo = 'VF-' + next;
+            }
+
+            if (findProducto(codigo)) {
+                toast('Ya existe un producto con ese código', 'error');
+                return;
+            }
+
+            productos.push({ codigo, nombre, precio, costo, stock });
+            saveData();
+            cerrarAgregar();
+            toast('✅ Producto agregado: ' + nombre, 'success');
+        }
+
+        // ============================================
+        //  SCAN / VENTA
+        // ============================================
+        let scanProducto = null;
+
+        function handleScan(codigo) {
+            if (!codigo || codigo.trim() === '') return;
+            const p = findProducto(codigo.trim());
+            const resultDiv = document.getElementById('scanResult');
+            const infoDiv = document.getElementById('productoEncontrado');
+
+            if (!p) {
+                infoDiv.innerHTML = `<div style="color:#b21f1f;font-weight:600;">❌ Producto no encontrado</div>`;
+                resultDiv.style.display = 'block';
+                scanProducto = null;
+                return;
+            }
+            scanProducto = p;
+            infoDiv.innerHTML = `
+                <div style="font-weight:700;font-size:16px;">${p.nombre}</div>
+                <div style="display:flex;gap:16px;margin-top:6px;flex-wrap:wrap;">
+                    <span>📦 Stock: <strong>${p.stock}</strong></span>
+                    <span>💰 Precio: <strong>${formatMoneda(p.precio)}</strong></span>
+                    <span><span class="codigo-badge">${p.codigo}</span></span>
+                </div>
+            `;
+            resultDiv.style.display = 'block';
+            document.getElementById('ventaCantidad').value = 1;
+            document.getElementById('scanInput').value = '';
+            document.getElementById('scanInput').focus();
+        }
+
+        function venderProducto(cantidad) {
+            if (!scanProducto) {
+                toast('Escanea un producto primero', 'error');
+                return;
+            }
+            cantidad = parseInt(cantidad) || 1;
+            if (cantidad <= 0) {
+                toast('Cantidad inválida', 'error');
+                return;
+            }
+            if (scanProducto.stock < cantidad) {
+                toast('Stock insuficiente (disponible: ' + scanProducto.stock + ')', 'error');
+                return;
+            }
+            scanProducto.stock -= cantidad;
+            saveData();
+
+            const ventaItem = {
+                nombre: scanProducto.nombre,
+                cantidad: cantidad,
+                precio: scanProducto.precio
+            };
+
+            const ventas = JSON.parse(localStorage.getItem('vf_ventas') || '[]');
+            ventas.push({
+                producto: scanProducto.nombre,
+                cantidad: cantidad,
+                total: cantidad * scanProducto.precio,
+                fecha: new Date().toLocaleString('es-PA')
+            });
+            localStorage.setItem('vf_ventas', JSON.stringify(ventas));
+
+            const movs = JSON.parse(localStorage.getItem('vf_movimientos') || '[]');
+            movs.push({
+                tipo: 'salida',
+                producto: scanProducto.nombre,
+                cantidad: cantidad,
+                total: cantidad * scanProducto.precio,
+                fecha: new Date().toLocaleString('es-PA')
+            });
+            localStorage.setItem('vf_movimientos', JSON.stringify(movs));
+
+            toast('✅ Venta registrada: ' + scanProducto.nombre + ' x' + cantidad, 'success');
+
+            // Guardar para ticket
+            ultimaVenta = { items: [ventaItem] };
+
+            document.getElementById('scanResult').style.display = 'none';
+            scanProducto = null;
+            document.getElementById('scanInput').focus();
+            renderAll();
+
+            // Preguntar si imprimir
+            if (confirm('¿Imprimir ticket?')) {
+                imprimirTicket(ultimaVenta);
+            }
+        }
+
+        // ============================================
+        //  EVENTOS
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+
+            document.querySelectorAll('#mainNav button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#mainNav button').forEach(b => b.classList.remove(
+                    'active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                    document.getElementById(this.dataset.panel).classList.add('active');
+                    if (this.dataset.panel === 'panel-venta') {
+                        document.getElementById('scanInput').focus();
+                    }
+                    if (this.dataset.panel === 'panel-buscar') {
+                        document.getElementById('buscarInput').focus();
+                    }
+                });
+            });
+
+            document.getElementById('scanInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleScan(this.value);
+                }
+            });
+
+            document.getElementById('btnVenderConfirm').addEventListener('click', function() {
+                venderProducto(1);
+            });
+            document.getElementById('btnVenderMulti').addEventListener('click', function() {
+                const cant = parseInt(document.getElementById('ventaCantidad').value) || 1;
+                venderProducto(cant);
+            });
+            document.getElementById('btnVenderCancel').addEventListener('click', function() {
+                document.getElementById('scanResult').style.display = 'none';
+                scanProducto = null;
+                document.getElementById('scanInput').focus();
+            });
+
+            document.getElementById('btnEntrada').addEventListener('click', function() {
+                const codigo = document.getElementById('entradaCodigo').value.trim();
+                const cantidad = parseInt(document.getElementById('entradaCantidad').value) || 1;
+                if (!codigo) { toast('Ingresa un código', 'error'); return; }
+                if (cantidad <= 0) { toast('Cantidad inválida', 'error'); return; }
+                const p = findProducto(codigo);
+                if (!p) { toast('Producto no encontrado', 'error'); return; }
+                p.stock += cantidad;
+                saveData();
+                const movs = JSON.parse(localStorage.getItem('vf_movimientos') || '[]');
+                movs.push({
+                    tipo: 'entrada',
+                    producto: p.nombre,
+                    cantidad: cantidad,
+                    total: cantidad * p.costo,
+                    fecha: new Date().toLocaleString('es-PA')
+                });
+                localStorage.setItem('vf_movimientos', JSON.stringify(movs));
+                toast('📥 Entrada registrada: ' + p.nombre + ' +' + cantidad, 'success');
+                document.getElementById('entradaCodigo').value = '';
+                document.getElementById('entradaCantidad').value = 1;
+                renderAll();
+            });
+
+            document.getElementById('btnSalida').addEventListener('click', function() {
+                const codigo = document.getElementById('salidaCodigo').value.trim();
+                const cantidad = parseInt(document.getElementById('salidaCantidad').value) || 1;
+                if (!codigo) { toast('Ingresa un código', 'error'); return; }
+                if (cantidad <= 0) { toast('Cantidad inválida', 'error'); return; }
+                const p = findProducto(codigo);
+                if (!p) { toast('Producto no encontrado', 'error'); return; }
+                if (p.stock < cantidad) {
+                    toast('Stock insuficiente (disponible: ' + p.stock + ')', 'error');
+                    return;
+                }
+                p.stock -= cantidad;
+                saveData();
+                const movs = JSON.parse(localStorage.getItem('vf_movimientos') || '[]');
+                movs.push({
+                    tipo: 'salida',
+                    producto: p.nombre,
+                    cantidad: cantidad,
+                    total: cantidad * p.precio,
+                    fecha: new Date().toLocaleString('es-PA')
+                });
+                localStorage.setItem('vf_movimientos', JSON.stringify(movs));
+                toast('📤 Salida registrada: ' + p.nombre + ' -' + cantidad, 'success');
+                document.getElementById('salidaCodigo').value = '';
+                document.getElementById('salidaCantidad').value = 1;
+                renderAll();
+            });
+
+            document.getElementById('buscarInput').addEventListener('input', function() {
+                const q = this.value.toLowerCase().trim();
+                const el = document.getElementById('buscarResultados');
+                if (!q) { el.innerHTML = '<span class="text-muted">Escribe para buscar</span>'; return; }
+                const results = productos.filter(p =>
+                    p.nombre.toLowerCase().includes(q) ||
+                    p.codigo.toLowerCase().includes(q)
+                );
+                if (results.length === 0) {
+                    el.innerHTML = '<span class="text-muted">❌ No se encontraron productos</span>';
+                    return;
+                }
+                el.innerHTML = results.map(p =>
+                    `<div style="padding:8px 0;border-bottom:1px solid #f0f2f6;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+                        <span><span class="codigo-badge">${p.codigo}</span> ${p.nombre}</span>
+                        <span>📦 ${p.stock} · ${formatMoneda(p.precio)}</span>
+                    </div>`
+                ).join('');
+            });
+
+            document.getElementById('buscarInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    this.value = '';
+                    document.getElementById('buscarResultados').innerHTML =
+                    '<span class="text-muted">Escribe para buscar</span>';
+                }
+            });
+
+            document.getElementById('entradaCodigo').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { document.getElementById('btnEntrada').click(); }
+            });
+            document.getElementById('salidaCodigo').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { document.getElementById('btnSalida').click(); }
+            });
+
+            document.getElementById('editGuardar').addEventListener('click', guardarEdicion);
+            document.getElementById('editCancelar').addEventListener('click', cerrarModal);
+            document.getElementById('editEliminar').addEventListener('click', eliminarProducto);
+            document.getElementById('modalEditar').addEventListener('click', function(e) {
+                if (e.target === this) cerrarModal();
+            });
+
+            document.getElementById('btnAbrirAgregar').addEventListener('click', abrirAgregar);
+            document.getElementById('agregarGuardar').addEventListener('click', guardarAgregar);
+            document.getElementById('agregarCancelar').addEventListener('click', cerrarAgregar);
+            document.getElementById('modalAgregar').addEventListener('click', function(e) {
+                if (e.target === this) cerrarAgregar();
+            });
+
+            document.getElementById('agregarCodigo').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { document.getElementById('agregarNombre').focus(); }
+            });
+            document.getElementById('agregarNombre').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { document.getElementById('agregarPrecio').focus(); }
+            });
+            document.getElementById('agregarPrecio').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { document.getElementById('agregarCosto').focus(); }
+            });
+            document.getElementById('agregarCosto').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { document.getElementById('agregarStock').focus(); }
+            });
+            document.getElementById('agregarStock').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { document.getElementById('agregarGuardar').click(); }
+            });
+
+            renderAll();
+            if (document.getElementById('panel-venta').classList.contains('active')) {
+                document.getElementById('scanInput').focus();
+            }
+        });
+    </script>
+</body>
+</html>
