@@ -39,6 +39,18 @@
             font-size: 11px;
             font-weight: 600;
         }
+        .header .mode-badge {
+            background: #0f7b3a;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+        .header .mode-badge.employee {
+            background: #b21f1f;
+        }
         .nav {
             display: flex;
             gap: 8px;
@@ -68,6 +80,10 @@
         }
         .nav button:active {
             transform: scale(0.95);
+        }
+        .nav button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         .panel {
             display: none;
@@ -174,6 +190,10 @@
             width: 100%;
             justify-content: center;
             display: flex;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         .table-wrap {
             overflow-x: auto;
@@ -416,6 +436,10 @@
         .edit-btn:hover {
             background: #eef2f8;
         }
+        .edit-btn.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
         /* Ticket / Print */
         .ticket {
             display: none;
@@ -506,8 +530,11 @@
 
     <!-- HEADER -->
     <div class="header">
-        <h1>📦 CELL LA 25</h1>
-        <span class="badge">v2.4 · ES</span>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;">
+            <h1>📦 CELL LA 25</h1>
+            <span class="mode-badge employee" id="modeBadge" onclick="toggleModo()">👤 Empleado</span>
+        </div>
+        <span class="badge">v2.5 · ES</span>
     </div>
 
     <!-- NAV -->
@@ -623,6 +650,19 @@
         </div>
     </div>
 
+    <!-- MODAL JEFE -->
+    <div class="modal-overlay" id="modalJefe">
+        <div class="modal">
+            <h3>🔐 Modo Jefe</h3>
+            <label>Ingresa la contraseña</label>
+            <input type="password" id="jefePassword" placeholder="Contraseña">
+            <div class="btn-group">
+                <button class="btn btn-success" id="jefeConfirmar">🔓 Desbloquear</button>
+                <button class="btn btn-outline" id="jefeCancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== PANEL INVENTARIO ========== -->
     <div class="panel active" id="panel-inventario">
         <div class="card">
@@ -732,7 +772,13 @@
 
     <script>
         // ============================================
-        //  DATA: 71 productos importados (igual que antes)
+        //  CONFIG
+        // ============================================
+        const PASSWORD_JEFE = '123456';
+        let modoJefe = false;
+
+        // ============================================
+        //  DATA: 71 productos importados
         // ============================================
         const productosBase = [
             { codigo: "VF-001", nombre: "Aros de Luz 3D Sin Tirpode MJ-28", precio: 6, costo: 1, stock: 2 },
@@ -863,12 +909,91 @@
         }
 
         // ============================================
-        //  TICKET (Imprimir) - Con Pago
+        //  MODO JEFE
+        // ============================================
+        function toggleModo() {
+            if (modoJefe) {
+                modoJefe = false;
+                actualizarUI();
+                toast('🔒 Modo Empleado activado', '');
+                return;
+            }
+            document.getElementById('modalJefe').classList.add('active');
+            document.getElementById('jefePassword').value = '';
+            document.getElementById('jefePassword').focus();
+        }
+
+        function verificarJefe() {
+            const pass = document.getElementById('jefePassword').value;
+            if (pass === PASSWORD_JEFE) {
+                modoJefe = true;
+                document.getElementById('modalJefe').classList.remove('active');
+                actualizarUI();
+                toast('🔓 Modo Jefe activado', 'success');
+            } else {
+                toast('❌ Contraseña incorrecta', 'error');
+                document.getElementById('jefePassword').value = '';
+                document.getElementById('jefePassword').focus();
+            }
+        }
+
+        function actualizarUI() {
+            const badge = document.getElementById('modeBadge');
+            if (modoJefe) {
+                badge.textContent = '👑 Jefe';
+                badge.className = 'mode-badge';
+            } else {
+                badge.textContent = '👤 Empleado';
+                badge.className = 'mode-badge employee';
+            }
+            // Habilitar/deshabilitar botones de edición
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                if (modoJefe) {
+                    btn.classList.remove('disabled');
+                    btn.style.pointerEvents = 'auto';
+                } else {
+                    btn.classList.add('disabled');
+                    btn.style.pointerEvents = 'none';
+                }
+            });
+            // Botón Agregar
+            const btnAgregar = document.getElementById('btnAbrirAgregar');
+            if (modoJefe) {
+                btnAgregar.disabled = false;
+                btnAgregar.style.opacity = '1';
+            } else {
+                btnAgregar.disabled = true;
+                btnAgregar.style.opacity = '0.5';
+            }
+            // Botones Entrada y Salida
+            ['btnEntrada', 'btnSalida'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (modoJefe) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                } else {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                }
+            });
+            // Inputs de entrada/salida
+            ['entradaCodigo', 'entradaCantidad', 'salidaCodigo', 'salidaCantidad'].forEach(id => {
+                const el = document.getElementById(id);
+                if (modoJefe) {
+                    el.disabled = false;
+                    el.style.opacity = '1';
+                } else {
+                    el.disabled = true;
+                    el.style.opacity = '0.6';
+                }
+            });
+        }
+
+        // ============================================
+        //  TICKET (Imprimir)
         // ============================================
         function imprimirTicket(venta, pago) {
             const fecha = new Date().toLocaleString('es-PA');
-
-            // --- Ticket Cliente ---
             document.getElementById('ticketFecha').textContent = fecha;
             let itemsHtml = '';
             let total = 0;
@@ -882,19 +1007,16 @@
             document.getElementById('ticketTotal').textContent = formatMoneda(total);
             document.getElementById('ticketPago').textContent = 'Pago: ' + pago;
 
-            // --- Ticket Respaldo ---
             document.getElementById('ticketRespaldoFecha').textContent = fecha;
             document.getElementById('ticketRespaldoItems').innerHTML = itemsHtml;
             document.getElementById('ticketRespaldoTotal').textContent = formatMoneda(total);
             document.getElementById('ticketRespaldoPago').textContent = 'Pago: ' + pago;
 
-            // --- Imprimir ambos ---
             const ticketCliente = document.getElementById('ticket');
             const ticketRespaldo = document.getElementById('ticketRespaldo');
 
             ticketCliente.style.display = 'block';
             ticketRespaldo.style.display = 'none';
-            
             setTimeout(() => {
                 window.print();
                 setTimeout(() => {
@@ -927,6 +1049,7 @@
                 const val = p.stock * p.precio;
                 totalValor += val;
                 totalUds += p.stock;
+                const disabledClass = modoJefe ? '' : 'disabled';
                 html += `<tr>
                     <td><span class="codigo-badge">${p.codigo}</span></td>
                     <td>${p.nombre}</td>
@@ -934,7 +1057,7 @@
                     <td style="text-align:right;font-weight:600;">${formatMoneda(p.precio)}</td>
                     <td style="text-align:right;color:#8892a8;">${formatMoneda(p.costo)}</td>
                     <td style="text-align:center;">
-                        <button class="edit-btn" data-codigo="${p.codigo}" title="Editar">✏️</button>
+                        <button class="edit-btn ${disabledClass}" data-codigo="${p.codigo}" title="Editar" ${modoJefe ? '' : 'disabled'}>✏️</button>
                     </td>
                 </tr>`;
             });
@@ -945,9 +1068,14 @@
 
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
+                    if (!modoJefe) {
+                        toast('🔒 Solo el jefe puede editar', 'error');
+                        return;
+                    }
                     abrirModal(this.dataset.codigo);
                 });
             });
+            actualizarUI();
         }
 
         function renderUltimasVentas() {
@@ -996,6 +1124,7 @@
         let editandoCodigo = null;
 
         function abrirModal(codigo) {
+            if (!modoJefe) return;
             const p = findProducto(codigo);
             if (!p) return;
             editandoCodigo = codigo;
@@ -1013,6 +1142,7 @@
         }
 
         function guardarEdicion() {
+            if (!modoJefe) { toast('🔒 Solo el jefe puede editar', 'error'); return; }
             if (!editandoCodigo) return;
             const p = findProducto(editandoCodigo);
             if (!p) return;
@@ -1034,6 +1164,7 @@
         }
 
         function eliminarProducto() {
+            if (!modoJefe) { toast('🔒 Solo el jefe puede eliminar', 'error'); return; }
             if (!editandoCodigo) return;
             if (!confirm('¿Eliminar este producto permanentemente?')) return;
             const idx = productos.findIndex(p => p.codigo === editandoCodigo);
@@ -1048,6 +1179,7 @@
         //  MODAL AGREGAR
         // ============================================
         function abrirAgregar() {
+            if (!modoJefe) { toast('🔒 Solo el jefe puede agregar', 'error'); return; }
             document.getElementById('agregarCodigo').value = '';
             document.getElementById('agregarNombre').value = '';
             document.getElementById('agregarPrecio').value = '';
@@ -1062,6 +1194,7 @@
         }
 
         function guardarAgregar() {
+            if (!modoJefe) { toast('🔒 Solo el jefe puede agregar', 'error'); return; }
             let codigo = document.getElementById('agregarCodigo').value.trim();
             const nombre = document.getElementById('agregarNombre').value.trim();
             const precio = parseFloat(document.getElementById('agregarPrecio').value);
@@ -1094,7 +1227,7 @@
         }
 
         // ============================================
-        //  SCAN / VENTA (con Pago)
+        //  SCAN / VENTA (sin restricciones)
         // ============================================
         let scanProducto = null;
         let ventaPendienteCantidad = 0;
@@ -1140,8 +1273,6 @@
                 toast('Stock insuficiente (disponible: ' + scanProducto.stock + ')', 'error');
                 return;
             }
-            
-            // Guardar cantidad y mostrar modal de pago
             ventaPendienteCantidad = cantidad;
             document.getElementById('modalPago').classList.add('active');
         }
@@ -1149,8 +1280,7 @@
         function confirmarVentaConPago() {
             const pago = document.getElementById('pagoSelect').value;
             const cantidad = ventaPendienteCantidad;
-            
-            // Restar stock
+
             scanProducto.stock -= cantidad;
             saveData();
 
@@ -1186,7 +1316,7 @@
 
             document.getElementById('scanResult').style.display = 'none';
             document.getElementById('modalPago').classList.remove('active');
-            
+
             const p = scanProducto;
             scanProducto = null;
             document.getElementById('scanInput').focus();
@@ -1247,7 +1377,21 @@
                 toast('Venta cancelada', 'error');
             });
 
+            // Jefe
+            document.getElementById('jefeConfirmar').addEventListener('click', verificarJefe);
+            document.getElementById('jefeCancelar').addEventListener('click', function() {
+                document.getElementById('modalJefe').classList.remove('active');
+            });
+            document.getElementById('jefePassword').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { verificarJefe(); }
+            });
+            document.getElementById('modalJefe').addEventListener('click', function(e) {
+                if (e.target === this) { this.classList.remove('active'); }
+            });
+
+            // Entrada
             document.getElementById('btnEntrada').addEventListener('click', function() {
+                if (!modoJefe) { toast('🔒 Solo el jefe puede hacer entrada', 'error'); return; }
                 const codigo = document.getElementById('entradaCodigo').value.trim();
                 const cantidad = parseInt(document.getElementById('entradaCantidad').value) || 1;
                 if (!codigo) { toast('Ingresa un código', 'error'); return; }
@@ -1271,7 +1415,9 @@
                 renderAll();
             });
 
+            // Salida
             document.getElementById('btnSalida').addEventListener('click', function() {
+                if (!modoJefe) { toast('🔒 Solo el jefe puede hacer salida', 'error'); return; }
                 const codigo = document.getElementById('salidaCodigo').value.trim();
                 const cantidad = parseInt(document.getElementById('salidaCantidad').value) || 1;
                 if (!codigo) { toast('Ingresa un código', 'error'); return; }
@@ -1299,6 +1445,7 @@
                 renderAll();
             });
 
+            // Buscar
             document.getElementById('buscarInput').addEventListener('input', function() {
                 const q = this.value.toLowerCase().trim();
                 const el = document.getElementById('buscarResultados');
@@ -1334,6 +1481,7 @@
                 if (e.key === 'Enter') { document.getElementById('btnSalida').click(); }
             });
 
+            // Editar
             document.getElementById('editGuardar').addEventListener('click', guardarEdicion);
             document.getElementById('editCancelar').addEventListener('click', cerrarModal);
             document.getElementById('editEliminar').addEventListener('click', eliminarProducto);
@@ -1341,6 +1489,7 @@
                 if (e.target === this) cerrarModal();
             });
 
+            // Agregar
             document.getElementById('btnAbrirAgregar').addEventListener('click', abrirAgregar);
             document.getElementById('agregarGuardar').addEventListener('click', guardarAgregar);
             document.getElementById('agregarCancelar').addEventListener('click', cerrarAgregar);
@@ -1365,6 +1514,7 @@
             });
 
             renderAll();
+            actualizarUI();
             if (document.getElementById('panel-venta').classList.contains('active')) {
                 document.getElementById('scanInput').focus();
             }
