@@ -81,10 +81,6 @@
         .nav button:active {
             transform: scale(0.95);
         }
-        .nav button.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
         .panel {
             display: none;
             animation: fadeUp 0.25s ease;
@@ -361,29 +357,26 @@
             font-size: 11px;
             color: #1a2a6c;
         }
-        /* Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+        .foto-thumb {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e7f0;
         }
-        .modal-overlay.active {
-            display: flex;
+        .foto-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
         }
         .modal {
             background: white;
             border-radius: 20px;
             padding: 24px 20px;
-            max-width: 420px;
+            max-width: 500px;
             width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: fadeUp 0.2s ease;
         }
@@ -423,6 +416,90 @@
         .modal .btn-group .btn {
             flex: 1;
         }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .producto-check-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f2f6;
+        }
+        .producto-check-row input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #1a2a6c;
+            flex-shrink: 0;
+        }
+        .producto-check-row input[type="number"] {
+            width: 70px;
+            padding: 6px 8px;
+            border: 1.5px solid #e2e7f0;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .producto-check-row .nombre {
+            flex: 1;
+            font-size: 14px;
+        }
+        .producto-check-row .codigo {
+            font-size: 12px;
+            color: #8892a8;
+            font-family: monospace;
+            margin-right: 8px;
+        }
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 15px;
+            }
+            .nav button {
+                font-size: 10px;
+                padding: 8px 4px;
+                min-width: 48px;
+            }
+            .btn {
+                font-size: 13px;
+                padding: 10px 16px;
+            }
+            .input-group input,
+            .input-group select {
+                font-size: 14px;
+                padding: 10px 12px;
+            }
+            .card {
+                padding: 14px 12px;
+            }
+            table {
+                font-size: 12px;
+                min-width: 420px;
+            }
+            th,
+            td {
+                padding: 6px 8px;
+            }
+            .producto-check-row {
+                flex-wrap: wrap;
+            }
+            .producto-check-row input[type="number"] {
+                width: 60px;
+            }
+        }
         .edit-btn {
             background: none;
             border: none;
@@ -440,7 +517,6 @@
             opacity: 0.3;
             cursor: not-allowed;
         }
-        /* Ticket / Print */
         .ticket {
             display: none;
             background: white;
@@ -494,36 +570,6 @@
                 display: none !important;
             }
         }
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 15px;
-            }
-            .nav button {
-                font-size: 10px;
-                padding: 8px 4px;
-                min-width: 48px;
-            }
-            .btn {
-                font-size: 13px;
-                padding: 10px 16px;
-            }
-            .input-group input,
-            .input-group select {
-                font-size: 14px;
-                padding: 10px 12px;
-            }
-            .card {
-                padding: 14px 12px;
-            }
-            table {
-                font-size: 12px;
-                min-width: 420px;
-            }
-            th,
-            td {
-                padding: 6px 8px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -534,7 +580,7 @@
             <h1>📦 CELL LA 25</h1>
             <span class="mode-badge employee" id="modeBadge" onclick="toggleModo()">👤 Empleado</span>
         </div>
-        <span class="badge">v2.5 · ES</span>
+        <span class="badge">v2.8 · ES</span>
     </div>
 
     <!-- NAV -->
@@ -663,6 +709,31 @@
         </div>
     </div>
 
+    <!-- MODAL FOTO ENTRADA -->
+    <div class="modal-overlay" id="modalFotoEntrada">
+        <div class="modal">
+            <h3>📸 Foto + Entrada</h3>
+            <div style="text-align:center;padding:10px 0;">
+                <video id="fotoVideo" autoplay playsinline style="width:100%;border-radius:12px;background:#000;max-height:300px;display:none;"></video>
+                <canvas id="fotoCanvas" style="display:none;"></canvas>
+                <img id="fotoPreview" class="foto-thumb" src="" alt="Vista previa" style="display:none;">
+            </div>
+            <div class="btn-group" style="flex-wrap:wrap;">
+                <button class="btn btn-primary" id="fotoAbrirCamara">📷 Abrir Cámara</button>
+                <button class="btn btn-success" id="fotoTomar" style="display:none;">📸 Tomar Foto</button>
+                <button class="btn btn-warning" id="fotoSubir" style="display:none;">🖼️ Elegir de Galería</button>
+            </div>
+            <div style="margin-top:12px;font-size:12px;color:#8892a8;text-align:center;">
+                La foto se guarda en el dispositivo, no se sube a internet.
+            </div>
+            <div id="fotoProductosLista" style="margin-top:12px;max-height:300px;overflow-y:auto;"></div>
+            <div class="btn-group" style="margin-top:12px;">
+                <button class="btn btn-success" id="fotoConfirmarEntrada">✅ Confirmar Entrada</button>
+                <button class="btn btn-outline" id="fotoCancelarEntrada">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== PANEL INVENTARIO ========== -->
     <div class="panel active" id="panel-inventario">
         <div class="card">
@@ -739,7 +810,11 @@
                 <input type="text" id="entradaCodigo" placeholder="Código (VF-xxx o barras)">
                 <input type="number" id="entradaCantidad" placeholder="Cantidad" value="1" min="1">
             </div>
-            <button class="btn btn-success btn-block" id="btnEntrada">✅ Agregar Stock</button>
+            <div class="flex" style="margin-bottom:12px;">
+                <button class="btn btn-success" id="btnEntrada" style="flex:1;">✅ Agregar Stock</button>
+                <button class="btn btn-primary" id="btnFotoEntrada" style="flex:1;">📸 Foto + Stock</button>
+            </div>
+            <div id="fotosEntrada" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
         </div>
         <div class="card">
             <div class="card-title">📋 Últimos movimientos</div>
@@ -776,6 +851,7 @@
         // ============================================
         const PASSWORD_JEFE = '123456';
         let modoJefe = false;
+        let fotoCapturada = null;
 
         // ============================================
         //  DATA: 71 productos importados
@@ -860,9 +936,6 @@
             { codigo: "VF-071", nombre: "Linterna Yesido TC10", precio: 3.25, costo: 0.85, stock: 3 }
         ];
 
-        // ============================================
-        //  STORAGE
-        // ============================================
         let productos = [];
         let ultimaVenta = null;
 
@@ -883,9 +956,6 @@
             renderAll();
         }
 
-        // ============================================
-        //  HELPERS
-        // ============================================
         function findProducto(codigo) {
             return productos.find(p => p.codigo === codigo || p.codigo === codigo.trim());
         }
@@ -946,7 +1016,6 @@
                 badge.textContent = '👤 Empleado';
                 badge.className = 'mode-badge employee';
             }
-            // Habilitar/deshabilitar botones de edición
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 if (modoJefe) {
                     btn.classList.remove('disabled');
@@ -956,7 +1025,6 @@
                     btn.style.pointerEvents = 'none';
                 }
             });
-            // Botón Agregar
             const btnAgregar = document.getElementById('btnAbrirAgregar');
             if (modoJefe) {
                 btnAgregar.disabled = false;
@@ -965,8 +1033,7 @@
                 btnAgregar.disabled = true;
                 btnAgregar.style.opacity = '0.5';
             }
-            // Botones Entrada y Salida
-            ['btnEntrada', 'btnSalida'].forEach(id => {
+            ['btnEntrada', 'btnSalida', 'btnFotoEntrada'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (modoJefe) {
                     btn.disabled = false;
@@ -976,7 +1043,6 @@
                     btn.style.opacity = '0.5';
                 }
             });
-            // Inputs de entrada/salida
             ['entradaCodigo', 'entradaCantidad', 'salidaCodigo', 'salidaCantidad'].forEach(id => {
                 const el = document.getElementById(id);
                 if (modoJefe) {
@@ -987,49 +1053,6 @@
                     el.style.opacity = '0.6';
                 }
             });
-        }
-
-        // ============================================
-        //  TICKET (Imprimir)
-        // ============================================
-        function imprimirTicket(venta, pago) {
-            const fecha = new Date().toLocaleString('es-PA');
-            document.getElementById('ticketFecha').textContent = fecha;
-            let itemsHtml = '';
-            let total = 0;
-            venta.items.forEach(item => {
-                const subtotal = item.cantidad * item.precio;
-                total += subtotal;
-                itemsHtml +=
-                    `${item.nombre}<br>${item.cantidad} x ${formatMoneda(item.precio)} = ${formatMoneda(subtotal)}<br>`;
-            });
-            document.getElementById('ticketItems').innerHTML = itemsHtml;
-            document.getElementById('ticketTotal').textContent = formatMoneda(total);
-            document.getElementById('ticketPago').textContent = 'Pago: ' + pago;
-
-            document.getElementById('ticketRespaldoFecha').textContent = fecha;
-            document.getElementById('ticketRespaldoItems').innerHTML = itemsHtml;
-            document.getElementById('ticketRespaldoTotal').textContent = formatMoneda(total);
-            document.getElementById('ticketRespaldoPago').textContent = 'Pago: ' + pago;
-
-            const ticketCliente = document.getElementById('ticket');
-            const ticketRespaldo = document.getElementById('ticketRespaldo');
-
-            ticketCliente.style.display = 'block';
-            ticketRespaldo.style.display = 'none';
-            setTimeout(() => {
-                window.print();
-                setTimeout(() => {
-                    ticketCliente.style.display = 'none';
-                    ticketRespaldo.style.display = 'block';
-                    setTimeout(() => {
-                        window.print();
-                        setTimeout(() => {
-                            ticketRespaldo.style.display = 'none';
-                        }, 500);
-                    }, 300);
-                }, 500);
-            }, 300);
         }
 
         // ============================================
@@ -1108,6 +1131,7 @@
                     ${m.tipo === 'entrada' ? '📥' : '📤'} <strong>${m.producto}</strong> 
                     ${m.cantidad} uds · ${formatMoneda(m.total)} 
                     <span class="text-muted" style="float:right;">${m.fecha}</span>
+                    ${m.foto ? ' 📸' : ''}
                 </div>`
             ).join('');
         }
@@ -1200,12 +1224,10 @@
             const precio = parseFloat(document.getElementById('agregarPrecio').value);
             const costo = parseFloat(document.getElementById('agregarCosto').value);
             const stock = parseInt(document.getElementById('agregarStock').value);
-
             if (!nombre) { toast('El nombre es obligatorio', 'error'); return; }
             if (isNaN(precio) || precio < 0) { toast('Precio inválido', 'error'); return; }
             if (isNaN(costo) || costo < 0) { toast('Costo inválido', 'error'); return; }
             if (isNaN(stock) || stock < 0) { toast('Stock inválido', 'error'); return; }
-
             if (!codigo) {
                 const maxNum = productos.reduce((max, p) => {
                     const num = parseInt(p.codigo.replace('VF-', ''));
@@ -1214,12 +1236,10 @@
                 const next = String(maxNum + 1).padStart(3, '0');
                 codigo = 'VF-' + next;
             }
-
             if (findProducto(codigo)) {
                 toast('Ya existe un producto con ese código', 'error');
                 return;
             }
-
             productos.push({ codigo, nombre, precio, costo, stock });
             saveData();
             cerrarAgregar();
@@ -1227,7 +1247,196 @@
         }
 
         // ============================================
-        //  SCAN / VENTA (sin restricciones)
+        //  FOTO + ENTRADA
+        // ============================================
+        let stream = null;
+
+        function abrirFotoEntrada() {
+            if (!modoJefe) { toast('🔒 Solo el jefe puede usar esta función', 'error'); return; }
+            document.getElementById('modalFotoEntrada').classList.add('active');
+            document.getElementById('fotoPreview').style.display = 'none';
+            document.getElementById('fotoVideo').style.display = 'none';
+            document.getElementById('fotoTomar').style.display = 'none';
+            document.getElementById('fotoSubir').style.display = 'none';
+            document.getElementById('fotoProductosLista').innerHTML = '';
+            fotoCapturada = null;
+        }
+
+        function cerrarFotoEntrada() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            document.getElementById('modalFotoEntrada').classList.remove('active');
+            document.getElementById('fotoVideo').style.display = 'none';
+            document.getElementById('fotoVideo').pause();
+        }
+
+        function abrirCamara() {
+            const video = document.getElementById('fotoVideo');
+            const preview = document.getElementById('fotoPreview');
+            preview.style.display = 'none';
+            video.style.display = 'block';
+            document.getElementById('fotoTomar').style.display = 'inline-block';
+            document.getElementById('fotoSubir').style.display = 'inline-block';
+
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = s;
+                    video.play();
+                })
+                .catch(err => {
+                    toast('❌ No se pudo abrir la cámara: ' + err.message, 'error');
+                });
+        }
+
+        function tomarFoto() {
+            const video = document.getElementById('fotoVideo');
+            const canvas = document.getElementById('fotoCanvas');
+            const preview = document.getElementById('fotoPreview');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            fotoCapturada = dataUrl;
+            preview.src = dataUrl;
+            preview.style.display = 'block';
+            video.style.display = 'none';
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            document.getElementById('fotoTomar').style.display = 'none';
+            // Mostrar lista de productos para seleccionar
+            mostrarProductosParaEntrada();
+            toast('📸 Foto tomada, selecciona productos y cantidades', 'success');
+        }
+
+        function subirFoto() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    fotoCapturada = ev.target.result;
+                    const preview = document.getElementById('fotoPreview');
+                    preview.src = ev.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById('fotoVideo').style.display = 'none';
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                        stream = null;
+                    }
+                    document.getElementById('fotoTomar').style.display = 'none';
+                    mostrarProductosParaEntrada();
+                    toast('📸 Foto cargada, selecciona productos y cantidades', 'success');
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        }
+
+        function mostrarProductosParaEntrada() {
+            const container = document.getElementById('fotoProductosLista');
+            let html = '<div style="font-weight:600;font-size:14px;margin-bottom:8px;">Selecciona los productos que aparecen en la foto:</div>';
+            productos.forEach(p => {
+                html += `
+                    <div class="producto-check-row">
+                        <input type="checkbox" id="fotoCheck_${p.codigo}" value="${p.codigo}">
+                        <span class="codigo">${p.codigo}</span>
+                        <span class="nombre">${p.nombre}</span>
+                        <span style="font-size:12px;color:#8892a8;">Stock actual: ${p.stock}</span>
+                        <input type="number" id="fotoCant_${p.codigo}" value="1" min="1" style="width:60px;">
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function confirmarEntradaConFoto() {
+            if (!fotoCapturada) {
+                toast('❌ Primero toma o selecciona una foto', 'error');
+                return;
+            }
+            const checkboxes = document.querySelectorAll('#fotoProductosLista input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                toast('❌ Selecciona al menos un producto', 'error');
+                return;
+            }
+            let movimientos = [];
+            checkboxes.forEach(cb => {
+                const codigo = cb.value;
+                const p = findProducto(codigo);
+                if (!p) return;
+                const cantidadInput = document.getElementById(`fotoCant_${codigo}`);
+                const cantidad = parseInt(cantidadInput.value) || 1;
+                if (cantidad <= 0) return;
+                p.stock += cantidad;
+                movimientos.push({ producto: p.nombre, cantidad: cantidad, total: cantidad * p.costo });
+            });
+            if (movimientos.length === 0) {
+                toast('❌ Cantidades inválidas', 'error');
+                return;
+            }
+            saveData();
+
+            // Guardar movimientos
+            const movs = JSON.parse(localStorage.getItem('vf_movimientos') || '[]');
+            movimientos.forEach(m => {
+                movs.push({
+                    tipo: 'entrada',
+                    producto: m.producto,
+                    cantidad: m.cantidad,
+                    total: m.total,
+                    fecha: new Date().toLocaleString('es-PA'),
+                    foto: true
+                });
+            });
+            localStorage.setItem('vf_movimientos', JSON.stringify(movs));
+
+            // Guardar foto en localStorage (para historial)
+            const fotos = JSON.parse(localStorage.getItem('vf_fotos_entrada') || '[]');
+            fotos.push({
+                foto: fotoCapturada,
+                productos: movimientos.map(m => m.producto + ' x' + m.cantidad).join(', '),
+                fecha: new Date().toLocaleString('es-PA')
+            });
+            // Solo guardar las últimas 20 fotos para no llenar
+            if (fotos.length > 20) fotos.splice(0, fotos.length - 20);
+            localStorage.setItem('vf_fotos_entrada', JSON.stringify(fotos));
+
+            cerrarFotoEntrada();
+            renderAll();
+            toast('✅ Entrada con foto completada: ' + movimientos.length + ' productos', 'success');
+            mostrarFotosRecientes();
+        }
+
+        function mostrarFotosRecientes() {
+            const container = document.getElementById('fotosEntrada');
+            const fotos = JSON.parse(localStorage.getItem('vf_fotos_entrada') || '[]');
+            if (fotos.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            const ultimas = fotos.slice(-3).reverse();
+            container.innerHTML = ultimas.map(f =>
+                `<div style="border:1px solid #e2e7f0;border-radius:8px;padding:8px;width:120px;text-align:center;">
+                    <img src="${f.foto}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;">
+                    <div style="font-size:10px;color:#8892a8;margin-top:4px;">${f.productos.substring(0,20)}${f.productos.length>20?'...':''}</div>
+                    <div style="font-size:9px;color:#8892a8;">${f.fecha}</div>
+                </div>`
+            ).join('');
+        }
+
+        // ============================================
+        //  SCAN / VENTA
         // ============================================
         let scanProducto = null;
         let ventaPendienteCantidad = 0;
@@ -1237,7 +1446,6 @@
             const p = findProducto(codigo.trim());
             const resultDiv = document.getElementById('scanResult');
             const infoDiv = document.getElementById('productoEncontrado');
-
             if (!p) {
                 infoDiv.innerHTML = `<div style="color:#b21f1f;font-weight:600;">❌ Producto no encontrado</div>`;
                 resultDiv.style.display = 'block';
@@ -1280,16 +1488,9 @@
         function confirmarVentaConPago() {
             const pago = document.getElementById('pagoSelect').value;
             const cantidad = ventaPendienteCantidad;
-
             scanProducto.stock -= cantidad;
             saveData();
-
-            const ventaItem = {
-                nombre: scanProducto.nombre,
-                cantidad: cantidad,
-                precio: scanProducto.precio
-            };
-
+            const ventaItem = { nombre: scanProducto.nombre, cantidad: cantidad, precio: scanProducto.precio };
             const ventas = JSON.parse(localStorage.getItem('vf_ventas') || '[]');
             ventas.push({
                 producto: scanProducto.nombre,
@@ -1299,7 +1500,6 @@
                 fecha: new Date().toLocaleString('es-PA')
             });
             localStorage.setItem('vf_ventas', JSON.stringify(ventas));
-
             const movs = JSON.parse(localStorage.getItem('vf_movimientos') || '[]');
             movs.push({
                 tipo: 'salida',
@@ -1309,22 +1509,56 @@
                 fecha: new Date().toLocaleString('es-PA')
             });
             localStorage.setItem('vf_movimientos', JSON.stringify(movs));
-
             toast('✅ Venta registrada: ' + scanProducto.nombre + ' x' + cantidad + ' (' + pago + ')', 'success');
-
             ultimaVenta = { items: [ventaItem] };
-
             document.getElementById('scanResult').style.display = 'none';
             document.getElementById('modalPago').classList.remove('active');
-
-            const p = scanProducto;
             scanProducto = null;
             document.getElementById('scanInput').focus();
             renderAll();
-
             if (confirm('¿Imprimir ticket + resguardo?')) {
                 imprimirTicket(ultimaVenta, pago);
             }
+        }
+
+        // ============================================
+        //  TICKET
+        // ============================================
+        function imprimirTicket(venta, pago) {
+            const fecha = new Date().toLocaleString('es-PA');
+            document.getElementById('ticketFecha').textContent = fecha;
+            let itemsHtml = '';
+            let total = 0;
+            venta.items.forEach(item => {
+                const subtotal = item.cantidad * item.precio;
+                total += subtotal;
+                itemsHtml +=
+                    `${item.nombre}<br>${item.cantidad} x ${formatMoneda(item.precio)} = ${formatMoneda(subtotal)}<br>`;
+            });
+            document.getElementById('ticketItems').innerHTML = itemsHtml;
+            document.getElementById('ticketTotal').textContent = formatMoneda(total);
+            document.getElementById('ticketPago').textContent = 'Pago: ' + pago;
+            document.getElementById('ticketRespaldoFecha').textContent = fecha;
+            document.getElementById('ticketRespaldoItems').innerHTML = itemsHtml;
+            document.getElementById('ticketRespaldoTotal').textContent = formatMoneda(total);
+            document.getElementById('ticketRespaldoPago').textContent = 'Pago: ' + pago;
+            const ticketCliente = document.getElementById('ticket');
+            const ticketRespaldo = document.getElementById('ticketRespaldo');
+            ticketCliente.style.display = 'block';
+            ticketRespaldo.style.display = 'none';
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => {
+                    ticketCliente.style.display = 'none';
+                    ticketRespaldo.style.display = 'block';
+                    setTimeout(() => {
+                        window.print();
+                        setTimeout(() => {
+                            ticketRespaldo.style.display = 'none';
+                        }, 500);
+                    }, 300);
+                }, 500);
+            }, 300);
         }
 
         // ============================================
@@ -1332,6 +1566,7 @@
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
+            mostrarFotosRecientes();
 
             document.querySelectorAll('#mainNav button').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -1345,6 +1580,9 @@
                     }
                     if (this.dataset.panel === 'panel-buscar') {
                         document.getElementById('buscarInput').focus();
+                    }
+                    if (this.dataset.panel === 'panel-entrada') {
+                        mostrarFotosRecientes();
                     }
                 });
             });
@@ -1369,7 +1607,6 @@
                 document.getElementById('scanInput').focus();
             });
 
-            // Pago
             document.getElementById('pagoConfirmar').addEventListener('click', confirmarVentaConPago);
             document.getElementById('pagoCancelar').addEventListener('click', function() {
                 document.getElementById('modalPago').classList.remove('active');
@@ -1377,7 +1614,6 @@
                 toast('Venta cancelada', 'error');
             });
 
-            // Jefe
             document.getElementById('jefeConfirmar').addEventListener('click', verificarJefe);
             document.getElementById('jefeCancelar').addEventListener('click', function() {
                 document.getElementById('modalJefe').classList.remove('active');
@@ -1389,7 +1625,6 @@
                 if (e.target === this) { this.classList.remove('active'); }
             });
 
-            // Entrada
             document.getElementById('btnEntrada').addEventListener('click', function() {
                 if (!modoJefe) { toast('🔒 Solo el jefe puede hacer entrada', 'error'); return; }
                 const codigo = document.getElementById('entradaCodigo').value.trim();
@@ -1415,7 +1650,6 @@
                 renderAll();
             });
 
-            // Salida
             document.getElementById('btnSalida').addEventListener('click', function() {
                 if (!modoJefe) { toast('🔒 Solo el jefe puede hacer salida', 'error'); return; }
                 const codigo = document.getElementById('salidaCodigo').value.trim();
@@ -1445,7 +1679,17 @@
                 renderAll();
             });
 
-            // Buscar
+            // FOTO ENTRADA
+            document.getElementById('btnFotoEntrada').addEventListener('click', abrirFotoEntrada);
+            document.getElementById('fotoAbrirCamara').addEventListener('click', abrirCamara);
+            document.getElementById('fotoTomar').addEventListener('click', tomarFoto);
+            document.getElementById('fotoSubir').addEventListener('click', subirFoto);
+            document.getElementById('fotoConfirmarEntrada').addEventListener('click', confirmarEntradaConFoto);
+            document.getElementById('fotoCancelarEntrada').addEventListener('click', cerrarFotoEntrada);
+            document.getElementById('modalFotoEntrada').addEventListener('click', function(e) {
+                if (e.target === this) cerrarFotoEntrada();
+            });
+
             document.getElementById('buscarInput').addEventListener('input', function() {
                 const q = this.value.toLowerCase().trim();
                 const el = document.getElementById('buscarResultados');
@@ -1481,7 +1725,6 @@
                 if (e.key === 'Enter') { document.getElementById('btnSalida').click(); }
             });
 
-            // Editar
             document.getElementById('editGuardar').addEventListener('click', guardarEdicion);
             document.getElementById('editCancelar').addEventListener('click', cerrarModal);
             document.getElementById('editEliminar').addEventListener('click', eliminarProducto);
@@ -1489,7 +1732,6 @@
                 if (e.target === this) cerrarModal();
             });
 
-            // Agregar
             document.getElementById('btnAbrirAgregar').addEventListener('click', abrirAgregar);
             document.getElementById('agregarGuardar').addEventListener('click', guardarAgregar);
             document.getElementById('agregarCancelar').addEventListener('click', cerrarAgregar);
