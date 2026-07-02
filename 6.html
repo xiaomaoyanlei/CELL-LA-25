@@ -379,7 +379,8 @@
             display: block;
             margin-top: 10px;
         }
-        .modal input {
+        .modal input,
+        .modal select {
             width: 100%;
             padding: 10px 14px;
             border: 1.5px solid #e2e7f0;
@@ -389,7 +390,8 @@
             background: #fafbfc;
             outline: none;
         }
-        .modal input:focus {
+        .modal input:focus,
+        .modal select:focus {
             border-color: #1a2a6c;
             background: white;
         }
@@ -439,6 +441,12 @@
         .ticket .small {
             font-size: 12px;
             color: #666;
+        }
+        .ticket .resguardo {
+            font-size: 16px;
+            font-weight: 700;
+            color: #b21f1f;
+            letter-spacing: 2px;
         }
         @media print {
             body * {
@@ -499,7 +507,7 @@
     <!-- HEADER -->
     <div class="header">
         <h1>📦 CELL LA 25</h1>
-        <span class="badge">v2.2 · ES</span>
+        <span class="badge">v2.4 · ES</span>
     </div>
 
     <!-- NAV -->
@@ -514,21 +522,62 @@
     <!-- TOAST -->
     <div class="toast" id="toast"></div>
 
-    <!-- TICKET (para imprimir) -->
+    <!-- TICKET (Cliente) -->
     <div class="ticket" id="ticket">
-        <div class="center">
-            <strong>CELL LA 25</strong><br>
-            <span class="small">Tel: 0000-0000</span><br>
-            <span class="small" id="ticketFecha"></span>
+        <div id="ticketContent">
+            <div class="center">
+                <strong>CELL LA 25</strong><br>
+                <span class="small">Tel: 0000-0000</span><br>
+                <span class="small" id="ticketFecha"></span>
+            </div>
+            <div class="line"></div>
+            <div id="ticketItems"></div>
+            <div class="line"></div>
+            <div class="center total">
+                Total: <span id="ticketTotal">$0.00</span>
+            </div>
+            <div class="center" id="ticketPago" style="font-size:13px;margin-top:4px;"></div>
+            <div class="line"></div>
+            <div class="center small">¡Gracias por tu compra!</div>
         </div>
-        <div class="line"></div>
-        <div id="ticketItems"></div>
-        <div class="line"></div>
-        <div class="center total">
-            Total: <span id="ticketTotal">$0.00</span>
+    </div>
+
+    <!-- TICKET DE RESPALDO -->
+    <div class="ticket" id="ticketRespaldo">
+        <div id="ticketRespaldoContent">
+            <div class="center">
+                <div class="resguardo">COPIA - RESGUARDO</div>
+                <strong>CELL LA 25</strong><br>
+                <span class="small">Tel: 0000-0000</span><br>
+                <span class="small" id="ticketRespaldoFecha"></span>
+            </div>
+            <div class="line"></div>
+            <div id="ticketRespaldoItems"></div>
+            <div class="line"></div>
+            <div class="center total">
+                Total: <span id="ticketRespaldoTotal">$0.00</span>
+            </div>
+            <div class="center" id="ticketRespaldoPago" style="font-size:13px;margin-top:4px;"></div>
+            <div class="line"></div>
+            <div class="center small">COPIA DE RESGUARDO</div>
         </div>
-        <div class="line"></div>
-        <div class="center small">¡Gracias por tu compra!</div>
+    </div>
+
+    <!-- MODAL PAGO -->
+    <div class="modal-overlay" id="modalPago">
+        <div class="modal">
+            <h3>💳 Forma de Pago</h3>
+            <label>Selecciona el método de pago</label>
+            <select id="pagoSelect">
+                <option value="YAPPY">A. YAPPY</option>
+                <option value="Efectivo">B. Efectivo (Cash)</option>
+                <option value="Tarjeta de Crédito">C. Tarjeta de Crédito</option>
+            </select>
+            <div class="btn-group">
+                <button class="btn btn-success" id="pagoConfirmar">✅ Confirmar Venta</button>
+                <button class="btn btn-outline" id="pagoCancelar">Cancelar</button>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL EDITAR -->
@@ -683,7 +732,7 @@
 
     <script>
         // ============================================
-        //  DATA: 71 productos importados
+        //  DATA: 71 productos importados (igual que antes)
         // ============================================
         const productosBase = [
             { codigo: "VF-001", nombre: "Aros de Luz 3D Sin Tirpode MJ-28", precio: 6, costo: 1, stock: 2 },
@@ -814,13 +863,13 @@
         }
 
         // ============================================
-        //  TICKET (Imprimir)
+        //  TICKET (Imprimir) - Con Pago
         // ============================================
-        function imprimirTicket(venta) {
-            const ticket = document.getElementById('ticket');
+        function imprimirTicket(venta, pago) {
             const fecha = new Date().toLocaleString('es-PA');
-            document.getElementById('ticketFecha').textContent = fecha;
 
+            // --- Ticket Cliente ---
+            document.getElementById('ticketFecha').textContent = fecha;
             let itemsHtml = '';
             let total = 0;
             venta.items.forEach(item => {
@@ -831,12 +880,32 @@
             });
             document.getElementById('ticketItems').innerHTML = itemsHtml;
             document.getElementById('ticketTotal').textContent = formatMoneda(total);
+            document.getElementById('ticketPago').textContent = 'Pago: ' + pago;
 
-            ticket.style.display = 'block';
+            // --- Ticket Respaldo ---
+            document.getElementById('ticketRespaldoFecha').textContent = fecha;
+            document.getElementById('ticketRespaldoItems').innerHTML = itemsHtml;
+            document.getElementById('ticketRespaldoTotal').textContent = formatMoneda(total);
+            document.getElementById('ticketRespaldoPago').textContent = 'Pago: ' + pago;
+
+            // --- Imprimir ambos ---
+            const ticketCliente = document.getElementById('ticket');
+            const ticketRespaldo = document.getElementById('ticketRespaldo');
+
+            ticketCliente.style.display = 'block';
+            ticketRespaldo.style.display = 'none';
+            
             setTimeout(() => {
                 window.print();
                 setTimeout(() => {
-                    ticket.style.display = 'none';
+                    ticketCliente.style.display = 'none';
+                    ticketRespaldo.style.display = 'block';
+                    setTimeout(() => {
+                        window.print();
+                        setTimeout(() => {
+                            ticketRespaldo.style.display = 'none';
+                        }, 500);
+                    }, 300);
                 }, 500);
             }, 300);
         }
@@ -893,6 +962,7 @@
                 `<div style="padding:6px 0;border-bottom:1px solid #f0f2f6;font-size:13px;">
                     <strong>${v.producto}</strong> · ${v.cantidad} uds · ${formatMoneda(v.total)} 
                     <span class="text-muted" style="float:right;">${v.fecha}</span>
+                    <span style="float:right;margin-right:10px;background:#eef2f8;padding:0 8px;border-radius:10px;font-size:11px;">${v.pago || 'N/A'}</span>
                 </div>`
             ).join('');
         }
@@ -1024,9 +1094,10 @@
         }
 
         // ============================================
-        //  SCAN / VENTA
+        //  SCAN / VENTA (con Pago)
         // ============================================
         let scanProducto = null;
+        let ventaPendienteCantidad = 0;
 
         function handleScan(codigo) {
             if (!codigo || codigo.trim() === '') return;
@@ -1069,6 +1140,17 @@
                 toast('Stock insuficiente (disponible: ' + scanProducto.stock + ')', 'error');
                 return;
             }
+            
+            // Guardar cantidad y mostrar modal de pago
+            ventaPendienteCantidad = cantidad;
+            document.getElementById('modalPago').classList.add('active');
+        }
+
+        function confirmarVentaConPago() {
+            const pago = document.getElementById('pagoSelect').value;
+            const cantidad = ventaPendienteCantidad;
+            
+            // Restar stock
             scanProducto.stock -= cantidad;
             saveData();
 
@@ -1083,6 +1165,7 @@
                 producto: scanProducto.nombre,
                 cantidad: cantidad,
                 total: cantidad * scanProducto.precio,
+                pago: pago,
                 fecha: new Date().toLocaleString('es-PA')
             });
             localStorage.setItem('vf_ventas', JSON.stringify(ventas));
@@ -1097,19 +1180,20 @@
             });
             localStorage.setItem('vf_movimientos', JSON.stringify(movs));
 
-            toast('✅ Venta registrada: ' + scanProducto.nombre + ' x' + cantidad, 'success');
+            toast('✅ Venta registrada: ' + scanProducto.nombre + ' x' + cantidad + ' (' + pago + ')', 'success');
 
-            // Guardar para ticket
             ultimaVenta = { items: [ventaItem] };
 
             document.getElementById('scanResult').style.display = 'none';
+            document.getElementById('modalPago').classList.remove('active');
+            
+            const p = scanProducto;
             scanProducto = null;
             document.getElementById('scanInput').focus();
             renderAll();
 
-            // Preguntar si imprimir
-            if (confirm('¿Imprimir ticket?')) {
-                imprimirTicket(ultimaVenta);
+            if (confirm('¿Imprimir ticket + resguardo?')) {
+                imprimirTicket(ultimaVenta, pago);
             }
         }
 
@@ -1122,7 +1206,7 @@
             document.querySelectorAll('#mainNav button').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('#mainNav button').forEach(b => b.classList.remove(
-                    'active'));
+                        'active'));
                     this.classList.add('active');
                     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
                     document.getElementById(this.dataset.panel).classList.add('active');
@@ -1153,6 +1237,14 @@
                 document.getElementById('scanResult').style.display = 'none';
                 scanProducto = null;
                 document.getElementById('scanInput').focus();
+            });
+
+            // Pago
+            document.getElementById('pagoConfirmar').addEventListener('click', confirmarVentaConPago);
+            document.getElementById('pagoCancelar').addEventListener('click', function() {
+                document.getElementById('modalPago').classList.remove('active');
+                ventaPendienteCantidad = 0;
+                toast('Venta cancelada', 'error');
             });
 
             document.getElementById('btnEntrada').addEventListener('click', function() {
@@ -1231,7 +1323,7 @@
                 if (e.key === 'Enter') {
                     this.value = '';
                     document.getElementById('buscarResultados').innerHTML =
-                    '<span class="text-muted">Escribe para buscar</span>';
+                        '<span class="text-muted">Escribe para buscar</span>';
                 }
             });
 
