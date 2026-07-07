@@ -49,18 +49,33 @@
         .text-muted { color: #8892a8; font-size: 11px; }
         .text-center { text-align: center; }
 
-        .ticket { display: none; background: white; padding: 20px 16px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.7; max-width: 340px; margin: 0 auto; border: 1px solid #ddd; border-radius: 4px; }
+        /* ====== TICKET 80mm ====== */
+        .ticket {
+            display: none;
+            background: white;
+            padding: 12px 14px 8px 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 2.0;
+            max-width: 320px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
         .ticket .center { text-align: center; }
-        .ticket .line { border-top: 1px dashed #999; margin: 6px 0; }
-        .ticket .line-doble { border-top: 2px solid #333; margin: 6px 0; }
-        .ticket .total { font-size: 16px; font-weight: 700; }
-        .ticket .small { font-size: 10px; color: #666; }
-        .ticket .fila { display: flex; justify-content: space-between; padding: 2px 0; }
+        .ticket .line { border-top: 1px dashed #999; margin: 4px 0; }
+        .ticket .line-doble { border-top: 2px solid #333; margin: 4px 0; }
+        .ticket .total { font-size: 18px; font-weight: 700; }
+        .ticket .small { font-size: 11px; color: #555; }
+        .ticket .fila { display: flex; justify-content: space-between; padding: 1px 0; }
         .ticket .fila .izq { flex: 1; }
         .ticket .fila .der { text-align: right; white-space: nowrap; }
-        .ticket .impuesto-line { display: flex; justify-content: space-between; font-size: 11px; }
-        .ticket .gracias { text-align: center; font-size: 12px; font-weight: 600; margin-top: 4px; }
+        .ticket .impuesto-line { display: flex; justify-content: space-between; font-size: 13px; }
+        .ticket .gracias { text-align: center; font-size: 14px; font-weight: 600; margin-top: 4px; padding-bottom: 2px; }
+        .ticket .titulo-principal { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+        .ticket .ruc-line { font-size: 12px; font-weight: 700; }
 
+        /* ====== MODALES ====== */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal-overlay.active { display: flex; }
         .modal { background: white; border-radius: 16px; padding: 22px 18px; max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
@@ -79,10 +94,32 @@
         .toast.success { background: #0f7b3a; }
         .toast.error { background: #b21f1f; }
 
+        /* ====== PRINT 80mm ====== */
+        @page {
+            margin: 6mm 4mm 4mm 4mm;
+            size: 80mm auto;
+        }
+
         @media print {
             body * { visibility: hidden; }
             .ticket, .ticket * { visibility: visible; }
-            .ticket { display: block !important; position: absolute; left: 0; top: 0; width: 100%; max-width: 340px; padding: 20px 16px; margin: 0 auto; border: none; }
+            .ticket {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                max-width: 320px;
+                padding: 8px 12px 4px 12px;
+                margin: 0 auto;
+                border: none;
+                font-size: 14px;
+                line-height: 1.9;
+            }
+            .ticket .total { font-size: 18px; }
+            .ticket .small { font-size: 11px; }
+            .ticket .titulo-principal { font-size: 15px; }
+            .ticket .gracias { font-size: 14px; padding-bottom: 0; }
             .no-print { display: none !important; }
             #modalPrintSelector { display: none !important; }
         }
@@ -95,8 +132,11 @@
             .card { padding: 12px 10px; }
             table { font-size: 11px; min-width: 340px; }
             th, td { padding: 5px 6px; }
-            .ticket { font-size: 11px; max-width: 300px; padding: 16px 12px; }
-            .ticket .total { font-size: 14px; }
+            .ticket { font-size: 13px; max-width: 290px; padding: 10px 10px 6px 10px; }
+            .ticket .total { font-size: 16px; }
+            .ticket .small { font-size: 10px; }
+            .ticket .titulo-principal { font-size: 13px; }
+            .ticket .gracias { font-size: 13px; }
         }
     </style>
 </head>
@@ -107,7 +147,7 @@
             <h1>📦 CELL LA 25</h1>
             <span class="mode-badge" id="modeBadge" onclick="toggleModo()">👤 Empleado</span>
         </div>
-        <span class="badge">v3.6 · ES</span>
+        <span class="badge">v3.7 · ES</span>
     </div>
 
     <div class="nav" id="mainNav">
@@ -120,19 +160,19 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- ====== TICKETS ====== -->
+    <!-- ====== TICKETS 80mm ====== -->
     <!-- Cliente -->
     <div class="ticket" id="ticket">
         <div id="ticketContent">
             <div class="center">
-                <div style="font-size:13px;font-weight:700;letter-spacing:1px;">COMPROBANTE AUXILIAR</div>
-                <div style="font-size:13px;font-weight:700;letter-spacing:1px;">DE FACTURA ELECTRÓNICA</div>
-                <div style="font-size:12px;font-weight:700;margin-top:4px;">FACTURA DE OPERACIÓN INTERNA</div>
-                <div style="font-size:14px;font-weight:700;margin-top:6px;">CELL LA 25</div>
+                <div class="titulo-principal">COMPROBANTE AUXILIAR</div>
+                <div class="titulo-principal">DE FACTURA ELECTRÓNICA</div>
+                <div style="font-size:13px;font-weight:700;margin-top:2px;">FACTURA DE OPERACIÓN INTERNA</div>
+                <div style="font-size:16px;font-weight:700;margin-top:4px;">CELL LA 25</div>
                 <div class="small">URB. NUEVO TOCUMEN,</div>
                 <div class="small">CARRET. INTERAMERICANA</div>
                 <div class="small">P.H. LA 25 PLAZA, LOCAL A 10.</div>
-                <div class="small" style="font-weight:700;">RUC: E-8-166991 DV: 41</div>
+                <div class="small ruc-line">RUC: E-8-166991 DV: 41</div>
             </div>
             <div class="line"></div>
             <div class="fila"><span class="izq">Tipo cliente:</span><span class="der">Consumidor final</span></div>
@@ -145,7 +185,7 @@
             <div class="line"></div>
             <div id="ticketItems"></div>
             <div class="line"></div>
-            <div class="fila" style="font-weight:700;"><span class="izq">SUBTOTAL</span><span class="der" id="ticketSubtotal">B/.0.00</span></div>
+            <div class="fila" style="font-weight:700;font-size:15px;"><span class="izq">SUBTOTAL</span><span class="der" id="ticketSubtotal">B/.0.00</span></div>
             <div class="fila impuesto-line"><span id="ticketImpuestoLabel">Impuesto 7.00%</span><span id="ticketImpuesto">B/.0.00</span></div>
             <div class="line-doble"></div>
             <div class="fila total"><span class="izq">TOTAL</span><span class="der" id="ticketTotal">B/.0.00</span></div>
@@ -156,18 +196,18 @@
         </div>
     </div>
 
-    <!-- Respaldo (sin COPIA RESGUARDO) -->
+    <!-- Respaldo -->
     <div class="ticket" id="ticketRespaldo">
         <div id="ticketRespaldoContent">
             <div class="center">
-                <div style="font-size:13px;font-weight:700;letter-spacing:1px;">COMPROBANTE AUXILIAR</div>
-                <div style="font-size:13px;font-weight:700;letter-spacing:1px;">DE FACTURA ELECTRÓNICA</div>
-                <div style="font-size:12px;font-weight:700;margin-top:4px;">FACTURA DE OPERACIÓN INTERNA</div>
-                <div style="font-size:14px;font-weight:700;margin-top:6px;">CELL LA 25</div>
+                <div class="titulo-principal">COMPROBANTE AUXILIAR</div>
+                <div class="titulo-principal">DE FACTURA ELECTRÓNICA</div>
+                <div style="font-size:13px;font-weight:700;margin-top:2px;">FACTURA DE OPERACIÓN INTERNA</div>
+                <div style="font-size:16px;font-weight:700;margin-top:4px;">CELL LA 25</div>
                 <div class="small">URB. NUEVO TOCUMEN,</div>
                 <div class="small">CARRET. INTERAMERICANA</div>
                 <div class="small">P.H. LA 25 PLAZA, LOCAL A 10.</div>
-                <div class="small" style="font-weight:700;">RUC: E-8-166991 DV: 41</div>
+                <div class="small ruc-line">RUC: E-8-166991 DV: 41</div>
             </div>
             <div class="line"></div>
             <div class="fila"><span class="izq">Tipo cliente:</span><span class="der">Consumidor final</span></div>
@@ -180,7 +220,7 @@
             <div class="line"></div>
             <div id="ticketRespaldoItems"></div>
             <div class="line"></div>
-            <div class="fila" style="font-weight:700;"><span class="izq">SUBTOTAL</span><span class="der" id="ticketRespaldoSubtotal">B/.0.00</span></div>
+            <div class="fila" style="font-weight:700;font-size:15px;"><span class="izq">SUBTOTAL</span><span class="der" id="ticketRespaldoSubtotal">B/.0.00</span></div>
             <div class="fila impuesto-line"><span id="ticketRespaldoImpuestoLabel">Impuesto 7.00%</span><span id="ticketRespaldoImpuesto">B/.0.00</span></div>
             <div class="line-doble"></div>
             <div class="fila total"><span class="izq">TOTAL</span><span class="der" id="ticketRespaldoTotal">B/.0.00</span></div>
@@ -473,7 +513,7 @@
             let itemsHtml = '';
             ventaData.items.forEach(item => {
                 const totalItem = item.cantidad * item.precio;
-                itemsHtml += `<div class="fila"><span class="izq">${item.nombre}</span><span class="der">${formatMoneda(totalItem)}</span></div><div class="fila small" style="font-size:10px;color:#666;"><span class="izq">${item.cantidad} und x ${formatMoneda(item.precio)}</span></div>`;
+                itemsHtml += `<div class="fila"><span class="izq">${item.nombre}</span><span class="der">${formatMoneda(totalItem)}</span></div><div class="fila small" style="font-size:11px;color:#555;"><span class="izq">${item.cantidad} und x ${formatMoneda(item.precio)}</span></div>`;
             });
 
             const subtotal = ventaData.subtotal;
