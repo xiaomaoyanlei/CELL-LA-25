@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <title>CELL LA 25 - Sistema de Inventario</title>
     <style>
-        /* ====== RESET Y BASE ====== */
         * {
             margin: 0;
             padding: 0;
@@ -190,7 +189,6 @@
             gap: 6px;
         }
 
-        /* ====== TABLA INVENTARIO ====== */
         .table-wrap {
             overflow-x: auto;
             border-radius: 10px;
@@ -284,9 +282,6 @@
         .ticket .center {
             text-align: center;
         }
-        .ticket .right {
-            text-align: right;
-        }
         .ticket .line {
             border-top: 1px dashed #999;
             margin: 6px 0;
@@ -302,11 +297,6 @@
         .ticket .small {
             font-size: 10px;
             color: #666;
-        }
-        .ticket .titulo {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
         }
         .ticket .resguardo {
             font-size: 14px;
@@ -326,10 +316,6 @@
             text-align: right;
             white-space: nowrap;
         }
-        .ticket .fila .centro {
-            text-align: center;
-            flex: 1;
-        }
         .ticket .impuesto-line {
             display: flex;
             justify-content: space-between;
@@ -342,7 +328,6 @@
             margin-top: 4px;
         }
 
-        /* ====== MODAL ====== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -410,7 +395,6 @@
             text-align: center;
         }
 
-        /* ====== SCAN ====== */
         .scan-area {
             background: #f0f4ff;
             border: 2px dashed #1a2a6c;
@@ -439,7 +423,6 @@
             border-left: 4px solid #1a2a6c;
         }
 
-        /* ====== TOAST ====== */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -470,7 +453,6 @@
             background: #b21f1f;
         }
 
-        /* ====== RESPONSIVE ====== */
         @media print {
             body * {
                 visibility: hidden;
@@ -542,7 +524,7 @@
             <h1>📦 CELL LA 25</h1>
             <span class="mode-badge" id="modeBadge" onclick="toggleModo()">👤 Empleado</span>
         </div>
-        <span class="badge">v3.3 · ES</span>
+        <span class="badge">v3.4 · ES</span>
     </div>
 
     <!-- ====== NAV ====== -->
@@ -1311,7 +1293,7 @@
         }
 
         // ============================================
-        //  FACTURA / TICKET - IMPRESIÓN SEPARADA
+        //  FACTURA / TICKET - CON CONFIRMACIÓN MANUAL
         // ============================================
         function imprimirFactura(ventaData) {
             const now = new Date();
@@ -1370,25 +1352,38 @@
             document.getElementById('ticketRespaldoPagoLabel').textContent = ventaData.pago;
             document.getElementById('ticketRespaldoPagoMonto').textContent = formatMoneda(total);
 
-            // ---- IMPRIMIR PRIMERO CLIENTE ----
+            // ---- PASO 1: Imprimir CLIENTE ----
             const ticketCliente = document.getElementById('ticket');
             const ticketRespaldo = document.getElementById('ticketRespaldo');
 
             ticketCliente.style.display = 'block';
             ticketRespaldo.style.display = 'none';
 
+            toast('🖨️ Imprimiendo CLIENTE...', '');
+            
+            // Forzar impresión
             setTimeout(() => {
                 window.print();
-                // Después de imprimir cliente, esperar y luego imprimir respaldo
+                // Después de imprimir, preguntar si ya salió
                 setTimeout(() => {
-                    ticketCliente.style.display = 'none';
-                    ticketRespaldo.style.display = 'block';
-                    setTimeout(() => {
-                        window.print();
+                    if (confirm('¿Ya imprimiste la copia del CLIENTE?\nAhora imprimiré el RESGUARDO.')) {
+                        // ---- PASO 2: Imprimir RESPALDO ----
+                        ticketCliente.style.display = 'none';
+                        ticketRespaldo.style.display = 'block';
+                        toast('🖨️ Imprimiendo RESGUARDO...', '');
                         setTimeout(() => {
-                            ticketRespaldo.style.display = 'none';
-                        }, 500);
-                    }, 300);
+                            window.print();
+                            setTimeout(() => {
+                                ticketRespaldo.style.display = 'none';
+                                toast('✅ Ambas copias impresas', 'success');
+                            }, 500);
+                        }, 300);
+                    } else {
+                        // Si cancela, ocultar todo
+                        ticketCliente.style.display = 'none';
+                        ticketRespaldo.style.display = 'none';
+                        toast('❌ Impresión cancelada', 'error');
+                    }
                 }, 500);
             }, 300);
         }
