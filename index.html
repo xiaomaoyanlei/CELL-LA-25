@@ -605,8 +605,18 @@
         }
 
         async function eliminarProducto() {
-            if (!modoJefe || !editandoId) return;
-            if (!confirm('¿Eliminar este producto permanentemente?')) return;
+            console.log('eliminarProducto called, editandoId:', editandoId);
+            if (!modoJefe) {
+                toast('🔒 Solo jefe puede eliminar', 'error');
+                return;
+            }
+            if (!editandoId) {
+                toast('⚠️ No hay producto seleccionado', 'error');
+                return;
+            }
+            if (!confirm('¿Eliminar este producto permanentemente?')) {
+                return;
+            }
             await eliminarProductoDB(editandoId);
             cerrarModal();
             toast('🗑 Producto eliminado', 'success');
@@ -970,7 +980,7 @@
 
             // Editar
             document.getElementById('editGuardar').addEventListener('click', guardarEdicion);
-            document.getElementById('editEliminar').addEventListener('click', eliminarProducto); // ← 这行已补上
+            document.getElementById('editEliminar').addEventListener('click', eliminarProducto);
             document.getElementById('editCancelar').addEventListener('click', cerrarModal);
             document.getElementById('modalEditar').addEventListener('click', function(e) {
                 if (e.target === this) cerrarModal();
