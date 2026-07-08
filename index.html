@@ -119,7 +119,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
             <span class="sync-status" id="syncStatus">🔄</span>
-            <span class="badge">v4.0 · Cloud</span>
+            <span class="badge">v4.2 · Cloud</span>
         </div>
     </div>
 
@@ -261,7 +261,7 @@
         let scanProducto = null;
         let ventaPendienteCantidad = 0;
         let facturaCounter = 1;
-        let editandoId = null;
+        let editandoCodigo = null;
 
         // ============================================
         //  FUNCIONES DE SUPABASE
@@ -315,9 +315,9 @@
             }
         }
 
-        async function eliminarProductoDB(id) {
+        async function eliminarProductoDB(codigo) {
             try {
-                await supabaseFetch(`/rest/v1/productos?id=eq.${id}`, { method: 'DELETE' });
+                await supabaseFetch(`/rest/v1/productos?codigo=eq.${encodeURIComponent(codigo)}`, { method: 'DELETE' });
                 await cargarProductos();
                 return true;
             } catch (error) {
@@ -407,7 +407,6 @@
                 badge.textContent = '👤 Empleado';
                 badge.className = 'mode-badge';
             }
-            // Habilitar/deshabilitar botones según modo
             document.querySelectorAll('.edit-btn').forEach(b => {
                 if (modoJefe) {
                     b.classList.remove('disabled');
@@ -437,7 +436,7 @@
         function renderInventario() {
             const tbody = document.getElementById('inventarioBody');
             if (!productos || productos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Cargando productos...</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay productos</td></tr>';
                 return;
             }
             let html = '',
@@ -452,7 +451,7 @@
                     <td style="text-align:center;">${p.stock} ${getStockBadge(p.stock)}</td>
                     <td style="text-align:right;font-weight:600;">${formatMoneda(p.precio)}</td>
                     <td style="text-align:center;">
-                        <button class="edit-btn ${modoJefe ? '' : 'disabled'}" data-id="${p.id}" data-codigo="${p.codigo}" ${modoJefe ? '' : 'disabled'} title="Editar">✏️</button>
+                        <button class="edit-btn ${modoJefe ? '' : 'disabled'}" data-codigo="${p.codigo}" ${modoJefe ? '' : 'disabled'} title="Editar">✏️</button>
                     </td>
                 </tr>`;
             });
@@ -461,7 +460,6 @@
             document.getElementById('totalUnidades').textContent = totalUds;
             document.getElementById('valorTotal').textContent = formatMoneda(totalValor);
 
-            // 绑定编辑按钮事件 - 使用 onclick 直接绑定，确保触发
             document.querySelectorAll('.edit-btn').forEach(b => {
                 b.onclick = function(e) {
                     e.preventDefault();
@@ -469,10 +467,9 @@
                         toast('🔒 Solo jefe puede editar', 'error');
                         return;
                     }
-                    const id = this.dataset.id;
                     const codigo = this.dataset.codigo;
-                    console.log('Edit button clicked:', id, codigo);
-                    abrirModal(id, codigo);
+                    console.log('Edit button clicked:', codigo);
+                    abrirModal(codigo);
                 };
             });
         }
@@ -520,18 +517,18 @@
         // ============================================
         //  MODAL EDITAR
         // ============================================
-        function abrirModal(id, codigo) {
-            console.log('abrirModal called with id:', id);
+        function abrirModal(codigo) {
+            console.log('abrirModal called with codigo:', codigo);
             if (!modoJefe) {
                 toast('🔒 Solo jefe puede editar', 'error');
                 return;
             }
-            const p = productos.find(x => x.id === id);
+            const p = findProducto(codigo);
             if (!p) {
-                toast('⚠️ Producto no encontrado', 'error');
+                toast('⚠️ Producto no encontrado: ' + codigo, 'error');
                 return;
             }
-            editandoId = id;
+            editandoCodigo = codigo;
             document.getElementById('editCodigo').value = p.codigo;
             document.getElementById('editNombre').value = p.nombre;
             document.getElementById('editPrecio').value = p.precio;
@@ -542,12 +539,12 @@
 
         function cerrarModal() {
             document.getElementById('modalEditar').classList.remove('active');
-            editandoId = null;
+            editandoCodigo = null;
         }
 
         async function guardarEdicion() {
-            if (!modoJefe || !editandoId) return;
-            const p = productos.find(x => x.id === editandoId);
+            if (!modoJefe || !editandoCodigo) return;
+            const p = findProducto(editandoCodigo);
             if (!p) return;
             const nombre = document.getElementById('editNombre').value.trim();
             const precio = parseFloat(document.getElementById('editPrecio').value);
@@ -567,11 +564,14 @@
         }
 
         async function eliminarProducto() {
-            if (!modoJefe || !editandoId) return;
-            const p = productos.find(x => x.id === editandoId);
-            if (!p) { toast('⚠️ Producto no encontrado', 'error'); return; }
+            if (!modoJefe || !editandoCodigo) return;
+            const p = findProducto(editandoCodigo);
+            if (!p) {
+                toast('⚠️ Producto no encontrado', 'error');
+                return;
+            }
             if (!confirm(`¿Eliminar "${p.nombre}" permanentemente?`)) return;
-            await eliminarProductoDB(editandoId);
+            await eliminarProductoDB(editandoCodigo);
             cerrarModal();
             toast('🗑 Producto eliminado', 'success');
         }
@@ -855,7 +855,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             cargarProductos();
 
-            // Navegación
             document.querySelectorAll('#mainNav button').forEach(b => {
                 b.addEventListener('click', function() {
                     document.querySelectorAll('#mainNav button').forEach(x => x.classList.remove('active'));
@@ -867,7 +866,6 @@
                 });
             });
 
-            // Scan
             document.getElementById('scanInput').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') { e.preventDefault();
                     handleScan(this.value); }
@@ -882,7 +880,6 @@
                 document.getElementById('scanInput').focus();
             });
 
-            // Pago
             document.getElementById('pagoConfirmar').addEventListener('click', confirmarVenta);
             document.getElementById('pagoCancelar').addEventListener('click', function() {
                 document.getElementById('modalPago').classList.remove('active');
@@ -890,7 +887,6 @@
                 toast('Cancelado', 'error');
             });
 
-            // Jefe
             document.getElementById('jefeConfirmar').addEventListener('click', verificarJefe);
             document.getElementById('jefeCancelar').addEventListener('click', function() {
                 document.getElementById('modalJefe').classList.remove('active');
@@ -902,7 +898,6 @@
                 if (e.target === this) this.classList.remove('active');
             });
 
-            // Entrada / Salida
             document.getElementById('btnEntrada').addEventListener('click', hacerEntrada);
             document.getElementById('btnSalida').addEventListener('click', hacerSalida);
             document.getElementById('entradaCodigo').addEventListener('keydown', function(e) {
@@ -912,7 +907,6 @@
                 if (e.key === 'Enter') document.getElementById('btnSalida').click();
             });
 
-            // Buscar
             document.getElementById('buscarInput').addEventListener('input', buscarProductos);
             document.getElementById('buscarInput').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
@@ -921,7 +915,6 @@
                 }
             });
 
-            // Editar
             document.getElementById('editGuardar').addEventListener('click', guardarEdicion);
             document.getElementById('editEliminar').addEventListener('click', eliminarProducto);
             document.getElementById('editCancelar').addEventListener('click', cerrarModal);
@@ -929,7 +922,6 @@
                 if (e.target === this) cerrarModal();
             });
 
-            // Agregar
             document.getElementById('btnAbrirAgregar').addEventListener('click', abrirAgregar);
             document.getElementById('agregarGuardar').addEventListener('click', guardarAgregar);
             document.getElementById('agregarCancelar').addEventListener('click', function() {
@@ -949,7 +941,6 @@
                 });
             });
 
-            // Impresión
             document.getElementById('printClienteBtn').addEventListener('click', printCliente);
             document.getElementById('printRespaldoBtn').addEventListener('click', printRespaldo);
             document.getElementById('printCancelBtn').addEventListener('click', cancelPrint);
@@ -962,7 +953,6 @@
                 document.getElementById('scanInput').focus();
             }
 
-            // Sincronizar cada 30 segundos
             setInterval(() => {
                 cargarProductos();
             }, 30000);
