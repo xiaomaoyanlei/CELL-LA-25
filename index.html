@@ -125,7 +125,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
             <span class="sync-status" id="syncStatus">🔄</span>
-            <span class="badge">v4.1 · Cloud</span>
+            <span class="badge">v4.2 · Cloud</span>
         </div>
     </div>
 
@@ -970,8 +970,8 @@
 
             // Editar
             document.getElementById('editGuardar').addEventListener('click', guardarEdicion);
+            document.getElementById('editEliminar').addEventListener('click', eliminarProducto); // ← 这行已补上
             document.getElementById('editCancelar').addEventListener('click', cerrarModal);
-            document.getElementById('editEliminar').addEventListener('click', eliminarProducto);
             document.getElementById('modalEditar').addEventListener('click', function(e) {
                 if (e.target === this) cerrarModal();
             });
