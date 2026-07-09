@@ -32,6 +32,7 @@
         .btn-danger { background: #b21f1f; color: white; }
         .btn-primary { background: #1a2a6c; color: white; }
         .btn-outline { background: transparent; border: 1.5px solid #1a2a6c; color: #1a2a6c; }
+        .btn-warning { background: #d48c1c; color: white; }
         .btn-block { width: 100%; justify-content: center; display: flex; }
         .btn-sm { padding: 6px 14px; font-size: 11px; }
         .flex { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
@@ -67,7 +68,7 @@
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal-overlay.active { display: flex; }
-        .modal { background: white; border-radius: 16px; padding: 22px 18px; max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .modal { background: white; border-radius: 16px; padding: 22px 18px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         .modal h3 { font-size: 17px; color: #1a2a6c; margin-bottom: 14px; font-family: 'Courier New', monospace; }
         .modal label { font-size: 12px; font-weight: 600; color: #1a2a6c; display: block; margin-top: 10px; font-family: 'Courier New', monospace; }
         .modal input, .modal select { width: 100%; padding: 10px 12px; border: 1.5px solid #e2e7f0; border-radius: 10px; font-size: 14px; margin-top: 4px; background: #fafbfc; outline: none; font-family: 'Courier New', monospace; }
@@ -82,6 +83,13 @@
         .toast.show { opacity: 1; }
         .toast.success { background: #0f7b3a; }
         .toast.error { background: #b21f1f; }
+
+        .foto-thumb { max-width: 100%; max-height: 300px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e7f0; }
+        .producto-check-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f2f6; flex-wrap: wrap; }
+        .producto-check-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: #1a2a6c; flex-shrink: 0; }
+        .producto-check-row input[type="number"] { width: 70px; padding: 6px 8px; border: 1.5px solid #e2e7f0; border-radius: 8px; font-size: 14px; text-align: center; flex-shrink: 0; font-family: 'Courier New', monospace; }
+        .producto-check-row .nombre { flex: 1; font-size: 14px; }
+        .producto-check-row .codigo { font-size: 12px; color: #8892a8; font-family: monospace; margin-right: 8px; }
 
         @page { margin: 4mm 3mm 3mm 3mm; size: 80mm auto; }
         @media print {
@@ -108,6 +116,7 @@
             .ticket .small { font-size: 10px; }
             .ticket .titulo-principal { font-size: 13px; }
             .ticket .gracias { font-size: 13px; }
+            .producto-check-row input[type="number"] { width: 60px; }
         }
     </style>
 </head>
@@ -119,7 +128,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
             <span class="sync-status" id="syncStatus">🔄</span>
-            <span class="badge">v4.2 · Cloud</span>
+            <span class="badge">v4.3 · Cloud</span>
         </div>
     </div>
 
@@ -215,6 +224,32 @@
         </div>
     </div>
 
+    <!-- MODAL FOTO ENTRADA -->
+    <div class="modal-overlay" id="modalFotoEntrada">
+        <div class="modal">
+            <h3>📸 Foto + Entrada</h3>
+            <div style="text-align:center;padding:10px 0;">
+                <video id="fotoVideo" autoplay playsinline style="width:100%;border-radius:12px;background:#000;max-height:300px;display:none;"></video>
+                <canvas id="fotoCanvas" style="display:none;"></canvas>
+                <img id="fotoPreview" class="foto-thumb" src="" alt="Vista previa" style="display:none;">
+            </div>
+            <div class="btn-group" style="flex-wrap:wrap;">
+                <button class="btn btn-primary" id="fotoAbrirCamara">📷 Abrir Cámara</button>
+                <button class="btn btn-success" id="fotoTomar" style="display:none;">📸 Tomar Foto</button>
+                <button class="btn btn-warning" id="fotoSubir" style="display:none;">🖼️ Elegir de Galería</button>
+                <button class="btn btn-danger" id="fotoCancelarBtn">❌ Cerrar</button>
+            </div>
+            <div style="margin-top:12px;font-size:12px;color:#8892a8;text-align:center;">
+                La foto se guarda en el dispositivo, no se sube a internet.
+            </div>
+            <div id="fotoProductosLista" style="margin-top:12px;max-height:300px;overflow-y:auto;"></div>
+            <div class="btn-group" style="margin-top:12px;">
+                <button class="btn btn-success" id="fotoConfirmarEntrada">✅ Confirmar Entrada</button>
+                <button class="btn btn-outline" id="fotoCancelarEntrada">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODALES -->
     <div class="modal-overlay" id="modalPago"><div class="modal"><h3>💳 Forma de Pago</h3><label>Selecciona el método de pago</label><select id="pagoSelect"><option value="EFECTIVO">EFECTIVO</option><option value="YAPPY">YAPPY</option><option value="TARJETA DE CRÉDITO">TARJETA DE CRÉDITO</option></select><label>Impuesto (IVA)</label><select id="tasaImpuestoSelect"><option value="0">0%</option><option value="7" selected>7%</option></select><div class="btn-group"><button class="btn btn-success" id="pagoConfirmar">✅ Confirmar</button><button class="btn btn-outline" id="pagoCancelar">Cancelar</button></div></div></div>
     <div class="modal-overlay" id="modalEditar"><div class="modal"><h3>✏️ Editar Producto</h3><label>Código</label><input id="editCodigo" readonly style="background:#f0f2f6;"><label>Nombre</label><input id="editNombre"><label>Precio (venta)</label><input id="editPrecio" type="number" step="0.01"><label>Costo</label><input id="editCosto" type="number" step="0.01"><label>Stock</label><input id="editStock" type="number" step="1"><div class="btn-group"><button class="btn btn-success" id="editGuardar">💾 Guardar</button><button class="btn btn-danger" id="editEliminar">🗑 Eliminar</button><button class="btn btn-outline" id="editCancelar">Cancelar</button></div></div></div>
@@ -233,7 +268,17 @@
     </div>
 
     <div class="panel" id="panel-entrada">
-        <div class="card"><div class="card-title">📥 Entrada</div><div class="input-group"><input type="text" id="entradaCodigo" placeholder="Código"><input type="number" id="entradaCantidad" placeholder="Cantidad" value="1" min="1"></div><button class="btn btn-success btn-block" id="btnEntrada">✅ Agregar Stock</button></div>
+        <div class="card">
+            <div class="card-title">📥 Entrada</div>
+            <div class="input-group">
+                <input type="text" id="entradaCodigo" placeholder="Código">
+                <input type="number" id="entradaCantidad" placeholder="Cantidad" value="1" min="1">
+            </div>
+            <div class="flex" style="margin-bottom:8px;">
+                <button class="btn btn-success" id="btnEntrada" style="flex:1;">✅ Agregar Stock</button>
+                <button class="btn btn-primary" id="btnFotoEntrada" style="flex:1;">📸 Foto + Stock</button>
+            </div>
+        </div>
         <div class="card"><div class="card-title">📋 Movimientos</div><div id="movimientosLista" class="text-muted" style="padding:6px 0;">Cargando...</div></div>
     </div>
 
@@ -262,6 +307,8 @@
         let ventaPendienteCantidad = 0;
         let facturaCounter = 1;
         let editandoCodigo = null;
+        let fotoCapturada = null;
+        let stream = null;
 
         // ============================================
         //  FUNCIONES DE SUPABASE
@@ -416,7 +463,7 @@
                     b.disabled = true;
                 }
             });
-            ['btnAbrirAgregar', 'btnEntrada', 'btnSalida'].forEach(id => {
+            ['btnAbrirAgregar', 'btnEntrada', 'btnSalida', 'btnFotoEntrada'].forEach(id => {
                 const b = document.getElementById(id);
                 if (modoJefe) { b.disabled = false;
                     b.style.opacity = '1'; } else { b.disabled = true;
@@ -468,7 +515,6 @@
                         return;
                     }
                     const codigo = this.dataset.codigo;
-                    console.log('Edit button clicked:', codigo);
                     abrirModal(codigo);
                 };
             });
@@ -518,7 +564,6 @@
         //  MODAL EDITAR
         // ============================================
         function abrirModal(codigo) {
-            console.log('abrirModal called with codigo:', codigo);
             if (!modoJefe) {
                 toast('🔒 Solo jefe puede editar', 'error');
                 return;
@@ -613,6 +658,168 @@
             await guardarProducto(nuevoProducto);
             document.getElementById('modalAgregar').classList.remove('active');
             toast('✅ Producto agregado', 'success');
+        }
+
+        // ============================================
+        //  FOTO + ENTRADA
+        // ============================================
+        function abrirFotoEntrada() {
+            if (!modoJefe) { toast('🔒 Solo jefe', 'error'); return; }
+            document.getElementById('modalFotoEntrada').classList.add('active');
+            document.getElementById('fotoPreview').style.display = 'none';
+            document.getElementById('fotoVideo').style.display = 'none';
+            document.getElementById('fotoTomar').style.display = 'none';
+            document.getElementById('fotoSubir').style.display = 'none';
+            document.getElementById('fotoProductosLista').innerHTML = '';
+            fotoCapturada = null;
+        }
+
+        function cerrarFotoEntrada() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            document.getElementById('modalFotoEntrada').classList.remove('active');
+            document.getElementById('fotoVideo').style.display = 'none';
+            document.getElementById('fotoVideo').pause();
+        }
+
+        function abrirCamara() {
+            const video = document.getElementById('fotoVideo');
+            const preview = document.getElementById('fotoPreview');
+            preview.style.display = 'none';
+            video.style.display = 'block';
+            document.getElementById('fotoTomar').style.display = 'inline-block';
+            document.getElementById('fotoSubir').style.display = 'inline-block';
+
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = s;
+                    video.play();
+                })
+                .catch(err => {
+                    toast('❌ No se pudo abrir la cámara: ' + err.message, 'error');
+                });
+        }
+
+        function tomarFoto() {
+            const video = document.getElementById('fotoVideo');
+            const canvas = document.getElementById('fotoCanvas');
+            const preview = document.getElementById('fotoPreview');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            fotoCapturada = dataUrl;
+            preview.src = dataUrl;
+            preview.style.display = 'block';
+            video.style.display = 'none';
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            document.getElementById('fotoTomar').style.display = 'none';
+            mostrarProductosParaEntrada();
+            toast('📸 Foto tomada, selecciona productos y cantidades', 'success');
+        }
+
+        function subirFoto() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    fotoCapturada = ev.target.result;
+                    const preview = document.getElementById('fotoPreview');
+                    preview.src = ev.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById('fotoVideo').style.display = 'none';
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                        stream = null;
+                    }
+                    document.getElementById('fotoTomar').style.display = 'none';
+                    mostrarProductosParaEntrada();
+                    toast('📸 Foto cargada, selecciona productos y cantidades', 'success');
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        }
+
+        function mostrarProductosParaEntrada() {
+            const container = document.getElementById('fotoProductosLista');
+            if (!productos || productos.length === 0) {
+                container.innerHTML = '<div class="text-muted" style="padding:10px 0;">No hay productos en el sistema</div>';
+                return;
+            }
+            let html = '<div style="font-weight:600;font-size:14px;margin-bottom:8px;">Selecciona los productos y cantidades:</div>';
+            productos.forEach(p => {
+                html += `
+                    <div class="producto-check-row">
+                        <input type="checkbox" id="fotoCheck_${p.codigo}" value="${p.codigo}">
+                        <span class="codigo">${p.codigo}</span>
+                        <span class="nombre">${p.nombre}</span>
+                        <span style="font-size:12px;color:#8892a8;">Stock: ${p.stock}</span>
+                        <input type="number" id="fotoCant_${p.codigo}" value="1" min="1">
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        async function confirmarEntradaConFoto() {
+            if (!fotoCapturada) {
+                toast('❌ Primero toma o selecciona una foto', 'error');
+                return;
+            }
+            const checkboxes = document.querySelectorAll('#fotoProductosLista input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                toast('❌ Selecciona al menos un producto', 'error');
+                return;
+            }
+            let movimientos = [];
+            let productosActualizados = 0;
+            for (const cb of checkboxes) {
+                const codigo = cb.value;
+                const p = findProducto(codigo);
+                if (!p) continue;
+                const cantidadInput = document.getElementById(`fotoCant_${codigo}`);
+                const cantidad = parseInt(cantidadInput.value) || 1;
+                if (cantidad <= 0) continue;
+                p.stock += cantidad;
+                await guardarProducto(p);
+                movimientos.push({ producto: p.nombre, cantidad: cantidad, total: cantidad * p.costo });
+                productosActualizados++;
+            }
+            if (movimientos.length === 0) {
+                toast('❌ Cantidades inválidas', 'error');
+                return;
+            }
+
+            const movs = JSON.parse(localStorage.getItem('vf_movimientos') || '[]');
+            movimientos.forEach(m => {
+                movs.push({
+                    tipo: 'entrada',
+                    producto: m.producto,
+                    cantidad: m.cantidad,
+                    total: m.total,
+                    fecha: new Date().toLocaleString('es-PA'),
+                    foto: true
+                });
+            });
+            localStorage.setItem('vf_movimientos', JSON.stringify(movs));
+
+            cerrarFotoEntrada();
+            await cargarProductos();
+            toast('✅ Entrada con foto completada: ' + productosActualizados + ' productos', 'success');
         }
 
         // ============================================
@@ -939,6 +1146,18 @@
                         else document.getElementById('agregarGuardar').click();
                     }
                 });
+            });
+
+            // FOTO ENTRADA
+            document.getElementById('btnFotoEntrada').addEventListener('click', abrirFotoEntrada);
+            document.getElementById('fotoAbrirCamara').addEventListener('click', abrirCamara);
+            document.getElementById('fotoTomar').addEventListener('click', tomarFoto);
+            document.getElementById('fotoSubir').addEventListener('click', subirFoto);
+            document.getElementById('fotoConfirmarEntrada').addEventListener('click', confirmarEntradaConFoto);
+            document.getElementById('fotoCancelarEntrada').addEventListener('click', cerrarFotoEntrada);
+            document.getElementById('fotoCancelarBtn').addEventListener('click', cerrarFotoEntrada);
+            document.getElementById('modalFotoEntrada').addEventListener('click', function(e) {
+                if (e.target === this) cerrarFotoEntrada();
             });
 
             document.getElementById('printClienteBtn').addEventListener('click', printCliente);
