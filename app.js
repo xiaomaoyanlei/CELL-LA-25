@@ -1,4 +1,4 @@
-// app.js - 应用入口
+// app.js - Aplicación principal
 // ============================================
 import { SUPABASE_URL, SUPABASE_KEY } from './supabase.js';
 import {
@@ -28,6 +28,7 @@ import {
 // ===== Global state =====
 let modoJefe = false;
 let searchTimeout = null;
+let facturaCounter = 1;
 
 // ===== Toast y Beep =====
 function toast(msg, tipo) {
@@ -90,12 +91,20 @@ function bindNavigation() {
             this.classList.add('active');
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.getElementById(this.dataset.panel).classList.add('active');
-            if (this.dataset.panel === 'panel-venta') document.getElementById('scanInput').focus();
-            if (this.dataset.panel === 'panel-buscar') document.getElementById('buscarInput').focus();
-            if (this.dataset.panel === 'panel-reportes') renderReport(document.getElementById('reportePeriodo').value);
+            if (this.dataset.panel === 'panel-venta') {
+                setTimeout(() => document.getElementById('scanInput').focus(), 300);
+            }
+            if (this.dataset.panel === 'panel-buscar') {
+                setTimeout(() => document.getElementById('buscarInput').focus(), 300);
+            }
+            if (this.dataset.panel === 'panel-reportes') {
+                renderReport(document.getElementById('reportePeriodo').value);
+            }
         });
     });
 }
+
+function formatMoneda(val) { return 'B/.' + val.toFixed(2); }
 
 // ===== Búsqueda en venta =====
 function buscarEnVenta(query) {
@@ -114,19 +123,19 @@ function buscarEnVenta(query) {
     );
 
     if (results.length === 0) {
-        resultsContainer.innerHTML = '<div class="sin-resultados">❌ No se encontraron productos</div>';
+        resultsContainer.innerHTML = '<div class="sin-resultados" style="padding:16px;font-size:15px;">❌ No se encontraron productos</div>';
         return;
     }
 
     const mostrar = results.slice(0, 10);
     resultsContainer.innerHTML = mostrar.map(p =>
-        `<div class="result-item" data-codigo="${p.codigo}">
+        `<div class="result-item" data-codigo="${p.codigo}" style="padding:12px 14px;font-size:15px;touch-action:manipulation;">
             <div>
-                <div class="nombre">${p.nombre}</div>
-                <div class="detalle">${p.codigo} · Stock: ${p.stock} · ${formatMoneda(p.precio)}</div>
+                <div class="nombre" style="font-size:16px;">${p.nombre}</div>
+                <div class="detalle" style="font-size:13px;">${p.codigo} · Stock: ${p.stock} · ${formatMoneda(p.precio)}</div>
             </div>
             <div>
-                <button class="btn btn-success btn-sm" onclick="window.agregarDesdeBusqueda('${p.codigo}')" style="padding:4px 12px;font-size:12px;">➕</button>
+                <button class="btn btn-success btn-sm" onclick="window.agregarDesdeBusqueda('${p.codigo}')" style="padding:8px 16px;font-size:16px;border-radius:10px;min-height:40px;">➕</button>
             </div>
         </div>
     `).join('');
@@ -140,13 +149,12 @@ function buscarEnVenta(query) {
     });
 }
 
-function formatMoneda(val) { return 'B/.' + val.toFixed(2); }
-
 window.agregarDesdeBusqueda = function(codigo) {
-    agregarAlCarrito(codigo, parseInt(document.getElementById('ventaCantidad').value) || 1);
+    const cantidad = parseInt(document.getElementById('ventaCantidad').value) || 1;
+    agregarAlCarrito(codigo, cantidad);
     document.getElementById('scanInput').value = '';
     document.getElementById('searchResults').innerHTML = '';
-    document.getElementById('scanInput').focus();
+    setTimeout(() => document.getElementById('scanInput').focus(), 200);
 };
 
 // ===== Modo Jefe =====
@@ -161,7 +169,7 @@ function toggleModo() {
     }
     document.getElementById('modalJefe').classList.add('active');
     document.getElementById('jefePassword').value = '';
-    document.getElementById('jefePassword').focus();
+    setTimeout(() => document.getElementById('jefePassword').focus(), 200);
 }
 
 function verificarJefe() {
@@ -211,53 +219,56 @@ function actualizarUI() {
         badge.textContent = '👤 Empleado';
         badge.className = 'mode-badge';
     }
-    // La UI de inventory se actualiza sola con setModoJefe
     loadInventory();
+}
+
+// ===== Pago rápido (botones grandes) =====
+function bindPagoRapido() {
+    document.querySelectorAll('.pago-rapido').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const pago = this.dataset.pago;
+            // Guardar el pago seleccionado y confirmar
+            document.getElementById('pagoSelect').value = pago;
+            document.getElementById('pagoConfirmar').click();
+        });
+    });
 }
 
 // ===== Shortcuts =====
 function bindShortcuts() {
     document.addEventListener('keydown', function(e) {
+        // ESC - Cerrar modales
         if (e.key === 'Escape') {
-            if (document.getElementById('modalPago').classList.contains('active')) {
-                document.getElementById('modalPago').classList.remove('active');
-                toast('Cancelado', '');
-                return;
-            }
-            if (document.getElementById('modalEditar').classList.contains('active')) {
-                document.getElementById('modalEditar').classList.remove('active');
-                return;
-            }
-            if (document.getElementById('modalAgregar').classList.contains('active')) {
-                document.getElementById('modalAgregar').classList.remove('active');
-                return;
-            }
-            if (document.getElementById('modalJefe').classList.contains('active')) {
-                document.getElementById('modalJefe').classList.remove('active');
-                return;
-            }
-            if (document.getElementById('modalDevolucion').classList.contains('active')) {
-                document.getElementById('modalDevolucion').classList.remove('active');
-                return;
-            }
-            if (document.getElementById('modalExportar').classList.contains('active')) {
-                document.getElementById('modalExportar').classList.remove('active');
-                return;
-            }
-            if (document.getElementById('modalPrintSelector').classList.contains('active')) {
-                document.getElementById('modalPrintSelector').classList.remove('active');
-                return;
+            const modales = ['modalPago', 'modalEditar', 'modalAgregar', 'modalJefe', 'modalDevolucion', 'modalExportar', 'modalPrintSelector'];
+            for (const id of modales) {
+                const el = document.getElementById(id);
+                if (el && el.classList.contains('active')) {
+                    el.classList.remove('active');
+                    toast('Cancelado', '');
+                    return;
+                }
             }
             document.getElementById('scanInput').focus();
             return;
         }
 
-        if (e.key === 'F1') { e.preventDefault();
+        // F1 = Buscar
+        if (e.key === 'F1') {
+            e.preventDefault();
             document.getElementById('scanInput').focus();
             document.getElementById('scanInput').select();
-            toast('🔍 Buscar', ''); return; }
-        if (e.key === 'F2') { e.preventDefault();
-            toggleModo(); return; }
+            toast('🔍 Buscar', '');
+            return;
+        }
+
+        // F2 = Jefe
+        if (e.key === 'F2') {
+            e.preventDefault();
+            toggleModo();
+            return;
+        }
+
+        // F3 = Reportes
         if (e.key === 'F3') {
             e.preventDefault();
             document.querySelectorAll('#mainNav button').forEach(b => b.classList.remove('active'));
@@ -267,6 +278,8 @@ function bindShortcuts() {
             renderReport(document.getElementById('reportePeriodo').value);
             return;
         }
+
+        // F4 = Inventario
         if (e.key === 'F4') {
             e.preventDefault();
             document.querySelectorAll('#mainNav button').forEach(b => b.classList.remove('active'));
@@ -276,6 +289,7 @@ function bindShortcuts() {
             return;
         }
 
+        // Pago rápido: 1, 2, 3
         if (document.getElementById('modalPago').classList.contains('active')) {
             if (e.key === '1') { e.preventDefault();
                 document.getElementById('pagoSelect').value = 'EFECTIVO';
@@ -290,6 +304,7 @@ function bindShortcuts() {
                 document.getElementById('pagoConfirmar').click(); }
         }
 
+        // Enter en modales
         if (e.key === 'Enter') {
             const modal = document.querySelector('.modal-overlay.active');
             if (modal) {
@@ -389,9 +404,6 @@ function cancelPrint() {
     toast('❌ Impresión cancelada', 'error');
 }
 
-let facturaCounter = 1;
-
-// ===== Exportar modal =====
 function abrirExportar() {
     if (!modoJefe) { toast('🔒 Solo jefe', 'error'); return; }
     document.getElementById('modalExportar').classList.add('active');
@@ -401,24 +413,22 @@ function abrirExportar() {
 async function init() {
     restaurarModoJefe();
 
-    // Cargar datos
     await loadInventory();
     renderCarrito();
     renderDevoluciones();
 
-    // Bindear navegación
     bindNavigation();
-
-    // Bindear shortcuts
     bindShortcuts();
+    bindPagoRapido();
 
-    // Bindear eventos de input
+    // ===== Eventos =====
+    // Búsqueda en tiempo real
     document.getElementById('scanInput').addEventListener('input', function() {
         clearTimeout(searchTimeout);
         const val = this.value;
         searchTimeout = setTimeout(() => {
             buscarEnVenta(val);
-        }, 200);
+        }, 300);
     });
 
     document.getElementById('scanInput').addEventListener('keydown', function(e) {
@@ -473,7 +483,7 @@ async function init() {
         if (e.target === this) this.classList.remove('active');
     });
 
-    // Entrada / Salida
+    // Entrada
     document.getElementById('btnEntrada').addEventListener('click', async function() {
         if (!modoJefe) { toast('🔒 Solo jefe', 'error'); return; }
         const codigo = document.getElementById('entradaCodigo').value.trim();
@@ -489,6 +499,7 @@ async function init() {
         document.getElementById('entradaCantidad').value = 1;
     });
 
+    // Salida
     document.getElementById('btnSalida').addEventListener('click', async function() {
         if (!modoJefe) { toast('🔒 Solo jefe', 'error'); return; }
         const codigo = document.getElementById('salidaCodigo').value.trim();
@@ -567,7 +578,7 @@ async function init() {
         );
         if (!results.length) { el.innerHTML = '❌ No encontrados'; return; }
         el.innerHTML = results.map(p =>
-            `<div style="padding:6px 0;border-bottom:1px solid #f0f2f6;font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;">
+            `<div style="padding:10px 0;border-bottom:1px solid #f0f2f6;font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;">
                 <span><span class="codigo-badge">${p.codigo}</span> ${p.nombre}</span>
                 <span>📦 ${p.stock} · ${formatMoneda(p.precio)}</span>
             </div>`
@@ -581,7 +592,7 @@ async function init() {
         }
     });
 
-    // Editar (desde inventory.js)
+    // Editar
     document.getElementById('editGuardar').addEventListener('click', guardarEdicion);
     document.getElementById('editEliminar').addEventListener('click', eliminarProducto);
     document.getElementById('editCancelar').addEventListener('click', function() {
@@ -620,27 +631,22 @@ async function init() {
         if (e.target === this) cancelPrint();
     });
 
-    // Exponer preparePrintData a cart.js
+    // Exponer funciones globales
     window.preparePrintData = preparePrintData;
-
-    // Exponer toggleModo a window para onclick del badge
     window.toggleModo = toggleModo;
-
-    // Exponer funciones a window para onclick en HTML
     window.abrirAgregar = invAbrirAgregar;
 
-    // Actualizar UI inicial
     actualizarUI();
-
-    // Render inicial
     renderCarrito();
     renderDevoluciones();
     renderReport('hoy');
 
     // Foco inicial
-    if (document.getElementById('panel-venta').classList.contains('active')) {
-        document.getElementById('scanInput').focus();
-    }
+    setTimeout(() => {
+        if (document.getElementById('panel-venta').classList.contains('active')) {
+            document.getElementById('scanInput').focus();
+        }
+    }, 400);
 
     // Sincronizar cada 30 segundos
     setInterval(() => {
@@ -648,5 +654,22 @@ async function init() {
     }, 30000);
 }
 
-// Iniciar
+// ===== Iniciar =====
 document.addEventListener('DOMContentLoaded', init);
+
+// Fix para que el modal de pago tenga el select oculto pero funcional
+// (se usa internamente para la lógica de pago)
+document.addEventListener('DOMContentLoaded', function() {
+    // Crear un select oculto para la lógica de pago si no existe
+    if (!document.getElementById('pagoSelect')) {
+        const hiddenSelect = document.createElement('select');
+        hiddenSelect.id = 'pagoSelect';
+        hiddenSelect.style.display = 'none';
+        hiddenSelect.innerHTML = `
+            <option value="EFECTIVO">EFECTIVO</option>
+            <option value="YAPPY">YAPPY</option>
+            <option value="TARJETA DE CRÉDITO">TARJETA DE CRÉDITO</option>
+        `;
+        document.body.appendChild(hiddenSelect);
+    }
+});
