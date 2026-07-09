@@ -4,7 +4,6 @@
 export const SUPABASE_URL = 'https://hruwxcqedhogseqpbcio.supabase.co';
 export const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhydXd4Y3FlZGhvZ3NlcXBiY2lvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzUyNzExMywiZXhwIjoyMDk5MTAzMTEzfQ.VfnKr375IEpv83neEhQ9h5mLgpknIp1pyZjDaG1jCOw';
 
-// ===== Función base =====
 async function supabaseFetch(endpoint, options = {}) {
     const url = SUPABASE_URL + endpoint;
     const headers = {
@@ -50,26 +49,4 @@ export async function saveVenta(venta) {
 // ===== Movimientos =====
 export async function saveMovimiento(movimiento) {
     return supabaseFetch('/rest/v1/movimientos', { method: 'POST', body: JSON.stringify(movimiento) });
-}
-
-// ===== Cargar productos con estado Cloud =====
-export async function cargarProductos() {
-    try {
-        const data = await fetchProductos();
-        // Actualizar estado Cloud
-        const syncStatus = document.getElementById('syncStatus');
-        if (syncStatus) {
-            syncStatus.textContent = '✅ Cloud';
-            syncStatus.className = 'sync-status online';
-        }
-        return data;
-    } catch (error) {
-        console.error('Error al cargar productos:', error);
-        const syncStatus = document.getElementById('syncStatus');
-        if (syncStatus) {
-            syncStatus.textContent = '⚠️ Offline';
-            syncStatus.className = 'sync-status offline';
-        }
-        throw error;
-    }
 }
