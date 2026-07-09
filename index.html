@@ -11,7 +11,7 @@
     <div class="header">
         <div style="display:flex;align-items:center;flex-wrap:wrap;">
             <h1>📦 CELL LA 25</h1>
-            <span class="mode-badge" id="modeBadge" onclick="toggleModo()">👤 Empleado</span>
+            <span class="mode-badge" id="modeBadge" onclick="window.toggleModo && toggleModo()">👤 Empleado</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
             <span class="sync-status" id="syncStatus">🔄</span>
@@ -20,7 +20,6 @@
         </div>
     </div>
 
-    <!-- Shortcuts help -->
     <div class="shortcuts-help" id="shortcutsHelp">
         <span><span class="key">F1</span> Buscar</span>
         <span><span class="key">F2</span> Jefe</span>
@@ -35,7 +34,7 @@
 
     <div class="nav" id="mainNav">
         <button class="active" data-panel="panel-venta">🛒 Vender</button>
-        <button data-panel="panel-inventario">📋 Inventario</button>
+        <button data-panel="panel-inventario">📋 Inv</button>
         <button data-panel="panel-entrada">📥 Entrada</button>
         <button data-panel="panel-salida">📤 Salida</button>
         <button data-panel="panel-reportes">📊 Reportes</button>
@@ -79,7 +78,6 @@
         </div>
     </div>
 
-    <!-- TICKET RESPALDO -->
     <div class="ticket" id="ticketRespaldo">
         <div id="ticketRespaldoContent">
             <div class="center">
@@ -117,33 +115,37 @@
     <!-- ====== MODALES ====== -->
     <div class="modal-overlay" id="modalPago">
         <div class="modal">
-            <h3>💳 Finalizar Compra</h3>
-            <label>Selecciona el método de pago</label>
-            <select id="pagoSelect">
-                <option value="EFECTIVO">EFECTIVO</option>
-                <option value="YAPPY">YAPPY</option>
-                <option value="TARJETA DE CRÉDITO">TARJETA DE CRÉDITO</option>
-            </select>
-            <label>Impuesto (IVA)</label>
-            <select id="tasaImpuestoSelect">
+            <h3 style="font-size:20px;">💳 Finalizar Compra</h3>
+            <div style="margin-top:12px;padding:14px;background:#f5f7fb;border-radius:12px;">
+                <div style="display:flex;justify-content:space-between;font-size:15px;">
+                    <span>Total a pagar:</span>
+                    <span id="modalTotalPago" style="font-weight:700;font-size:24px;color:#0f7b3a;">B/.0.00</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;color:#8892a8;margin-top:4px;">
+                    <span>Artículos: <span id="modalCantidadItems">0</span></span>
+                    <span>IVA: <span id="modalIvaDisplay">7%</span></span>
+                </div>
+            </div>
+
+            <label style="margin-top:10px;font-weight:600;font-size:14px;">Selecciona el método de pago:</label>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+                <button class="btn btn-success pago-rapido" data-pago="EFECTIVO" style="padding:18px;font-size:20px;border-radius:14px;touch-action:manipulation;">💵 EFECTIVO</button>
+                <button class="btn btn-primary pago-rapido" data-pago="YAPPY" style="padding:18px;font-size:20px;border-radius:14px;touch-action:manipulation;">📱 YAPPY</button>
+                <button class="btn btn-warning pago-rapido" data-pago="TARJETA DE CRÉDITO" style="padding:18px;font-size:20px;border-radius:14px;touch-action:manipulation;">💳 TARJETA</button>
+            </div>
+
+            <label style="margin-top:12px;font-weight:600;font-size:14px;">Impuesto (IVA)</label>
+            <select id="tasaImpuestoSelect" style="width:100%;padding:12px;border:1.5px solid #e2e7f0;border-radius:12px;font-size:16px;margin-top:4px;background:#fafbfc;">
                 <option value="0">0%</option>
                 <option value="7" selected>7%</option>
             </select>
-            <div style="margin-top:12px;padding:10px;background:#f5f7fb;border-radius:10px;">
-                <div style="display:flex;justify-content:space-between;font-size:14px;">
-                    <span>Total a pagar:</span>
-                    <span id="modalTotalPago" style="font-weight:700;font-size:18px;">B/.0.00</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;color:#8892a8;margin-top:4px;">
-                    <span>Artículos: <span id="modalCantidadItems">0</span></span>
-                </div>
+
+            <div style="margin-top:10px;font-size:12px;color:#8892a8;text-align:center;">
+                ⌨️ 1=Efectivo · 2=YAPPY · 3=Tarjeta
             </div>
-            <div class="btn-group">
-                <button class="btn btn-success" id="pagoConfirmar">✅ Confirmar Venta</button>
-                <button class="btn btn-outline" id="pagoCancelar">Cancelar</button>
-            </div>
-            <div style="margin-top:10px;font-size:11px;color:#8892a8;text-align:center;">
-                ⌨️ Presiona <strong>1</strong> (Efectivo) · <strong>2</strong> (YAPPY) · <strong>3</strong> (Tarjeta)
+
+            <div class="btn-group" style="margin-top:14px;">
+                <button class="btn btn-outline" id="pagoCancelar" style="padding:14px;font-size:16px;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -197,7 +199,7 @@
         <div class="modal">
             <h3>🔐 Modo Jefe</h3>
             <label>Ingresa la contraseña</label>
-            <input type="password" id="jefePassword" placeholder="Contraseña">
+            <input type="password" id="jefePassword" placeholder="Contraseña" style="font-size:18px;padding:14px;">
             <div class="btn-group">
                 <button class="btn btn-success" id="jefeConfirmar">🔓 Desbloquear</button>
                 <button class="btn btn-outline" id="jefeCancelar">Cancelar</button>
@@ -210,9 +212,9 @@
             <h3>🖨️ Imprimir Factura</h3>
             <p style="font-size:14px; margin-bottom: 16px;">Selecciona qué copia quieres imprimir:</p>
             <div class="btn-group" style="flex-direction: column; gap: 12px;">
-                <button class="btn btn-primary" id="printClienteBtn" style="width:100%; padding: 14px;">🧾 Cliente (Original)</button>
-                <button class="btn btn-success" id="printRespaldoBtn" style="width:100%; padding: 14px;">📋 Resguardo (Copia)</button>
-                <button class="btn btn-danger" id="printCancelBtn" style="width:100%; padding: 14px;">❌ Cancelar</button>
+                <button class="btn btn-primary" id="printClienteBtn" style="width:100%; padding: 16px;font-size:16px;">🧾 Cliente (Original)</button>
+                <button class="btn btn-success" id="printRespaldoBtn" style="width:100%; padding: 16px;font-size:16px;">📋 Resguardo (Copia)</button>
+                <button class="btn btn-danger" id="printCancelBtn" style="width:100%; padding: 16px;font-size:16px;">❌ Cancelar</button>
             </div>
         </div>
     </div>
@@ -221,12 +223,12 @@
         <div class="modal">
             <h3>🔄 Devolución / Reembolso</h3>
             <label>Selecciona la venta a devolver</label>
-            <select id="devolucionVentaSelect" style="width:100%;padding:10px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:14px;margin-top:4px;background:#fafbfc;"></select>
+            <select id="devolucionVentaSelect" style="width:100%;padding:12px;border:1.5px solid #e2e7f0;border-radius:12px;font-size:15px;margin-top:4px;background:#fafbfc;"></select>
             <div id="devolucionItems" style="margin-top:12px;"></div>
             <label>Motivo de devolución</label>
-            <input id="devolucionMotivo" placeholder="Ej: Producto defectuoso, Cliente cambió de opinión..." style="width:100%;padding:10px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:14px;margin-top:4px;">
+            <input id="devolucionMotivo" placeholder="Ej: Producto defectuoso..." style="width:100%;padding:12px;border:1.5px solid #e2e7f0;border-radius:12px;font-size:15px;margin-top:4px;">
             <div class="btn-group" style="margin-top:16px;">
-                <button class="btn btn-danger" id="devolucionConfirmar">🔄 Confirmar Devolución</button>
+                <button class="btn btn-danger" id="devolucionConfirmar" style="padding:14px;font-size:16px;">🔄 Confirmar Devolución</button>
                 <button class="btn btn-outline" id="devolucionCancelar">Cancelar</button>
             </div>
         </div>
@@ -237,10 +239,10 @@
             <h3>📤 Exportar Datos</h3>
             <p style="font-size:14px;margin-bottom:16px;">Selecciona qué datos quieres exportar:</p>
             <div style="display:flex;flex-direction:column;gap:10px;">
-                <button class="btn btn-primary" id="exportarProductos">📦 Exportar Productos (CSV)</button>
-                <button class="btn btn-primary" id="exportarVentas">📊 Exportar Ventas (CSV)</button>
-                <button class="btn btn-primary" id="exportarStock">⚠️ Exportar Stock Crítico (CSV)</button>
-                <button class="btn btn-success" id="exportarBackup">💾 Backup completo (JSON)</button>
+                <button class="btn btn-primary" id="exportarProductos" style="padding:14px;font-size:16px;">📦 Exportar Productos (CSV)</button>
+                <button class="btn btn-primary" id="exportarVentas" style="padding:14px;font-size:16px;">📊 Exportar Ventas (CSV)</button>
+                <button class="btn btn-primary" id="exportarStock" style="padding:14px;font-size:16px;">⚠️ Exportar Stock Crítico (CSV)</button>
+                <button class="btn btn-success" id="exportarBackup" style="padding:14px;font-size:16px;">💾 Backup completo (JSON)</button>
             </div>
             <div style="margin-top:12px;font-size:11px;color:#8892a8;text-align:center;">
                 Los archivos se descargarán automáticamente
@@ -265,35 +267,37 @@
                 <span id="statsFecha"></span> · <span id="statsVentasCount">0</span> ventas
             </div>
         </div>
+
         <div class="card">
             <div class="card-title">📷 Buscar / Agregar al Carrito</div>
-            <div class="scan-area">
-                <p style="color:#1a2a6c;font-weight:700;margin-bottom:10px;">Escribe código, nombre o palabra clave</p>
-                <div class="input-group">
-                    <input type="text" id="scanInput" placeholder="Ej: ZP-001, audifono, mouse..." autofocus style="flex:1;">
-                    <button class="btn btn-primary" id="btnAgregarCarrito" style="flex:0 0 auto;">➕ Agregar</button>
+            <div class="scan-area" style="padding:20px 16px;">
+                <p style="color:#1a2a6c;font-weight:700;margin-bottom:12px;font-size:15px;">Escribe código, nombre o palabra clave</p>
+                <div class="input-group" style="flex-direction:column;gap:10px;">
+                    <input type="text" id="scanInput" placeholder="Ej: ZP-001, audifono, mouse..." autofocus style="flex:1;font-size:20px;padding:16px;border-radius:14px;">
+                    <button class="btn btn-primary" id="btnAgregarCarrito" style="flex:0 0 auto;padding:16px;font-size:18px;border-radius:14px;min-height:56px;">➕ Agregar</button>
                 </div>
-                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-                    <input type="number" id="ventaCantidad" value="1" min="1" style="flex:1;padding:10px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:14px;width:60px;font-family:'Courier New',monospace;">
-                    <span style="font-size:13px;color:#8892a8;align-self:center;">unidades</span>
+                <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;">
+                    <input type="number" id="ventaCantidad" value="1" min="1" style="flex:1;padding:14px;border:1.5px solid #e2e7f0;border-radius:12px;font-size:18px;width:70px;font-family:'Courier New',monospace;text-align:center;">
+                    <span style="font-size:14px;color:#8892a8;">unidades</span>
                 </div>
                 <div id="searchResults" class="search-results"></div>
             </div>
             <div id="scanResult" class="scan-result" style="display:none;">
                 <div id="productoEncontrado"></div>
-                <div class="flex mt-8"><button class="btn btn-success" id="btnAgregarCarritoDirecto" style="flex:1;">➕ Agregar al Carrito</button><button class="btn btn-outline" id="btnVenderCancel">Cancelar</button></div>
+                <div class="flex mt-8"><button class="btn btn-success" id="btnAgregarCarritoDirecto" style="flex:1;padding:14px;font-size:16px;border-radius:12px;">➕ Agregar al Carrito</button><button class="btn btn-outline" id="btnVenderCancel" style="padding:14px;font-size:16px;">Cancelar</button></div>
             </div>
         </div>
+
         <div class="card">
             <div class="flex-between">
-                <div class="card-title">🛒 Carrito de Compras</div>
-                <button class="btn btn-danger btn-sm" id="btnVaciarCarrito">🗑 Vaciar</button>
+                <div class="card-title">🛒 Carrito</div>
+                <button class="btn btn-danger btn-sm" id="btnVaciarCarrito" style="padding:8px 14px;font-size:13px;">🗑 Vaciar</button>
             </div>
-            <div id="carritoLista"><div class="carrito-vacio">🛒 Carrito vacío</div></div>
+            <div id="carritoLista"><div class="carrito-vacio" style="padding:30px 0;font-size:15px;">🛒 Carrito vacío</div></div>
             <div id="carritoResumen" style="display:none;">
-                <div class="carrito-total"><span>Total</span><span id="carritoTotal">B/.0.00</span></div>
-                <div style="display:flex;gap:10px;margin-top:10px;">
-                    <button class="btn btn-success" id="btnFinalizarCompra" style="flex:2;">💳 Finalizar Compra</button>
+                <div class="carrito-total" style="font-size:20px;padding:14px 0;"><span>Total</span><span id="carritoTotal">B/.0.00</span></div>
+                <div style="display:flex;gap:10px;margin-top:12px;">
+                    <button class="btn btn-success" id="btnFinalizarCompra" style="flex:2;padding:18px;font-size:18px;border-radius:14px;min-height:56px;">💳 Finalizar Compra</button>
                 </div>
             </div>
         </div>
@@ -315,8 +319,8 @@
             <div class="flex-between">
                 <div class="card-title">📦 Inventario</div>
                 <div style="display:flex;gap:8px;">
-                    <button class="btn btn-primary btn-sm" id="btnExportar">📤 Exportar</button>
-                    <button class="btn btn-success btn-sm" id="btnAbrirAgregar">➕ Agregar</button>
+                    <button class="btn btn-primary btn-sm" id="btnExportar" style="padding:8px 14px;">📤 Exportar</button>
+                    <button class="btn btn-success btn-sm" id="btnAbrirAgregar" style="padding:8px 14px;">➕ Agregar</button>
                 </div>
             </div>
             <div class="table-wrap">
@@ -331,11 +335,11 @@
     <div class="panel" id="panel-entrada">
         <div class="card">
             <div class="card-title">📥 Entrada</div>
-            <div class="input-group">
-                <input type="text" id="entradaCodigo" placeholder="Código">
-                <input type="number" id="entradaCantidad" placeholder="Cantidad" value="1" min="1">
+            <div class="input-group" style="flex-direction:column;gap:10px;">
+                <input type="text" id="entradaCodigo" placeholder="Código" style="font-size:18px;padding:14px;">
+                <input type="number" id="entradaCantidad" placeholder="Cantidad" value="1" min="1" style="font-size:18px;padding:14px;">
             </div>
-            <button class="btn btn-success btn-block" id="btnEntrada">✅ Agregar Stock</button>
+            <button class="btn btn-success btn-block" id="btnEntrada" style="padding:16px;font-size:18px;border-radius:14px;">✅ Agregar Stock</button>
         </div>
         <div class="card">
             <div class="card-title">📋 Movimientos</div>
@@ -346,16 +350,16 @@
     <div class="panel" id="panel-salida">
         <div class="card">
             <div class="card-title">📤 Salida / Ajuste</div>
-            <div class="input-group">
-                <input type="text" id="salidaCodigo" placeholder="Código">
-                <input type="number" id="salidaCantidad" placeholder="Cantidad" value="1" min="1">
+            <div class="input-group" style="flex-direction:column;gap:10px;">
+                <input type="text" id="salidaCodigo" placeholder="Código" style="font-size:18px;padding:14px;">
+                <input type="number" id="salidaCantidad" placeholder="Cantidad" value="1" min="1" style="font-size:18px;padding:14px;">
             </div>
-            <button class="btn btn-danger btn-block" id="btnSalida">➖ Quitar Stock</button>
+            <button class="btn btn-danger btn-block" id="btnSalida" style="padding:16px;font-size:18px;border-radius:14px;">➖ Quitar Stock</button>
         </div>
         <div class="card">
             <div class="flex-between">
                 <div class="card-title">🔄 Devoluciones</div>
-                <button class="btn btn-warning btn-sm" id="btnAbrirDevolucion">➕ Nueva Devolución</button>
+                <button class="btn btn-warning btn-sm" id="btnAbrirDevolucion" style="padding:8px 14px;">➕ Nueva</button>
             </div>
             <div id="devolucionesLista" class="text-muted" style="padding:6px 0;">Sin devoluciones</div>
         </div>
@@ -365,7 +369,7 @@
         <div class="card">
             <div class="card-title">📊 Reportes</div>
             <div class="reporte-filtros">
-                <select id="reportePeriodo">
+                <select id="reportePeriodo" style="padding:12px;font-size:15px;border-radius:12px;">
                     <option value="hoy">Hoy</option>
                     <option value="semana">Esta semana</option>
                     <option value="mes">Este mes</option>
@@ -373,11 +377,11 @@
                     <option value="anio">Este año</option>
                     <option value="todo">Todo</option>
                 </select>
-                <button class="btn btn-primary" id="btnActualizarReporte">🔄 Actualizar</button>
-                <button class="btn btn-success btn-sm" id="btnExportarReporte">📤 Exportar</button>
+                <button class="btn btn-primary" id="btnActualizarReporte" style="padding:12px 18px;font-size:14px;">🔄 Actualizar</button>
+                <button class="btn btn-success btn-sm" id="btnExportarReporte" style="padding:8px 14px;">📤 Exportar</button>
             </div>
             <div id="reporteContenido">
-                <div class="text-muted" style="padding:20px;text-align:center;">Selecciona un período y actualiza</div>
+                <div class="text-muted" style="padding:30px 0;text-align:center;font-size:15px;">Selecciona un período y actualiza</div>
             </div>
         </div>
     </div>
@@ -385,7 +389,7 @@
     <div class="panel" id="panel-buscar">
         <div class="card">
             <div class="card-title">🔍 Buscar</div>
-            <div class="input-group"><input type="text" id="buscarInput" placeholder="Nombre o código..."></div>
+            <div class="input-group"><input type="text" id="buscarInput" placeholder="Nombre o código..." style="font-size:18px;padding:14px;border-radius:12px;"></div>
             <div id="buscarResultados" class="text-muted" style="padding:6px 0;">Escribe para buscar</div>
         </div>
     </div>
