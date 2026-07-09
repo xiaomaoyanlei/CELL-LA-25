@@ -755,7 +755,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
             <span class="sync-status" id="syncStatus">🔄</span>
-            <span class="badge">v5.3 · Cloud</span>
+            <span class="badge">v5.4 · Cloud</span>
         </div>
     </div>
 
@@ -1240,11 +1240,12 @@
         }
 
         // ============================================
-        //  MODO JEFE
+        //  MODO JEFE (持久化)
         // ============================================
         function toggleModo() {
             if (modoJefe) {
                 modoJefe = false;
+                localStorage.removeItem('cell_la25_modo_jefe');
                 actualizarUI();
                 toast('🔒 Modo Empleado', '');
                 return;
@@ -1257,6 +1258,10 @@
         function verificarJefe() {
             if (document.getElementById('jefePassword').value === '123456') {
                 modoJefe = true;
+                localStorage.setItem('cell_la25_modo_jefe', JSON.stringify({
+                    activo: true,
+                    timestamp: Date.now()
+                }));
                 document.getElementById('modalJefe').classList.remove('active');
                 actualizarUI();
                 toast('🔓 Modo Jefe', 'success');
@@ -1264,6 +1269,26 @@
                 toast('❌ Contraseña incorrecta', 'error');
                 document.getElementById('jefePassword').value = '';
                 document.getElementById('jefePassword').focus();
+            }
+        }
+
+        function restaurarModoJefe() {
+            const data = localStorage.getItem('cell_la25_modo_jefe');
+            if (data) {
+                try {
+                    const parsed = JSON.parse(data);
+                    // 8小时自动过期 (8 * 60 * 60 * 1000)
+                    if (parsed.activo && (Date.now() - parsed.timestamp < 8 * 60 * 60 * 1000)) {
+                        modoJefe = true;
+                        actualizarUI();
+                        toast('🔓 Modo Jefe restaurado', 'success');
+                        return;
+                    } else {
+                        localStorage.removeItem('cell_la25_modo_jefe');
+                    }
+                } catch (e) {
+                    localStorage.removeItem('cell_la25_modo_jefe');
+                }
             }
         }
 
@@ -1505,7 +1530,6 @@
                 });
             }
 
-            // Guardar en Supabase
             for (const item of carrito) {
                 const p = findProducto(item.codigo);
                 await guardarProducto(p);
@@ -1873,6 +1897,9 @@
         //  INICIALIZACIÓN
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
+            // Restaurar modo jefe si estaba activo
+            restaurarModoJefe();
+
             cargarProductos();
 
             document.querySelectorAll('#mainNav button').forEach(b => {
