@@ -4,119 +4,616 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <title>CELL LA 25 - Sistema de Inventario</title>
+    <!-- Tesseract.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
+    </script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Courier New', monospace; background: #f0f2f5; padding: 16px 12px 40px 12px; min-height: 100vh; }
-        .header { background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%); padding: 16px 18px; border-radius: 12px; color: white; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .header h1 { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
-        .header .badge { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 30px; font-size: 11px; }
-        .header .mode-badge { background: #b21f1f; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600; cursor: pointer; margin-left: 8px; }
-        .header .mode-badge.jefe { background: #0f7b3a; }
-        .header .sync-status { font-size: 10px; background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
-        .header .sync-status.online { background: #0f7b3a; }
-        .header .sync-status.offline { background: #b21f1f; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #f0f2f5;
+            padding: 16px 12px 40px 12px;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            padding: 16px 18px;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .header .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+        }
+        .header .mode-badge {
+            background: #b21f1f;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        .header .mode-badge.jefe {
+            background: #0f7b3a;
+        }
+        .header .sync-status {
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 8px;
+        }
+        .header .sync-status.online {
+            background: #0f7b3a;
+        }
+        .header .sync-status.offline {
+            background: #b21f1f;
+        }
 
-        .nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
-        .nav button { flex: 1; min-width: 56px; padding: 10px 4px; border: none; border-radius: 10px; background: white; color: #1a2a6c; font-weight: 700; font-size: 11px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); cursor: pointer; border: 1px solid #e2e7f0; transition: 0.2s; }
-        .nav button.active { background: #1a2a6c; color: white; border-color: #1a2a6c; }
-        .panel { display: none; }
-        .panel.active { display: block; }
-        .card { background: white; border-radius: 14px; padding: 16px; margin-bottom: 14px; border: 1px solid #e2e7f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .card-title { font-size: 14px; font-weight: 700; color: #1a2a6c; margin-bottom: 12px; }
-        .input-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-        .input-group input, .input-group select { flex: 1; min-width: 120px; padding: 10px 12px; border: 1.5px solid #e2e7f0; border-radius: 10px; font-size: 14px; font-family: 'Courier New', monospace; background: #fafbfc; outline: none; }
-        .input-group input:focus { border-color: #1a2a6c; background: white; }
-        .btn { padding: 10px 18px; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: 'Courier New', monospace; }
-        .btn:active { transform: scale(0.96); }
-        .btn-success { background: #0f7b3a; color: white; }
-        .btn-danger { background: #b21f1f; color: white; }
-        .btn-primary { background: #1a2a6c; color: white; }
-        .btn-outline { background: transparent; border: 1.5px solid #1a2a6c; color: #1a2a6c; }
-        .btn-warning { background: #d48c1c; color: white; }
-        .btn-block { width: 100%; justify-content: center; display: flex; }
-        .btn-sm { padding: 6px 14px; font-size: 11px; }
-        .flex { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
-        .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid #eef2f8; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 400px; font-family: 'Courier New', monospace; }
-        th { background: #f5f7fb; text-align: left; padding: 8px 8px; font-weight: 700; color: #1a2a6c; border-bottom: 2px solid #e2e7f0; font-size: 10px; text-transform: uppercase; }
-        td { padding: 7px 8px; border-bottom: 1px solid #eef2f8; }
-        .badge-stock { display: inline-block; padding: 2px 10px; border-radius: 30px; font-size: 10px; font-weight: 700; }
-        .badge-stock.alto { background: #e1f5e8; color: #0f7b3a; }
-        .badge-stock.medio { background: #fff3d6; color: #b27c1a; }
-        .badge-stock.bajo { background: #fde1e1; color: #b21f1f; }
-        .codigo-badge { background: #eef2f8; padding: 2px 8px; border-radius: 30px; font-size: 10px; color: #1a2a6c; font-family: 'Courier New', monospace; }
-        .edit-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 4px 8px; border-radius: 6px; color: #d48c1c; }
-        .edit-btn:hover { background: #f0f2f5; }
-        .edit-btn.disabled { opacity: 0.3; cursor: not-allowed; }
-        .text-muted { color: #8892a8; font-size: 11px; }
-        .text-center { text-align: center; }
+        .nav {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .nav button {
+            flex: 1;
+            min-width: 56px;
+            padding: 10px 4px;
+            border: none;
+            border-radius: 10px;
+            background: white;
+            color: #1a2a6c;
+            font-weight: 700;
+            font-size: 11px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            cursor: pointer;
+            border: 1px solid #e2e7f0;
+            transition: 0.2s;
+        }
+        .nav button.active {
+            background: #1a2a6c;
+            color: white;
+            border-color: #1a2a6c;
+        }
+        .panel {
+            display: none;
+        }
+        .panel.active {
+            display: block;
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+            border: 1px solid #e2e7f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a2a6c;
+            margin-bottom: 12px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .input-group input,
+        .input-group select {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 12px;
+            border: 1.5px solid #e2e7f0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            background: #fafbfc;
+            outline: none;
+        }
+        .input-group input:focus {
+            border-color: #1a2a6c;
+            background: white;
+        }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Courier New', monospace;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn-success {
+            background: #0f7b3a;
+            color: white;
+        }
+        .btn-danger {
+            background: #b21f1f;
+            color: white;
+        }
+        .btn-primary {
+            background: #1a2a6c;
+            color: white;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #1a2a6c;
+            color: #1a2a6c;
+        }
+        .btn-warning {
+            background: #d48c1c;
+            color: white;
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+            display: flex;
+        }
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 11px;
+        }
+        .flex {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #eef2f8;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            min-width: 400px;
+            font-family: 'Courier New', monospace;
+        }
+        th {
+            background: #f5f7fb;
+            text-align: left;
+            padding: 8px 8px;
+            font-weight: 700;
+            color: #1a2a6c;
+            border-bottom: 2px solid #e2e7f0;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #eef2f8;
+        }
+        .badge-stock {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .badge-stock.alto {
+            background: #e1f5e8;
+            color: #0f7b3a;
+        }
+        .badge-stock.medio {
+            background: #fff3d6;
+            color: #b27c1a;
+        }
+        .badge-stock.bajo {
+            background: #fde1e1;
+            color: #b21f1f;
+        }
+        .codigo-badge {
+            background: #eef2f8;
+            padding: 2px 8px;
+            border-radius: 30px;
+            font-size: 10px;
+            color: #1a2a6c;
+            font-family: 'Courier New', monospace;
+        }
+        .edit-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: #d48c1c;
+        }
+        .edit-btn:hover {
+            background: #f0f2f5;
+        }
+        .edit-btn.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .text-muted {
+            color: #8892a8;
+            font-size: 11px;
+        }
+        .text-center {
+            text-align: center;
+        }
 
-        .ticket { display: none; background: white; padding: 12px 14px 8px 14px; font-family: 'Courier New', monospace; font-size: 14px; line-height: 2.0; max-width: 320px; margin: 0 auto; border: 1px solid #ddd; border-radius: 4px; }
-        .ticket .center { text-align: center; }
-        .ticket .line { border-top: 1px dashed #999; margin: 4px 0; }
-        .ticket .line-doble { border-top: 2px solid #333; margin: 4px 0; }
-        .ticket .total { font-size: 18px; font-weight: 700; }
-        .ticket .small { font-size: 11px; color: #555; }
-        .ticket .fila { display: flex; justify-content: space-between; padding: 1px 0; }
-        .ticket .fila .izq { flex: 1; }
-        .ticket .fila .der { text-align: right; white-space: nowrap; }
-        .ticket .impuesto-line { display: flex; justify-content: space-between; font-size: 13px; }
-        .ticket .gracias { text-align: center; font-size: 14px; font-weight: 600; margin-top: 4px; padding-bottom: 2px; }
-        .ticket .titulo-principal { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
-        .ticket .ruc-line { font-size: 12px; font-weight: 700; }
+        .ticket {
+            display: none;
+            background: white;
+            padding: 12px 14px 8px 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 2.0;
+            max-width: 320px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .ticket .center {
+            text-align: center;
+        }
+        .ticket .line {
+            border-top: 1px dashed #999;
+            margin: 4px 0;
+        }
+        .ticket .line-doble {
+            border-top: 2px solid #333;
+            margin: 4px 0;
+        }
+        .ticket .total {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .ticket .small {
+            font-size: 11px;
+            color: #555;
+        }
+        .ticket .fila {
+            display: flex;
+            justify-content: space-between;
+            padding: 1px 0;
+        }
+        .ticket .fila .izq {
+            flex: 1;
+        }
+        .ticket .fila .der {
+            text-align: right;
+            white-space: nowrap;
+        }
+        .ticket .impuesto-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+        .ticket .gracias {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 4px;
+            padding-bottom: 2px;
+        }
+        .ticket .titulo-principal {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .ticket .ruc-line {
+            font-size: 12px;
+            font-weight: 700;
+        }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: white; border-radius: 16px; padding: 22px 18px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-        .modal h3 { font-size: 17px; color: #1a2a6c; margin-bottom: 14px; font-family: 'Courier New', monospace; }
-        .modal label { font-size: 12px; font-weight: 600; color: #1a2a6c; display: block; margin-top: 10px; font-family: 'Courier New', monospace; }
-        .modal input, .modal select { width: 100%; padding: 10px 12px; border: 1.5px solid #e2e7f0; border-radius: 10px; font-size: 14px; margin-top: 4px; background: #fafbfc; outline: none; font-family: 'Courier New', monospace; }
-        .modal input:focus, .modal select:focus { border-color: #1a2a6c; background: white; }
-        .modal .btn-group { display: flex; gap: 10px; margin-top: 16px; }
-        .modal .btn-group .btn { flex: 1; text-align: center; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 22px 18px;
+            max-width: 420px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .modal h3 {
+            font-size: 17px;
+            color: #1a2a6c;
+            margin-bottom: 14px;
+            font-family: 'Courier New', monospace;
+        }
+        .modal label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1a2a6c;
+            display: block;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+        }
+        .modal input,
+        .modal select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #e2e7f0;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-top: 4px;
+            background: #fafbfc;
+            outline: none;
+            font-family: 'Courier New', monospace;
+        }
+        .modal input:focus,
+        .modal select:focus {
+            border-color: #1a2a6c;
+            background: white;
+        }
+        .modal .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .modal .btn-group .btn {
+            flex: 1;
+            text-align: center;
+        }
 
-        .scan-area { background: #f0f4ff; border: 2px dashed #1a2a6c; border-radius: 14px; padding: 24px 16px; text-align: center; margin-bottom: 12px; }
-        .scan-area input { width: 100%; padding: 14px; font-size: 18px; text-align: center; border: 2px solid #1a2a6c; border-radius: 10px; background: white; font-weight: 600; letter-spacing: 1px; font-family: 'Courier New', monospace; }
-        .scan-result { background: #f8faff; border-radius: 10px; padding: 14px; margin-top: 10px; border-left: 4px solid #1a2a6c; }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a2a6c; color: white; padding: 12px 24px; border-radius: 40px; font-weight: 600; font-size: 13px; box-shadow: 0 8px 30px rgba(0,0,0,0.25); z-index: 999; opacity: 0; transition: 0.3s; pointer-events: none; max-width: 90%; text-align: center; font-family: 'Courier New', monospace; }
-        .toast.show { opacity: 1; }
-        .toast.success { background: #0f7b3a; }
-        .toast.error { background: #b21f1f; }
+        .scan-area {
+            background: #f0f4ff;
+            border: 2px dashed #1a2a6c;
+            border-radius: 14px;
+            padding: 24px 16px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .scan-area input {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            text-align: center;
+            border: 2px solid #1a2a6c;
+            border-radius: 10px;
+            background: white;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-family: 'Courier New', monospace;
+        }
+        .scan-result {
+            background: #f8faff;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 10px;
+            border-left: 4px solid #1a2a6c;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2a6c;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            z-index: 999;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .toast.success {
+            background: #0f7b3a;
+        }
+        .toast.error {
+            background: #b21f1f;
+        }
 
-        .foto-thumb { max-width: 100%; max-height: 300px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e7f0; }
-        .producto-check-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f2f6; flex-wrap: wrap; }
-        .producto-check-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: #1a2a6c; flex-shrink: 0; }
-        .producto-check-row input[type="number"] { width: 70px; padding: 6px 8px; border: 1.5px solid #e2e7f0; border-radius: 8px; font-size: 14px; text-align: center; flex-shrink: 0; font-family: 'Courier New', monospace; }
-        .producto-check-row .nombre { flex: 1; font-size: 14px; }
-        .producto-check-row .codigo { font-size: 12px; color: #8892a8; font-family: monospace; margin-right: 8px; }
+        .foto-thumb {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e7f0;
+        }
+        .producto-check-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f2f6;
+            flex-wrap: wrap;
+        }
+        .producto-check-row input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #1a2a6c;
+            flex-shrink: 0;
+        }
+        .producto-check-row input[type="number"] {
+            width: 70px;
+            padding: 6px 8px;
+            border: 1.5px solid #e2e7f0;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            flex-shrink: 0;
+            font-family: 'Courier New', monospace;
+        }
+        .producto-check-row .nombre {
+            flex: 1;
+            font-size: 14px;
+        }
+        .producto-check-row .codigo {
+            font-size: 12px;
+            color: #8892a8;
+            font-family: monospace;
+            margin-right: 8px;
+        }
+        .ocr-result {
+            background: #f8faff;
+            border: 1px solid #e2e7f0;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+        .ocr-result .label {
+            font-weight: 700;
+            color: #1a2a6c;
+            margin-bottom: 6px;
+        }
 
-        @page { margin: 4mm 3mm 3mm 3mm; size: 80mm auto; }
+        @page {
+            margin: 4mm 3mm 3mm 3mm;
+            size: 80mm auto;
+        }
         @media print {
-            body * { visibility: hidden; }
-            .ticket, .ticket * { visibility: visible; }
-            .ticket { display: block !important; position: absolute; left: 0; top: 0; width: 100%; max-width: 320px; padding: 6px 10px 4px 10px; margin: 0 auto; border: none; font-size: 14px; line-height: 1.8; }
-            .ticket .total { font-size: 18px; }
-            .ticket .small { font-size: 11px; }
-            .ticket .titulo-principal { font-size: 15px; }
-            .ticket .gracias { font-size: 14px; padding-bottom: 0; }
-            .no-print { display: none !important; }
-            #modalPrintSelector { display: none !important; }
+            body * {
+                visibility: hidden;
+            }
+            .ticket,
+            .ticket * {
+                visibility: visible;
+            }
+            .ticket {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                max-width: 320px;
+                padding: 6px 10px 4px 10px;
+                margin: 0 auto;
+                border: none;
+                font-size: 14px;
+                line-height: 1.8;
+            }
+            .ticket .total {
+                font-size: 18px;
+            }
+            .ticket .small {
+                font-size: 11px;
+            }
+            .ticket .titulo-principal {
+                font-size: 15px;
+            }
+            .ticket .gracias {
+                font-size: 14px;
+                padding-bottom: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            #modalPrintSelector {
+                display: none !important;
+            }
         }
         @media (max-width: 480px) {
-            .header h1 { font-size: 15px; }
-            .nav button { font-size: 10px; padding: 8px 2px; min-width: 44px; }
-            .btn { font-size: 12px; padding: 8px 14px; }
-            .input-group input { font-size: 13px; padding: 8px 10px; }
-            .card { padding: 12px 10px; }
-            table { font-size: 11px; min-width: 340px; }
-            th, td { padding: 5px 6px; }
-            .ticket { font-size: 13px; max-width: 290px; padding: 10px 10px 6px 10px; }
-            .ticket .total { font-size: 16px; }
-            .ticket .small { font-size: 10px; }
-            .ticket .titulo-principal { font-size: 13px; }
-            .ticket .gracias { font-size: 13px; }
-            .producto-check-row input[type="number"] { width: 60px; }
+            .header h1 {
+                font-size: 15px;
+            }
+            .nav button {
+                font-size: 10px;
+                padding: 8px 2px;
+                min-width: 44px;
+            }
+            .btn {
+                font-size: 12px;
+                padding: 8px 14px;
+            }
+            .input-group input {
+                font-size: 13px;
+                padding: 8px 10px;
+            }
+            .card {
+                padding: 12px 10px;
+            }
+            table {
+                font-size: 11px;
+                min-width: 340px;
+            }
+            th,
+            td {
+                padding: 5px 6px;
+            }
+            .ticket {
+                font-size: 13px;
+                max-width: 290px;
+                padding: 10px 10px 6px 10px;
+            }
+            .ticket .total {
+                font-size: 16px;
+            }
+            .ticket .small {
+                font-size: 10px;
+            }
+            .ticket .titulo-principal {
+                font-size: 13px;
+            }
+            .ticket .gracias {
+                font-size: 13px;
+            }
+            .producto-check-row input[type="number"] {
+                width: 60px;
+            }
+            .ocr-result {
+                font-size: 12px;
+                max-height: 150px;
+            }
         }
     </style>
 </head>
@@ -128,7 +625,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
             <span class="sync-status" id="syncStatus">🔄</span>
-            <span class="badge">v4.3 · Cloud</span>
+            <span class="badge">v4.5 · Cloud</span>
         </div>
     </div>
 
@@ -237,10 +734,17 @@
                 <button class="btn btn-primary" id="fotoAbrirCamara">📷 Abrir Cámara</button>
                 <button class="btn btn-success" id="fotoTomar" style="display:none;">📸 Tomar Foto</button>
                 <button class="btn btn-warning" id="fotoSubir" style="display:none;">🖼️ Elegir de Galería</button>
+                <button class="btn btn-info" id="fotoOCR" style="display:none;background:#1a2a6c;color:white;">🔍 Reconocer Texto</button>
                 <button class="btn btn-danger" id="fotoCancelarBtn">❌ Cerrar</button>
             </div>
             <div style="margin-top:12px;font-size:12px;color:#8892a8;text-align:center;">
-                La foto se guarda en el dispositivo, no se sube a internet.
+                📌 Toma una foto de la factura o recibo, luego presiona "Reconocer Texto" para extraer los datos.
+            </div>
+            <div id="ocrResultContainer" style="display:none;">
+                <div class="ocr-result">
+                    <div class="label">📝 Texto reconocido:</div>
+                    <div id="ocrTextContent">Cargando...</div>
+                </div>
             </div>
             <div id="fotoProductosLista" style="margin-top:12px;max-height:300px;overflow-y:auto;"></div>
             <div class="btn-group" style="margin-top:12px;">
@@ -309,6 +813,7 @@
         let editandoCodigo = null;
         let fotoCapturada = null;
         let stream = null;
+        let ocrResult = '';
 
         // ============================================
         //  FUNCIONES DE SUPABASE
@@ -661,7 +1166,7 @@
         }
 
         // ============================================
-        //  FOTO + ENTRADA
+        //  FOTO + ENTRADA (con OCR)
         // ============================================
         function abrirFotoEntrada() {
             if (!modoJefe) { toast('🔒 Solo jefe', 'error'); return; }
@@ -670,8 +1175,12 @@
             document.getElementById('fotoVideo').style.display = 'none';
             document.getElementById('fotoTomar').style.display = 'none';
             document.getElementById('fotoSubir').style.display = 'none';
+            document.getElementById('fotoOCR').style.display = 'none';
             document.getElementById('fotoProductosLista').innerHTML = '';
+            document.getElementById('ocrResultContainer').style.display = 'none';
+            document.getElementById('ocrTextContent').textContent = '';
             fotoCapturada = null;
+            ocrResult = '';
         }
 
         function cerrarFotoEntrada() {
@@ -691,6 +1200,8 @@
             video.style.display = 'block';
             document.getElementById('fotoTomar').style.display = 'inline-block';
             document.getElementById('fotoSubir').style.display = 'inline-block';
+            document.getElementById('fotoOCR').style.display = 'none';
+            document.getElementById('ocrResultContainer').style.display = 'none';
 
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
@@ -723,8 +1234,10 @@
                 stream = null;
             }
             document.getElementById('fotoTomar').style.display = 'none';
-            mostrarProductosParaEntrada();
-            toast('📸 Foto tomada, selecciona productos y cantidades', 'success');
+            document.getElementById('fotoOCR').style.display = 'inline-block';
+            document.getElementById('fotoProductosLista').innerHTML = '';
+            document.getElementById('ocrResultContainer').style.display = 'none';
+            toast('📸 Foto tomada, presiona "Reconocer Texto" para extraer datos', 'success');
         }
 
         function subirFoto() {
@@ -746,12 +1259,51 @@
                         stream = null;
                     }
                     document.getElementById('fotoTomar').style.display = 'none';
-                    mostrarProductosParaEntrada();
-                    toast('📸 Foto cargada, selecciona productos y cantidades', 'success');
+                    document.getElementById('fotoOCR').style.display = 'inline-block';
+                    document.getElementById('fotoProductosLista').innerHTML = '';
+                    document.getElementById('ocrResultContainer').style.display = 'none';
+                    toast('📸 Foto cargada, presiona "Reconocer Texto" para extraer datos', 'success');
                 };
                 reader.readAsDataURL(file);
             };
             input.click();
+        }
+
+        async function reconocerTexto() {
+            if (!fotoCapturada) {
+                toast('❌ Primero toma o selecciona una foto', 'error');
+                return;
+            }
+
+            const ocrContainer = document.getElementById('ocrResultContainer');
+            const ocrText = document.getElementById('ocrTextContent');
+            ocrContainer.style.display = 'block';
+            ocrText.textContent = '⏳ Reconociendo texto... Por favor espera (puede tomar unos segundos)';
+
+            try {
+                // Cargar el worker de Tesseract con idioma español
+                const worker = await Tesseract.createWorker('spa', 1, {
+                    logger: m => console.log(m)
+                });
+
+                const { data: { text } } = await worker.recognize(fotoCapturada);
+                await worker.terminate();
+
+                ocrResult = text;
+                ocrText.textContent = text || '(No se reconoció ningún texto)';
+
+                if (text && text.trim().length > 0) {
+                    toast('✅ Texto reconocido con éxito', 'success');
+                    // Mostrar productos para entrada manual después de OCR
+                    mostrarProductosParaEntrada();
+                } else {
+                    toast('⚠️ No se reconoció texto. Intenta con una foto más clara.', 'error');
+                }
+            } catch (error) {
+                console.error('Error OCR:', error);
+                ocrText.textContent = '❌ Error al reconocer: ' + error.message;
+                toast('❌ Error en OCR', 'error');
+            }
         }
 
         function mostrarProductosParaEntrada() {
@@ -760,17 +1312,23 @@
                 container.innerHTML = '<div class="text-muted" style="padding:10px 0;">No hay productos en el sistema</div>';
                 return;
             }
-            let html = '<div style="font-weight:600;font-size:14px;margin-bottom:8px;">Selecciona los productos y cantidades:</div>';
+            let html = '<div style="font-weight:600;font-size:14px;margin-bottom:8px;">📋 Selecciona los productos y cantidades:</div>';
+            // Si hay resultado OCR, mostrarlo como referencia
+            if (ocrResult && ocrResult.trim().length > 0) {
+                html += `<div style="background:#f0f4ff;padding:8px 12px;border-radius:8px;margin-bottom:10px;font-size:12px;color:#1a2a6c;border-left:3px solid #1a2a6c;">
+                            📌 Texto detectado: <span style="font-weight:600;">${ocrResult.substring(0, 100)}${ocrResult.length > 100 ? '...' : ''}</span>
+                        </div>`;
+            }
             productos.forEach(p => {
                 html += `
-                    <div class="producto-check-row">
-                        <input type="checkbox" id="fotoCheck_${p.codigo}" value="${p.codigo}">
-                        <span class="codigo">${p.codigo}</span>
-                        <span class="nombre">${p.nombre}</span>
-                        <span style="font-size:12px;color:#8892a8;">Stock: ${p.stock}</span>
-                        <input type="number" id="fotoCant_${p.codigo}" value="1" min="1">
-                    </div>
-                `;
+                            <div class="producto-check-row">
+                                <input type="checkbox" id="fotoCheck_${p.codigo}" value="${p.codigo}">
+                                <span class="codigo">${p.codigo}</span>
+                                <span class="nombre">${p.nombre}</span>
+                                <span style="font-size:12px;color:#8892a8;">Stock: ${p.stock}</span>
+                                <input type="number" id="fotoCant_${p.codigo}" value="1" min="1">
+                            </div>
+                        `;
             });
             container.innerHTML = html;
         }
@@ -812,7 +1370,8 @@
                     cantidad: m.cantidad,
                     total: m.total,
                     fecha: new Date().toLocaleString('es-PA'),
-                    foto: true
+                    foto: true,
+                    ocr: ocrResult ? true : false
                 });
             });
             localStorage.setItem('vf_movimientos', JSON.stringify(movs));
@@ -910,8 +1469,10 @@
         // ============================================
         function preparePrintData(ventaData) {
             const now = new Date();
-            const fechaStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-            const horaStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+            const fechaStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate())
+                .padStart(2, '0');
+            const horaStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' +
+                String(now.getSeconds()).padStart(2, '0');
             const noFactura = String(facturaCounter).padStart(6, '0');
             facturaCounter++;
 
@@ -1050,9 +1611,9 @@
             if (!results.length) { el.innerHTML = '❌ No encontrados'; return; }
             el.innerHTML = results.map(p =>
                 `<div style="padding:6px 0;border-bottom:1px solid #f0f2f6;font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;">
-                    <span><span class="codigo-badge">${p.codigo}</span> ${p.nombre}</span>
-                    <span>📦 ${p.stock} · ${formatMoneda(p.precio)}</span>
-                </div>`
+                            <span><span class="codigo-badge">${p.codigo}</span> ${p.nombre}</span>
+                            <span>📦 ${p.stock} · ${formatMoneda(p.precio)}</span>
+                        </div>`
             ).join('');
         }
 
@@ -1068,8 +1629,10 @@
                     this.classList.add('active');
                     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
                     document.getElementById(this.dataset.panel).classList.add('active');
-                    if (this.dataset.panel === 'panel-venta') document.getElementById('scanInput').focus();
-                    if (this.dataset.panel === 'panel-buscar') document.getElementById('buscarInput').focus();
+                    if (this.dataset.panel === 'panel-venta') document.getElementById('scanInput')
+                        .focus();
+                    if (this.dataset.panel === 'panel-buscar') document.getElementById('buscarInput')
+                        .focus();
                 });
             });
 
@@ -1077,7 +1640,8 @@
                 if (e.key === 'Enter') { e.preventDefault();
                     handleScan(this.value); }
             });
-            document.getElementById('btnVenderConfirm').addEventListener('click', function() { venderProducto(1); });
+            document.getElementById('btnVenderConfirm').addEventListener('click', function() { venderProducto(
+                1); });
             document.getElementById('btnVenderMulti').addEventListener('click', function() {
                 venderProducto(document.getElementById('ventaCantidad').value);
             });
@@ -1141,7 +1705,9 @@
                 document.getElementById(id).addEventListener('keydown', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        const next = ['agregarCodigo', 'agregarNombre', 'agregarPrecio', 'agregarCosto', 'agregarStock'][i+1];
+                        const next = ['agregarCodigo', 'agregarNombre', 'agregarPrecio', 'agregarCosto',
+                            'agregarStock'
+                        ][i + 1];
                         if (next) document.getElementById(next).focus();
                         else document.getElementById('agregarGuardar').click();
                     }
@@ -1153,6 +1719,7 @@
             document.getElementById('fotoAbrirCamara').addEventListener('click', abrirCamara);
             document.getElementById('fotoTomar').addEventListener('click', tomarFoto);
             document.getElementById('fotoSubir').addEventListener('click', subirFoto);
+            document.getElementById('fotoOCR').addEventListener('click', reconocerTexto);
             document.getElementById('fotoConfirmarEntrada').addEventListener('click', confirmarEntradaConFoto);
             document.getElementById('fotoCancelarEntrada').addEventListener('click', cerrarFotoEntrada);
             document.getElementById('fotoCancelarBtn').addEventListener('click', cerrarFotoEntrada);
