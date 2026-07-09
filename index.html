@@ -253,20 +253,54 @@
             background: #f0f4ff;
             border: 2px dashed #1a2a6c;
             border-radius: 16px;
-            padding: 30px 16px;
+            padding: 24px 16px;
             text-align: center;
             margin-bottom: 14px;
         }
         .scan-area input {
             width: 100%;
-            padding: 16px;
-            font-size: 20px;
+            padding: 14px;
+            font-size: 18px;
             text-align: center;
             border: 2px solid #1a2a6c;
             border-radius: 12px;
             background: white;
             font-weight: 600;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+            font-family: 'Courier New', monospace;
+        }
+        .scan-area .search-results {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .scan-area .search-results .result-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eef2f8;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            transition: 0.15s;
+        }
+        .scan-area .search-results .result-item:hover {
+            background: #eef2f8;
+        }
+        .scan-area .search-results .result-item .nombre {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .scan-area .search-results .result-item .detalle {
+            font-size: 12px;
+            color: #8892a8;
+        }
+        .scan-area .search-results .sin-resultados {
+            padding: 12px;
+            color: #8892a8;
+            text-align: center;
+            font-size: 13px;
         }
         .scan-result {
             background: #f8faff;
@@ -692,6 +726,10 @@
             .stats-grid .stat-item.total .value {
                 font-size: 18px;
             }
+            .scan-area .search-results .result-item {
+                font-size: 13px;
+                padding: 6px 10px;
+            }
         }
     </style>
 </head>
@@ -702,7 +740,7 @@
             <h1>📦 CELL LA 25</h1>
             <span class="mode-badge" id="modeBadge" onclick="toggleModo()">👤 Empleado</span>
         </div>
-        <span class="badge">v5.1 · Carrito</span>
+        <span class="badge">v5.2 · Carrito</span>
     </div>
 
     <div class="nav" id="mainNav">
@@ -914,17 +952,18 @@
         </div>
 
         <div class="card">
-            <div class="card-title">📷 Escanear / Agregar al Carrito</div>
+            <div class="card-title">📷 Buscar / Agregar al Carrito</div>
             <div class="scan-area">
-                <p style="color:#1a2a6c;font-weight:700;margin-bottom:10px;">Escanea o escribe el código</p>
+                <p style="color:#1a2a6c;font-weight:700;margin-bottom:10px;">Escribe código, nombre o palabra clave</p>
                 <div class="input-group">
-                    <input type="text" id="scanInput" placeholder="Código de barras o ZP-xxx" autofocus style="flex:1;">
+                    <input type="text" id="scanInput" placeholder="Ej: ZP-001, audifono, mouse..." autofocus style="flex:1;">
                     <button class="btn btn-primary" id="btnAgregarCarrito" style="flex:0 0 auto;">➕ Agregar</button>
                 </div>
                 <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
                     <input type="number" id="ventaCantidad" value="1" min="1" style="flex:1;padding:10px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:14px;width:60px;font-family:'Courier New',monospace;">
                     <span style="font-size:13px;color:#8892a8;align-self:center;">unidades</span>
                 </div>
+                <div id="searchResults" class="search-results"></div>
             </div>
             <div id="scanResult" class="scan-result" style="display:none;">
                 <div id="productoEncontrado"></div>
@@ -1208,7 +1247,6 @@
                 else if (pago === 'YAPPY') yappy += monto;
                 else if (pago === 'TARJETA DE CRÉDITO' || pago === 'TARJETA') tarjeta += monto;
                 else {
-                    // Si no coincide, sumar a efectivo por defecto
                     efectivo += monto;
                 }
             });
@@ -1282,6 +1320,68 @@
         }
 
         // ============================================
+        //  BÚSQUEDA EN VENTA
+        // ============================================
+        let searchTimeout = null;
+
+        function buscarEnVenta(query) {
+            const resultsContainer = document.getElementById('searchResults');
+            const q = query.toLowerCase().trim();
+
+            if (!q) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            const results = productos.filter(p =>
+                p.nombre.toLowerCase().includes(q) ||
+                p.codigo.toLowerCase().includes(q)
+            );
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="sin-resultados">❌ No se encontraron productos</div>';
+                return;
+            }
+
+            // Limitar a 10 resultados para no saturar
+            const mostrar = results.slice(0, 10);
+            resultsContainer.innerHTML = mostrar.map(p =>
+                `<div class="result-item" data-codigo="${p.codigo}">
+                    <div>
+                        <div class="nombre">${p.nombre}</div>
+                        <div class="detalle">${p.codigo} · Stock: ${p.stock} · ${formatMoneda(p.precio)}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-success btn-sm" onclick="agregarDesdeBusqueda('${p.codigo}')" style="padding:4px 12px;font-size:12px;">➕</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Click en la fila también agrega
+            resultsContainer.querySelectorAll('.result-item').forEach(el => {
+                el.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'BUTTON') return;
+                    const codigo = this.dataset.codigo;
+                    agregarDesdeBusqueda(codigo);
+                });
+            });
+        }
+
+        function agregarDesdeBusqueda(codigo) {
+            const p = findProducto(codigo);
+            if (!p) {
+                toast('Producto no encontrado', 'error');
+                return;
+            }
+            const cantidad = parseInt(document.getElementById('ventaCantidad').value) || 1;
+            agregarAlCarrito(p, cantidad);
+            // Limpiar búsqueda
+            document.getElementById('scanInput').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+            document.getElementById('scanInput').focus();
+        }
+
+        // ============================================
         //  CARRITO
         // ============================================
         function renderCarrito() {
@@ -1322,7 +1422,6 @@
             resumen.style.display = 'block';
             totalEl.textContent = formatMoneda(total);
 
-            // Actualizar modal de pago
             document.getElementById('modalTotalPago').textContent = formatMoneda(total);
             document.getElementById('modalCantidadItems').textContent = carrito.reduce((sum, i) => sum + i.cantidad, 0);
         }
@@ -1383,9 +1482,10 @@
             renderCarrito();
             toast('✅ ' + producto.nombre + ' x' + cantidad + ' agregado', 'success');
             document.getElementById('scanInput').value = '';
-            document.getElementById('scanInput').focus();
+            document.getElementById('searchResults').innerHTML = '';
             document.getElementById('scanResult').style.display = 'none';
             scanProducto = null;
+            document.getElementById('scanInput').focus();
         }
 
         // ============================================
@@ -1406,7 +1506,6 @@
             const pago = document.getElementById('pagoSelect').value;
             const tasaImpuesto = parseInt(document.getElementById('tasaImpuestoSelect').value);
 
-            // Verificar stock final
             for (const item of carrito) {
                 const p = findProducto(item.codigo);
                 if (!p) {
@@ -1419,7 +1518,6 @@
                 }
             }
 
-            // Descontar stock
             const ventaItems = [];
             for (const item of carrito) {
                 const p = findProducto(item.codigo);
@@ -1436,7 +1534,6 @@
             const impuesto = subtotal * (tasaImpuesto / 100);
             const total = subtotal + impuesto;
 
-            // Guardar historial de ventas
             const ventas = JSON.parse(localStorage.getItem('cell_la25_ventas') || '[]');
             ventas.push({
                 items: ventaItems,
@@ -1449,7 +1546,6 @@
             });
             localStorage.setItem('cell_la25_ventas', JSON.stringify(ventas));
 
-            // Guardar movimientos
             const movs = JSON.parse(localStorage.getItem('cell_la25_movimientos') || '[]');
             ventaItems.forEach(item => {
                 movs.push({
@@ -1464,7 +1560,6 @@
 
             toast('✅ Venta completada! ' + ventaItems.length + ' productos', 'success');
 
-            // Preparar datos para ticket
             const ventaData = {
                 items: ventaItems,
                 pago: pago,
@@ -1474,15 +1569,11 @@
                 total: total
             };
 
-            // Limpiar carrito
             carrito = [];
             renderCarrito();
             document.getElementById('modalPago').classList.remove('active');
-
-            // Actualizar estadísticas
             renderStats();
 
-            // Imprimir ticket
             if (confirm('¿Imprimir factura?')) {
                 preparePrintData(ventaData);
                 document.getElementById('modalPrintSelector').classList.add('active');
@@ -1517,7 +1608,6 @@
             const total = ventaData.total;
             const tasaStr = ventaData.tasa_impuesto + '%';
 
-            // Cliente
             document.getElementById('ticketCliente').textContent = 'Consumidor Final';
             document.getElementById('ticketNo').textContent = '2222/' + noFactura;
             document.getElementById('ticketFecha').textContent = fechaStr;
@@ -1530,7 +1620,6 @@
             document.getElementById('ticketPagoLabel').textContent = ventaData.pago;
             document.getElementById('ticketPagoMonto').textContent = formatMoneda(total);
 
-            // Respaldo
             document.getElementById('ticketRespaldoCliente').textContent = 'Consumidor Final';
             document.getElementById('ticketRespaldoNo').textContent = '2222/' + noFactura;
             document.getElementById('ticketRespaldoFecha').textContent = fechaStr;
@@ -1739,41 +1828,6 @@
         }
 
         // ============================================
-        //  SCAN
-        // ============================================
-        function handleScan(codigo) {
-            if (!codigo || !codigo.trim()) return;
-            const p = findProducto(codigo.trim());
-            const resultDiv = document.getElementById('scanResult');
-            const infoDiv = document.getElementById('productoEncontrado');
-            if (!p) {
-                infoDiv.innerHTML = '<div style="color:#b21f1f;font-weight:700;">❌ Producto no encontrado</div>';
-                resultDiv.style.display = 'block';
-                scanProducto = null;
-                return;
-            }
-            scanProducto = p;
-            infoDiv.innerHTML = `
-                <div style="font-weight:700;font-size:15px;">${p.nombre}</div>
-                <div style="display:flex;gap:12px;margin-top:4px;flex-wrap:wrap;font-size:13px;">
-                    <span>📦 Stock: <strong>${p.stock}</strong></span>
-                    <span>💰 ${formatMoneda(p.precio)}</span>
-                    <span><span class="codigo-badge">${p.codigo}</span></span>
-                    <span>🔢 <input type="number" id="scanCantidadInput" value="${document.getElementById('ventaCantidad').value}" min="1" style="width:60px;padding:4px 6px;border:1.5px solid #e2e7f0;border-radius:6px;font-size:14px;"></span>
-                </div>
-            `;
-            resultDiv.style.display = 'block';
-            document.getElementById('scanInput').value = '';
-            document.getElementById('scanInput').focus();
-            const qtyInput = document.getElementById('scanCantidadInput');
-            if (qtyInput) {
-                qtyInput.addEventListener('change', function() {
-                    document.getElementById('ventaCantidad').value = this.value;
-                });
-            }
-        }
-
-        // ============================================
         //  ENTRADA / SALIDA
         // ============================================
         function hacerEntrada() {
@@ -1826,7 +1880,7 @@
         }
 
         // ============================================
-        //  BUSCAR
+        //  BUSCAR (panel)
         // ============================================
         function buscarProductos() {
             const q = document.getElementById('buscarInput').value.toLowerCase().trim();
@@ -1851,7 +1905,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
 
-            // Navegación
             document.querySelectorAll('#mainNav button').forEach(b => {
                 b.addEventListener('click', function() {
                     document.querySelectorAll('#mainNav button').forEach(x => x.classList.remove(
@@ -1866,35 +1919,61 @@
                 });
             });
 
-            // SCAN - Enter
-            document.getElementById('scanInput').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') { e.preventDefault();
-                    handleScan(this.value); }
+            // Búsqueda en tiempo real
+            document.getElementById('scanInput').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const val = this.value;
+                searchTimeout = setTimeout(() => {
+                    buscarEnVenta(val);
+                }, 200);
             });
 
-            // Botón Agregar al Carrito (desde el input)
+            document.getElementById('scanInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const firstResult = document.querySelector('#searchResults .result-item');
+                    if (firstResult) {
+                        const codigo = firstResult.dataset.codigo;
+                        agregarDesdeBusqueda(codigo);
+                    } else {
+                        // Si no hay resultados, intentar agregar por código directo
+                        const codigo = this.value.trim();
+                        if (codigo) {
+                            const p = findProducto(codigo);
+                            if (p) {
+                                const cantidad = parseInt(document.getElementById('ventaCantidad')
+                                .value) || 1;
+                                agregarAlCarrito(p, cantidad);
+                            } else {
+                                toast('Producto no encontrado', 'error');
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Botón Agregar
             document.getElementById('btnAgregarCarrito').addEventListener('click', function() {
                 const codigo = document.getElementById('scanInput').value.trim();
-                if (!codigo) { toast('Ingresa un código', 'error'); return; }
+                if (!codigo) { toast('Ingresa un código o nombre', 'error'); return; }
                 const p = findProducto(codigo);
-                if (!p) { toast('Producto no encontrado', 'error'); return; }
-                const cantidad = parseInt(document.getElementById('ventaCantidad').value) || 1;
-                agregarAlCarrito(p, cantidad);
-            });
-
-            // Botón Agregar al Carrito (desde el resultado del scan)
-            document.getElementById('btnAgregarCarritoDirecto').addEventListener('click', function() {
-                if (!scanProducto) { toast('No hay producto escaneado', 'error'); return; }
-                const cantidad = parseInt(document.getElementById('scanCantidadInput')?.value || document
-                    .getElementById('ventaCantidad').value) || 1;
-                agregarAlCarrito(scanProducto, cantidad);
-            });
-
-            // Cancelar scan
-            document.getElementById('btnVenderCancel').addEventListener('click', function() {
-                document.getElementById('scanResult').style.display = 'none';
-                scanProducto = null;
-                document.getElementById('scanInput').focus();
+                if (p) {
+                    const cantidad = parseInt(document.getElementById('ventaCantidad').value) || 1;
+                    agregarAlCarrito(p, cantidad);
+                } else {
+                    // Buscar coincidencia parcial
+                    const results = productos.filter(prod =>
+                        prod.nombre.toLowerCase().includes(codigo.toLowerCase())
+                    );
+                    if (results.length === 1) {
+                        const cantidad = parseInt(document.getElementById('ventaCantidad').value) || 1;
+                        agregarAlCarrito(results[0], cantidad);
+                    } else if (results.length > 1) {
+                        toast('Varios productos coinciden, selecciona uno de la lista', '');
+                    } else {
+                        toast('Producto no encontrado', 'error');
+                    }
+                }
             });
 
             // Carrito
@@ -1929,7 +2008,7 @@
                 if (e.key === 'Enter') document.getElementById('btnSalida').click();
             });
 
-            // Buscar
+            // Buscar panel
             document.getElementById('buscarInput').addEventListener('input', buscarProductos);
             document.getElementById('buscarInput').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
@@ -1977,6 +2056,14 @@
                 if (e.target === this) cancelPrint();
             });
 
+            // Cerrar resultados al hacer click fuera
+            document.addEventListener('click', function(e) {
+                const area = document.querySelector('.scan-area');
+                if (area && !area.contains(e.target)) {
+                    // No cerrar para que el usuario pueda interactuar
+                }
+            });
+
             actualizarUI();
             renderAll();
             if (document.getElementById('panel-venta').classList.contains('active')) {
@@ -1984,9 +2071,9 @@
             }
         });
 
-        // Hacer funciones globales para los onclick del carrito
         window.cambiarCantidadCarrito = cambiarCantidadCarrito;
         window.eliminarDelCarrito = eliminarDelCarrito;
+        window.agregarDesdeBusqueda = agregarDesdeBusqueda;
     </script>
 </body>
 </html>
