@@ -262,6 +262,20 @@
             background: #fde1e1;
             color: #b21f1f;
         }
+        .badge-stock.critico {
+            background: #b21f1f;
+            color: white;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
         .scan-area {
             background: #f0f4ff;
             border: 2px dashed #1a2a6c;
@@ -407,7 +421,7 @@
             background: white;
             border-radius: 20px;
             padding: 24px 20px;
-            max-width: 420px;
+            max-width: 500px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
@@ -627,6 +641,84 @@
             color: #b21f1f;
         }
 
+        /* Reportes */
+        .reporte-filtros {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .reporte-filtros select,
+        .reporte-filtros input {
+            padding: 8px 12px;
+            border: 1.5px solid #e2e7f0;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+            background: #fafbfc;
+        }
+        .reporte-tabla {
+            font-size: 12px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .reporte-tabla th {
+            background: #f5f7fb;
+            text-align: left;
+            padding: 6px 8px;
+            font-weight: 700;
+            color: #1a2a6c;
+            border-bottom: 2px solid #e2e7f0;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        .reporte-tabla td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #eef2f8;
+        }
+        .reporte-tabla .total-row {
+            background: #f5f7fb;
+            font-weight: 700;
+        }
+        .reporte-resumen {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .reporte-resumen .item {
+            background: #f5f7fb;
+            border-radius: 10px;
+            padding: 10px 12px;
+            text-align: center;
+        }
+        .reporte-resumen .item .label {
+            font-size: 10px;
+            color: #8892a8;
+            text-transform: uppercase;
+        }
+        .reporte-resumen .item .value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a6c;
+        }
+
+        /* Devoluciones */
+        .devolucion-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f2f6;
+        }
+        .devolucion-item .info {
+            flex: 1;
+        }
+        .devolucion-item .acciones {
+            display: flex;
+            gap: 8px;
+        }
+
         @page {
             margin: 4mm 3mm 3mm 3mm;
             size: 80mm auto;
@@ -743,6 +835,9 @@
                 font-size: 13px;
                 padding: 6px 10px;
             }
+            .reporte-resumen {
+                grid-template-columns: 1fr 1fr;
+            }
         }
     </style>
 </head>
@@ -755,7 +850,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
             <span class="sync-status" id="syncStatus">🔄</span>
-            <span class="badge">v5.4 · Cloud</span>
+            <span class="badge">v6.0 · Cloud</span>
         </div>
     </div>
 
@@ -764,6 +859,7 @@
         <button data-panel="panel-inventario">📋 Inventario</button>
         <button data-panel="panel-entrada">📥 Entrada</button>
         <button data-panel="panel-salida">📤 Salida</button>
+        <button data-panel="panel-reportes">📊 Reportes</button>
         <button data-panel="panel-buscar">🔍 Buscar</button>
     </div>
 
@@ -884,6 +980,8 @@
             <input id="editCosto" type="number" step="0.01">
             <label>Stock</label>
             <input id="editStock" type="number" step="1">
+            <label>Stock Mínimo (Alerta)</label>
+            <input id="editMinimo" type="number" step="1" value="3">
             <div class="btn-group">
                 <button class="btn btn-success" id="editGuardar">💾 Guardar</button>
                 <button class="btn btn-danger" id="editEliminar">🗑 Eliminar</button>
@@ -906,6 +1004,8 @@
             <input id="agregarCosto" type="number" step="0.01" placeholder="0.00">
             <label>Stock *</label>
             <input id="agregarStock" type="number" step="1" placeholder="0">
+            <label>Stock Mínimo (Alerta)</label>
+            <input id="agregarMinimo" type="number" step="1" value="3">
             <div class="btn-group">
                 <button class="btn btn-success" id="agregarGuardar">💾 Guardar</button>
                 <button class="btn btn-outline" id="agregarCancelar">Cancelar</button>
@@ -935,6 +1035,22 @@
                 <button class="btn btn-primary" id="printClienteBtn" style="width:100%; padding: 14px;">🧾 Cliente (Original)</button>
                 <button class="btn btn-success" id="printRespaldoBtn" style="width:100%; padding: 14px;">📋 Resguardo (Copia)</button>
                 <button class="btn btn-danger" id="printCancelBtn" style="width:100%; padding: 14px;">❌ Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DEVOLUCIÓN -->
+    <div class="modal-overlay" id="modalDevolucion">
+        <div class="modal">
+            <h3>🔄 Devolución / Reembolso</h3>
+            <label>Selecciona la venta a devolver</label>
+            <select id="devolucionVentaSelect" style="width:100%;padding:10px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:14px;margin-top:4px;background:#fafbfc;"></select>
+            <div id="devolucionItems" style="margin-top:12px;"></div>
+            <label>Motivo de devolución</label>
+            <input id="devolucionMotivo" placeholder="Ej: Producto defectuoso, Cliente cambió de opinión..." style="width:100%;padding:10px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:14px;margin-top:4px;">
+            <div class="btn-group" style="margin-top:16px;">
+                <button class="btn btn-danger" id="devolucionConfirmar">🔄 Confirmar Devolución</button>
+                <button class="btn btn-outline" id="devolucionCancelar">Cancelar</button>
             </div>
         </div>
     </div>
@@ -993,7 +1109,9 @@
         <div class="card">
             <div class="flex-between">
                 <div class="card-title">🛒 Carrito de Compras</div>
-                <button class="btn btn-danger btn-sm" id="btnVaciarCarrito">🗑 Vaciar</button>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn btn-danger btn-sm" id="btnVaciarCarrito">🗑 Vaciar</button>
+                </div>
             </div>
             <div id="carritoLista">
                 <div class="carrito-vacio">🛒 Carrito vacío</div>
@@ -1023,6 +1141,7 @@
             <div style="font-size:13px;display:flex;gap:16px;flex-wrap:wrap;">
                 <span>💰 Valor: <strong id="valorTotal">B/.0.00</strong></span>
                 <span>📦 <span id="totalUnidades">0</span> uds.</span>
+                <span>⚠️ <span id="totalCriticos">0</span> críticos</span>
             </div>
         </div>
         <div class="card">
@@ -1033,7 +1152,7 @@
             <div class="table-wrap">
                 <table>
                     <thead>
-                        <tr><th>Código</th><th>Producto</th><th style="text-align:center;">Stock</th><th style="text-align:right;">Precio</th><th style="text-align:center;">✏️</th></tr>
+                        <tr><th>Código</th><th>Producto</th><th style="text-align:center;">Stock</th><th style="text-align:center;">Mínimo</th><th style="text-align:right;">Precio</th><th style="text-align:center;">✏️</th></tr>
                     </thead>
                     <tbody id="inventarioBody"></tbody>
                 </table>
@@ -1066,6 +1185,34 @@
                 <input type="number" id="salidaCantidad" placeholder="Cantidad" value="1" min="1">
             </div>
             <button class="btn btn-danger btn-block" id="btnSalida">➖ Quitar Stock</button>
+        </div>
+        <div class="card">
+            <div class="flex-between">
+                <div class="card-title">🔄 Devoluciones</div>
+                <button class="btn btn-warning btn-sm" id="btnAbrirDevolucion">➕ Nueva Devolución</button>
+            </div>
+            <div id="devolucionesLista" class="text-muted" style="padding:6px 0;">Sin devoluciones</div>
+        </div>
+    </div>
+
+    <!-- ====== PANEL REPORTES ====== -->
+    <div class="panel" id="panel-reportes">
+        <div class="card">
+            <div class="card-title">📊 Reportes</div>
+            <div class="reporte-filtros">
+                <select id="reportePeriodo">
+                    <option value="hoy">Hoy</option>
+                    <option value="semana">Esta semana</option>
+                    <option value="mes">Este mes</option>
+                    <option value="trimestre">Este trimestre</option>
+                    <option value="anio">Este año</option>
+                    <option value="todo">Todo</option>
+                </select>
+                <button class="btn btn-primary" id="btnActualizarReporte">🔄 Actualizar</button>
+            </div>
+            <div id="reporteContenido">
+                <div class="text-muted" style="padding:20px;text-align:center;">Selecciona un período y actualiza</div>
+            </div>
         </div>
     </div>
 
@@ -1196,7 +1343,9 @@
             el._timer = setTimeout(() => { el.className = 'toast'; }, 2500);
         }
 
-        function getStockBadge(stock) {
+        function getStockBadge(stock, minimo) {
+            if (stock <= 0) return '<span class="badge-stock critico">⚠ Sin stock</span>';
+            if (stock <= (minimo || 3)) return '<span class="badge-stock critico">⚠ Crítico</span>';
             if (stock >= 10) return '<span class="badge-stock alto">✓ Alto</span>';
             if (stock >= 3) return '<span class="badge-stock medio">◉ Medio</span>';
             return '<span class="badge-stock bajo">⚠ Bajo</span>';
@@ -1277,7 +1426,6 @@
             if (data) {
                 try {
                     const parsed = JSON.parse(data);
-                    // 8小时自动过期 (8 * 60 * 60 * 1000)
                     if (parsed.activo && (Date.now() - parsed.timestamp < 8 * 60 * 60 * 1000)) {
                         modoJefe = true;
                         actualizarUI();
@@ -1310,7 +1458,7 @@
                     b.disabled = true;
                 }
             });
-            ['btnAbrirAgregar', 'btnEntrada', 'btnSalida'].forEach(id => {
+            ['btnAbrirAgregar', 'btnEntrada', 'btnSalida', 'btnAbrirDevolucion'].forEach(id => {
                 const b = document.getElementById(id);
                 if (modoJefe) { b.disabled = false;
                     b.style.opacity = '1'; } else { b.disabled = true;
@@ -1539,7 +1687,7 @@
             const impuesto = subtotal * (tasaImpuesto / 100);
             const total = subtotal + impuesto;
 
-            await guardarVenta({
+            const ventaRecord = {
                 items: ventaItems,
                 subtotal: subtotal,
                 impuesto: impuesto,
@@ -1547,7 +1695,14 @@
                 pago: pago,
                 iva: tasaImpuesto,
                 fecha: new Date().toISOString()
-            });
+            };
+
+            await guardarVenta(ventaRecord);
+
+            // Guardar en localStorage para reportes
+            const ventas = JSON.parse(localStorage.getItem('cell_la25_ventas') || '[]');
+            ventas.push(ventaRecord);
+            localStorage.setItem('cell_la25_ventas', JSON.stringify(ventas));
 
             for (const item of ventaItems) {
                 await guardarMovimiento({
@@ -1557,6 +1712,15 @@
                     total: item.cantidad * item.precio,
                     fecha: new Date().toISOString()
                 });
+                const movs = JSON.parse(localStorage.getItem('cell_la25_movimientos') || '[]');
+                movs.push({
+                    tipo: 'salida',
+                    producto: item.nombre,
+                    cantidad: item.cantidad,
+                    total: item.cantidad * item.precio,
+                    fecha: new Date().toISOString()
+                });
+                localStorage.setItem('cell_la25_movimientos', JSON.stringify(movs));
             }
 
             toast('✅ Venta completada! ' + ventaItems.length + ' productos', 'success');
@@ -1679,20 +1843,24 @@
         function renderInventario() {
             const tbody = document.getElementById('inventarioBody');
             if (!productos || productos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay productos</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No hay productos</td></tr>';
                 return;
             }
             let html = '',
                 totalValor = 0,
-                totalUds = 0;
+                totalUds = 0,
+                totalCriticos = 0;
             productos.forEach(p => {
                 totalValor += p.stock * p.precio;
                 totalUds += p.stock;
+                const minimo = p.minimo || 3;
+                if (p.stock <= minimo) totalCriticos++;
                 const disabled = modoJefe ? '' : 'disabled';
                 html += `<tr>
                     <td><span class="codigo-badge">${p.codigo}</span></td>
                     <td>${p.nombre}</td>
-                    <td style="text-align:center;">${p.stock} ${getStockBadge(p.stock)}</td>
+                    <td style="text-align:center;">${p.stock} ${getStockBadge(p.stock, minimo)}</td>
+                    <td style="text-align:center;">${minimo}</td>
                     <td style="text-align:right;font-weight:600;">${formatMoneda(p.precio)}</td>
                     <td style="text-align:center;">
                         <button class="edit-btn ${disabled}" data-codigo="${p.codigo}" ${modoJefe?'':'disabled'}>✏️</button>
@@ -1703,6 +1871,7 @@
             document.getElementById('totalProductos').textContent = productos.length;
             document.getElementById('totalUnidades').textContent = totalUds;
             document.getElementById('valorTotal').textContent = formatMoneda(totalValor);
+            document.getElementById('totalCriticos').textContent = totalCriticos;
 
             document.querySelectorAll('.edit-btn').forEach(b => {
                 b.addEventListener('click', function() {
@@ -1729,11 +1898,29 @@
             ).join('');
         }
 
+        function renderDevoluciones() {
+            const el = document.getElementById('devolucionesLista');
+            const devs = JSON.parse(localStorage.getItem('cell_la25_devoluciones') || '[]');
+            if (devs.length === 0) {
+                el.innerHTML = '<span class="text-muted">Sin devoluciones</span>';
+                return;
+            }
+            const ultimas = devs.slice(-5).reverse();
+            el.innerHTML = ultimas.map(d =>
+                `<div style="padding:4px 0;border-bottom:1px solid #f0f2f6;font-size:12px;">
+                    🔄 <strong>${d.producto}</strong> x${d.cantidad} · ${formatMoneda(d.total)}
+                    <span class="text-muted" style="float:right;">${d.fecha ? new Date(d.fecha).toLocaleString('es-PA') : ''}</span>
+                    <br><span class="text-muted" style="font-size:10px;">${d.motivo || 'Sin motivo'}</span>
+                </div>`
+            ).join('');
+        }
+
         function renderAll() {
             renderInventario();
             renderMovimientos();
             renderCarrito();
             renderStats();
+            renderDevoluciones();
         }
 
         // ============================================
@@ -1749,6 +1936,7 @@
             document.getElementById('editPrecio').value = p.precio;
             document.getElementById('editCosto').value = p.costo;
             document.getElementById('editStock').value = p.stock;
+            document.getElementById('editMinimo').value = p.minimo || 3;
             document.getElementById('modalEditar').classList.add('active');
         }
 
@@ -1765,7 +1953,9 @@
             const precio = parseFloat(document.getElementById('editPrecio').value);
             const costo = parseFloat(document.getElementById('editCosto').value);
             const stock = parseInt(document.getElementById('editStock').value);
-            if (!nombre || isNaN(precio) || precio < 0 || isNaN(costo) || costo < 0 || isNaN(stock) || stock < 0) {
+            const minimo = parseInt(document.getElementById('editMinimo').value) || 3;
+            if (!nombre || isNaN(precio) || precio < 0 || isNaN(costo) || costo < 0 || isNaN(stock) || stock < 0 ||
+                isNaN(minimo) || minimo < 0) {
                 toast('Datos inválidos', 'error');
                 return;
             }
@@ -1773,6 +1963,7 @@
             p.precio = precio;
             p.costo = costo;
             p.stock = stock;
+            p.minimo = minimo;
             await guardarProducto(p);
             cerrarModal();
             toast('✅ Producto actualizado', 'success');
@@ -1796,6 +1987,7 @@
             document.getElementById('agregarPrecio').value = '';
             document.getElementById('agregarCosto').value = '';
             document.getElementById('agregarStock').value = '';
+            document.getElementById('agregarMinimo').value = '3';
             document.getElementById('modalAgregar').classList.add('active');
             document.getElementById('agregarNombre').focus();
         }
@@ -1807,7 +1999,9 @@
             const precio = parseFloat(document.getElementById('agregarPrecio').value);
             const costo = parseFloat(document.getElementById('agregarCosto').value);
             const stock = parseInt(document.getElementById('agregarStock').value);
-            if (!nombre || isNaN(precio) || precio < 0 || isNaN(costo) || costo < 0 || isNaN(stock) || stock < 0) {
+            const minimo = parseInt(document.getElementById('agregarMinimo').value) || 3;
+            if (!nombre || isNaN(precio) || precio < 0 || isNaN(costo) || costo < 0 || isNaN(stock) || stock < 0 ||
+                isNaN(minimo) || minimo < 0) {
                 toast('Datos inválidos', 'error');
                 return;
             }
@@ -1819,7 +2013,7 @@
                 codigo = 'ZP-' + String(maxNum + 1).padStart(3, '0');
             }
             if (findProducto(codigo)) { toast('Código ya existe', 'error'); return; }
-            const nuevoProducto = { codigo, nombre, precio, costo, stock };
+            const nuevoProducto = { codigo, nombre, precio, costo, stock, minimo };
             await guardarProducto(nuevoProducto);
             document.getElementById('modalAgregar').classList.remove('active');
             toast('✅ Producto agregado', 'success');
@@ -1844,6 +2038,15 @@
                 total: cantidad * p.costo,
                 fecha: new Date().toISOString()
             });
+            const movs = JSON.parse(localStorage.getItem('cell_la25_movimientos') || '[]');
+            movs.push({
+                tipo: 'entrada',
+                producto: p.nombre,
+                cantidad: cantidad,
+                total: cantidad * p.costo,
+                fecha: new Date().toISOString()
+            });
+            localStorage.setItem('cell_la25_movimientos', JSON.stringify(movs));
             toast('📥 +' + cantidad + ' ' + p.nombre, 'success');
             document.getElementById('entradaCodigo').value = '';
             document.getElementById('entradaCantidad').value = 1;
@@ -1867,10 +2070,230 @@
                 total: cantidad * p.precio,
                 fecha: new Date().toISOString()
             });
+            const movs = JSON.parse(localStorage.getItem('cell_la25_movimientos') || '[]');
+            movs.push({
+                tipo: 'salida',
+                producto: p.nombre,
+                cantidad: cantidad,
+                total: cantidad * p.precio,
+                fecha: new Date().toISOString()
+            });
+            localStorage.setItem('cell_la25_movimientos', JSON.stringify(movs));
             toast('📤 -' + cantidad + ' ' + p.nombre, 'success');
             document.getElementById('salidaCodigo').value = '';
             document.getElementById('salidaCantidad').value = 1;
             renderAll();
+        }
+
+        // ============================================
+        //  DEVOLUCIONES
+        // ============================================
+        function abrirDevolucion() {
+            if (!modoJefe) { toast('🔒 Solo jefe', 'error'); return; }
+            const ventas = JSON.parse(localStorage.getItem('cell_la25_ventas') || '[]');
+            const select = document.getElementById('devolucionVentaSelect');
+            select.innerHTML = '<option value="">-- Selecciona una venta --</option>';
+            ventas.slice(-20).reverse().forEach((v, idx) => {
+                const total = v.total || 0;
+                const fecha = v.fecha ? new Date(v.fecha).toLocaleString('es-PA') : 'Sin fecha';
+                const items = v.items ? v.items.map(i => i.nombre).join(', ') : '';
+                select.innerHTML +=
+                    `<option value="${ventas.length - 1 - idx}">${fecha} - ${formatMoneda(total)} - ${items.substring(0,30)}...</option>`;
+            });
+            document.getElementById('devolucionItems').innerHTML = '';
+            document.getElementById('devolucionMotivo').value = '';
+            document.getElementById('modalDevolucion').classList.add('active');
+
+            select.onchange = function() {
+                const idx = parseInt(this.value);
+                if (isNaN(idx) || idx < 0) {
+                    document.getElementById('devolucionItems').innerHTML = '';
+                    return;
+                }
+                const venta = ventas[idx];
+                if (!venta || !venta.items) {
+                    document.getElementById('devolucionItems').innerHTML = '<div class="text-muted">No hay items para devolver</div>';
+                    return;
+                }
+                let html =
+                    '<div style="margin-top:8px;font-weight:700;">Selecciona los items a devolver:</div>';
+                venta.items.forEach((item, i) => {
+                    html += `
+                        <div class="devolucion-item">
+                            <div class="info">
+                                <strong>${item.nombre}</strong> · ${item.cantidad} und · ${formatMoneda(item.precio)}
+                            </div>
+                            <div class="acciones">
+                                <input type="number" id="devCant_${i}" value="${item.cantidad}" min="1" max="${item.cantidad}" style="width:50px;padding:4px;border:1.5px solid #e2e7f0;border-radius:6px;">
+                                <input type="checkbox" id="devCheck_${i}" checked>
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('devolucionItems').innerHTML = html;
+                document.getElementById('devolucionVentaSelect').dataset.ventaIdx = idx;
+            };
+        }
+
+        async function confirmarDevolucion() {
+            const select = document.getElementById('devolucionVentaSelect');
+            const idx = parseInt(select.value);
+            if (isNaN(idx) || idx < 0) {
+                toast('Selecciona una venta', 'error');
+                return;
+            }
+            const ventas = JSON.parse(localStorage.getItem('cell_la25_ventas') || '[]');
+            const venta = ventas[idx];
+            if (!venta) {
+                toast('Venta no encontrada', 'error');
+                return;
+            }
+
+            const motivo = document.getElementById('devolucionMotivo').value.trim() || 'Sin motivo';
+            let devueltos = 0;
+
+            for (let i = 0; i < venta.items.length; i++) {
+                const check = document.getElementById(`devCheck_${i}`);
+                if (!check || !check.checked) continue;
+                const cantidad = parseInt(document.getElementById(`devCant_${i}`).value) || 0;
+                if (cantidad <= 0) continue;
+                const item = venta.items[i];
+                const p = findProductoByNombre(item.nombre);
+                if (p) {
+                    p.stock += cantidad;
+                    await guardarProducto(p);
+                }
+                devueltos += cantidad;
+
+                // Registrar movimiento de devolución
+                await guardarMovimiento({
+                    tipo: 'entrada',
+                    producto: item.nombre,
+                    cantidad: cantidad,
+                    total: cantidad * item.precio,
+                    fecha: new Date().toISOString()
+                });
+                const movs = JSON.parse(localStorage.getItem('cell_la25_movimientos') || '[]');
+                movs.push({
+                    tipo: 'entrada',
+                    producto: item.nombre,
+                    cantidad: cantidad,
+                    total: cantidad * item.precio,
+                    fecha: new Date().toISOString()
+                });
+                localStorage.setItem('cell_la25_movimientos', JSON.stringify(movs));
+
+                // Registrar devolución
+                const devs = JSON.parse(localStorage.getItem('cell_la25_devoluciones') || '[]');
+                devs.push({
+                    producto: item.nombre,
+                    cantidad: cantidad,
+                    total: cantidad * item.precio,
+                    motivo: motivo,
+                    fecha: new Date().toISOString()
+                });
+                localStorage.setItem('cell_la25_devoluciones', JSON.stringify(devs));
+            }
+
+            if (devueltos === 0) {
+                toast('No se seleccionaron items para devolver', 'error');
+                return;
+            }
+
+            // Marcar la venta como devuelta (opcional)
+            venta.devuelto = true;
+            ventas[idx] = venta;
+            localStorage.setItem('cell_la25_ventas', JSON.stringify(ventas));
+
+            document.getElementById('modalDevolucion').classList.remove('active');
+            toast('✅ Devolución completada: ' + devueltos + ' unidades', 'success');
+            renderAll();
+        }
+
+        function findProductoByNombre(nombre) {
+            return productos.find(p => p.nombre === nombre);
+        }
+
+        // ============================================
+        //  REPORTES
+        // ============================================
+        function actualizarReporte() {
+            const periodo = document.getElementById('reportePeriodo').value;
+            const ventas = JSON.parse(localStorage.getItem('cell_la25_ventas') || '[]');
+            const ahora = new Date();
+            let filtered = [];
+
+            const inicio = new Date(ahora);
+            if (periodo === 'hoy') inicio.setHours(0, 0, 0, 0);
+            else if (periodo === 'semana') inicio.setDate(ahora.getDate() - 7);
+            else if (periodo === 'mes') inicio.setMonth(ahora.getMonth() - 1);
+            else if (periodo === 'trimestre') inicio.setMonth(ahora.getMonth() - 3);
+            else if (periodo === 'anio') inicio.setFullYear(ahora.getFullYear() - 1);
+            else if (periodo === 'todo') inicio.setFullYear(2000, 0, 1);
+
+            filtered = ventas.filter(v => {
+                if (!v.fecha) return false;
+                const fechaV = new Date(v.fecha);
+                return fechaV >= inicio;
+            });
+
+            // Resumen
+            let totalVentas = 0,
+                totalItems = 0,
+                totalMonto = 0;
+            const pagoResumen = { EFECTIVO: 0, YAPPY: 0, 'TARJETA DE CRÉDITO': 0 };
+            const productosVendidos = {};
+
+            filtered.forEach(v => {
+                totalVentas++;
+                totalMonto += v.total || 0;
+                if (v.items) {
+                    v.items.forEach(item => {
+                        totalItems += item.cantidad || 0;
+                        productosVendidos[item.nombre] = (productosVendidos[item.nombre] || 0) + (item
+                        .cantidad || 0);
+                    });
+                }
+                const pago = (v.pago || 'EFECTIVO').toUpperCase();
+                if (pagoResumen[pago] !== undefined) pagoResumen[pago] += v.total || 0;
+                else pagoResumen['EFECTIVO'] += v.total || 0;
+            });
+
+            const sorted = Object.entries(productosVendidos).sort((a, b) => b[1] - a[1]);
+
+            let html = `
+                <div class="reporte-resumen">
+                    <div class="item"><div class="label">Ventas</div><div class="value">${totalVentas}</div></div>
+                    <div class="item"><div class="label">Artículos</div><div class="value">${totalItems}</div></div>
+                    <div class="item"><div class="label">Total</div><div class="value">${formatMoneda(totalMonto)}</div></div>
+                    <div class="item"><div class="label">💵 Efectivo</div><div class="value">${formatMoneda(pagoResumen.EFECTIVO)}</div></div>
+                    <div class="item"><div class="label">📱 YAPPY</div><div class="value">${formatMoneda(pagoResumen.YAPPY)}</div></div>
+                    <div class="item"><div class="label">💳 Tarjeta</div><div class="value">${formatMoneda(pagoResumen['TARJETA DE CRÉDITO'])}</div></div>
+                </div>
+                <div style="font-weight:700;margin-bottom:8px;">📈 Productos más vendidos</div>
+                <table class="reporte-tabla">
+                    <thead><tr><th>Producto</th><th>Cantidad</th></tr></thead>
+                    <tbody>
+            `;
+
+            if (sorted.length === 0) {
+                html += `<tr><td colspan="2" class="text-muted">Sin datos en este período</td></tr>`;
+            } else {
+                sorted.slice(0, 20).forEach(([nombre, cantidad]) => {
+                    html += `<tr><td>${nombre}</td><td>${cantidad}</td></tr>`;
+                });
+            }
+
+            html += `
+                    </tbody>
+                </table>
+                <div style="margin-top:12px;font-size:11px;color:#8892a8;text-align:center;">
+                    Período: ${inicio.toLocaleDateString('es-PA')} - ${ahora.toLocaleDateString('es-PA')}
+                    · ${filtered.length} registros
+                </div>
+            `;
+
+            document.getElementById('reporteContenido').innerHTML = html;
         }
 
         // ============================================
@@ -1897,9 +2320,7 @@
         //  INICIALIZACIÓN
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Restaurar modo jefe si estaba activo
             restaurarModoJefe();
-
             cargarProductos();
 
             document.querySelectorAll('#mainNav button').forEach(b => {
@@ -1913,6 +2334,7 @@
                         .focus();
                     if (this.dataset.panel === 'panel-buscar') document.getElementById('buscarInput')
                         .focus();
+                    if (this.dataset.panel === 'panel-reportes') actualizarReporte();
                 });
             });
 
@@ -1998,6 +2420,19 @@
                 if (e.key === 'Enter') document.getElementById('btnSalida').click();
             });
 
+            // Devoluciones
+            document.getElementById('btnAbrirDevolucion').addEventListener('click', abrirDevolucion);
+            document.getElementById('devolucionConfirmar').addEventListener('click', confirmarDevolucion);
+            document.getElementById('devolucionCancelar').addEventListener('click', function() {
+                document.getElementById('modalDevolucion').classList.remove('active');
+            });
+            document.getElementById('modalDevolucion').addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('active');
+            });
+
+            // Reportes
+            document.getElementById('btnActualizarReporte').addEventListener('click', actualizarReporte);
+
             document.getElementById('buscarInput').addEventListener('input', buscarProductos);
             document.getElementById('buscarInput').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
@@ -2021,13 +2456,13 @@
             document.getElementById('modalAgregar').addEventListener('click', function(e) {
                 if (e.target === this) this.classList.remove('active');
             });
-            ['agregarCodigo', 'agregarNombre', 'agregarPrecio', 'agregarCosto', 'agregarStock'].forEach((id,
-            i) => {
+            ['agregarCodigo', 'agregarNombre', 'agregarPrecio', 'agregarCosto', 'agregarStock', 'agregarMinimo']
+            .forEach((id, i) => {
                 document.getElementById(id).addEventListener('keydown', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         const next = ['agregarCodigo', 'agregarNombre', 'agregarPrecio',
-                            'agregarCosto', 'agregarStock'
+                            'agregarCosto', 'agregarStock', 'agregarMinimo'
                         ][i + 1];
                         if (next) document.getElementById(next).focus();
                         else document.getElementById('agregarGuardar').click();
