@@ -64,6 +64,20 @@
         .header .sync-status.offline {
             background: #b21f1f;
         }
+        .header .shortcuts-hint {
+            font-size: 9px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 8px;
+            color: #ffd700;
+            display: none;
+        }
+        @media (min-width: 768px) {
+            .header .shortcuts-hint {
+                display: inline;
+            }
+        }
         .nav {
             display: flex;
             gap: 8px;
@@ -719,6 +733,32 @@
             gap: 8px;
         }
 
+        /* Shortcuts help */
+        .shortcuts-help {
+            display: none;
+            background: #1a2a6c;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            font-size: 12px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .shortcuts-help .key {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        @media (min-width: 768px) {
+            .shortcuts-help {
+                display: flex;
+            }
+        }
+
         @page {
             margin: 4mm 3mm 3mm 3mm;
             size: 80mm auto;
@@ -838,6 +878,9 @@
             .reporte-resumen {
                 grid-template-columns: 1fr 1fr;
             }
+            .shortcuts-help {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -850,8 +893,22 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
             <span class="sync-status" id="syncStatus">🔄</span>
-            <span class="badge">v6.0 · Cloud</span>
+            <span class="badge">v6.1 · Cloud</span>
+            <span class="shortcuts-hint">⌨️ F1=Buscar · F2=Jefe · F3=Reportes · Esc=Cerrar</span>
         </div>
+    </div>
+
+    <!-- Shortcuts help -->
+    <div class="shortcuts-help" id="shortcutsHelp">
+        <span><span class="key">F1</span> Buscar</span>
+        <span><span class="key">F2</span> Jefe</span>
+        <span><span class="key">F3</span> Reportes</span>
+        <span><span class="key">F4</span> Inventario</span>
+        <span><span class="key">Esc</span> Cerrar</span>
+        <span><span class="key">1</span> 💵 Efectivo</span>
+        <span><span class="key">2</span> 📱 YAPPY</span>
+        <span><span class="key">3</span> 💳 Tarjeta</span>
+        <span><span class="key">Enter</span> Confirmar</span>
     </div>
 
     <div class="nav" id="mainNav">
@@ -963,6 +1020,9 @@
                 <button class="btn btn-success" id="pagoConfirmar">✅ Confirmar Venta</button>
                 <button class="btn btn-outline" id="pagoCancelar">Cancelar</button>
             </div>
+            <div style="margin-top:10px;font-size:11px;color:#8892a8;text-align:center;">
+                ⌨️ Presiona <strong>1</strong> (Efectivo) · <strong>2</strong> (YAPPY) · <strong>3</strong> (Tarjeta)
+            </div>
         </div>
     </div>
 
@@ -1055,9 +1115,28 @@
         </div>
     </div>
 
+    <!-- MODAL EXPORTAR -->
+    <div class="modal-overlay" id="modalExportar">
+        <div class="modal">
+            <h3>📤 Exportar Datos</h3>
+            <p style="font-size:14px;margin-bottom:16px;">Selecciona qué datos quieres exportar:</p>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <button class="btn btn-primary" id="exportarProductos">📦 Exportar Productos (CSV)</button>
+                <button class="btn btn-primary" id="exportarVentas">📊 Exportar Ventas (CSV)</button>
+                <button class="btn btn-primary" id="exportarStock">⚠️ Exportar Stock Crítico (CSV)</button>
+                <button class="btn btn-success" id="exportarBackup">💾 Backup completo (JSON)</button>
+            </div>
+            <div style="margin-top:12px;font-size:11px;color:#8892a8;text-align:center;">
+                Los archivos se descargarán automáticamente
+            </div>
+            <div class="btn-group" style="margin-top:16px;">
+                <button class="btn btn-outline" id="exportarCancelar">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ====== PANEL VENTA (CARRITO) ====== -->
     <div class="panel active" id="panel-venta">
-        <!-- Estadísticas -->
         <div class="card">
             <div class="card-title">📊 Hoy</div>
             <div class="stats-grid" id="statsGrid">
@@ -1147,7 +1226,10 @@
         <div class="card">
             <div class="flex-between">
                 <div class="card-title">📦 Inventario</div>
-                <button class="btn btn-success btn-sm" id="btnAbrirAgregar">➕ Agregar</button>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn btn-primary btn-sm" id="btnExportar">📤 Exportar</button>
+                    <button class="btn btn-success btn-sm" id="btnAbrirAgregar">➕ Agregar</button>
+                </div>
             </div>
             <div class="table-wrap">
                 <table>
@@ -1209,6 +1291,7 @@
                     <option value="todo">Todo</option>
                 </select>
                 <button class="btn btn-primary" id="btnActualizarReporte">🔄 Actualizar</button>
+                <button class="btn btn-success btn-sm" id="btnExportarReporte">📤 Exportar</button>
             </div>
             <div id="reporteContenido">
                 <div class="text-muted" style="padding:20px;text-align:center;">Selecciona un período y actualiza</div>
@@ -1239,6 +1322,49 @@
         let modoJefe = false;
         let facturaCounter = 1;
         let editandoCodigo = null;
+        let pagoModalAbierto = false;
+        let pagoResolve = null;
+
+        // ============================================
+        //  AUDIO (Beep)
+        // ============================================
+        function playBeep(type) {
+            try {
+                const ctx = new(window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                if (type === 'success') {
+                    osc.frequency.value = 880;
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.2);
+                } else if (type === 'error') {
+                    osc.frequency.value = 440;
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.3);
+                } else if (type === 'scan') {
+                    osc.frequency.value = 1200;
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.08);
+                } else {
+                    osc.frequency.value = 660;
+                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.15);
+                }
+            } catch (e) {
+                // Silencio si no hay audio
+            }
+        }
 
         // ============================================
         //  SUPABASE FUNCTIONS
@@ -1341,6 +1467,8 @@
             el.className = 'toast show ' + (tipo || '');
             clearTimeout(el._timer);
             el._timer = setTimeout(() => { el.className = 'toast'; }, 2500);
+            if (tipo === 'success') playBeep('success');
+            else if (tipo === 'error') playBeep('error');
         }
 
         function getStockBadge(stock, minimo) {
@@ -1588,6 +1716,7 @@
             }
             item.cantidad = nuevaCantidad;
             renderCarrito();
+            playBeep('scan');
         }
 
         function eliminarDelCarrito(index) {
@@ -1631,6 +1760,7 @@
             }
             renderCarrito();
             toast('✅ ' + producto.nombre + ' x' + cantidad + ' agregado', 'success');
+            playBeep('scan');
             document.getElementById('scanInput').value = '';
             document.getElementById('searchResults').innerHTML = '';
             document.getElementById('scanResult').style.display = 'none';
@@ -1638,9 +1768,9 @@
         }
 
         // ============================================
-        //  FINALIZAR COMPRA
+        //  FINALIZAR COMPRA (con pago rápido)
         // ============================================
-        function abrirModalPago() {
+        function abrirModalPago(pagoPredefinido) {
             if (carrito.length === 0) {
                 toast('🛒 El carrito está vacío', 'error');
                 return;
@@ -1648,7 +1778,20 @@
             const total = carrito.reduce((sum, i) => sum + i.cantidad * i.precio, 0);
             document.getElementById('modalTotalPago').textContent = formatMoneda(total);
             document.getElementById('modalCantidadItems').textContent = carrito.reduce((sum, i) => sum + i.cantidad, 0);
+
+            if (pagoPredefinido) {
+                document.getElementById('pagoSelect').value = pagoPredefinido;
+                // Confirmar automáticamente después de un breve delay
+                setTimeout(() => {
+                    document.getElementById('pagoConfirmar').click();
+                }, 150);
+                return;
+            }
+
             document.getElementById('modalPago').classList.add('active');
+            pagoModalAbierto = true;
+            // Enfocar el select para teclado
+            document.getElementById('pagoSelect').focus();
         }
 
         async function confirmarVenta() {
@@ -1699,7 +1842,6 @@
 
             await guardarVenta(ventaRecord);
 
-            // Guardar en localStorage para reportes
             const ventas = JSON.parse(localStorage.getItem('cell_la25_ventas') || '[]');
             ventas.push(ventaRecord);
             localStorage.setItem('cell_la25_ventas', JSON.stringify(ventas));
@@ -1737,6 +1879,7 @@
             carrito = [];
             renderCarrito();
             document.getElementById('modalPago').classList.remove('active');
+            pagoModalAbierto = false;
             renderStats();
 
             if (confirm('¿Imprimir factura?')) {
@@ -1745,6 +1888,7 @@
             }
 
             renderAll();
+            document.getElementById('scanInput').focus();
         }
 
         // ============================================
@@ -2112,7 +2256,8 @@
                 }
                 const venta = ventas[idx];
                 if (!venta || !venta.items) {
-                    document.getElementById('devolucionItems').innerHTML = '<div class="text-muted">No hay items para devolver</div>';
+                    document.getElementById('devolucionItems').innerHTML =
+                    '<div class="text-muted">No hay items para devolver</div>';
                     return;
                 }
                 let html =
@@ -2165,7 +2310,6 @@
                 }
                 devueltos += cantidad;
 
-                // Registrar movimiento de devolución
                 await guardarMovimiento({
                     tipo: 'entrada',
                     producto: item.nombre,
@@ -2183,7 +2327,6 @@
                 });
                 localStorage.setItem('cell_la25_movimientos', JSON.stringify(movs));
 
-                // Registrar devolución
                 const devs = JSON.parse(localStorage.getItem('cell_la25_devoluciones') || '[]');
                 devs.push({
                     producto: item.nombre,
@@ -2200,7 +2343,6 @@
                 return;
             }
 
-            // Marcar la venta como devuelta (opcional)
             venta.devuelto = true;
             ventas[idx] = venta;
             localStorage.setItem('cell_la25_ventas', JSON.stringify(ventas));
@@ -2237,7 +2379,6 @@
                 return fechaV >= inicio;
             });
 
-            // Resumen
             let totalVentas = 0,
                 totalItems = 0,
                 totalMonto = 0;
@@ -2296,6 +2437,120 @@
             document.getElementById('reporteContenido').innerHTML = html;
         }
 
+        function exportarReporteCSV() {
+            const ventas = JSON.parse(localStorage.getItem('cell_la25_ventas') || '[]');
+            const periodo = document.getElementById('reportePeriodo').value;
+            const ahora = new Date();
+            let filtered = [];
+
+            const inicio = new Date(ahora);
+            if (periodo === 'hoy') inicio.setHours(0, 0, 0, 0);
+            else if (periodo === 'semana') inicio.setDate(ahora.getDate() - 7);
+            else if (periodo === 'mes') inicio.setMonth(ahora.getMonth() - 1);
+            else if (periodo === 'trimestre') inicio.setMonth(ahora.getMonth() - 3);
+            else if (periodo === 'anio') inicio.setFullYear(ahora.getFullYear() - 1);
+            else if (periodo === 'todo') inicio.setFullYear(2000, 0, 1);
+
+            filtered = ventas.filter(v => {
+                if (!v.fecha) return false;
+                const fechaV = new Date(v.fecha);
+                return fechaV >= inicio;
+            });
+
+            let csv = 'Fecha,Producto,Cantidad,Precio Unitario,Total,Pago\n';
+            filtered.forEach(v => {
+                const fecha = v.fecha ? new Date(v.fecha).toLocaleString('es-PA') : '';
+                if (v.items) {
+                    v.items.forEach(item => {
+                        csv +=
+                            `${fecha},${item.nombre},${item.cantidad},${item.precio},${item.cantidad * item.precio},${v.pago}\n`;
+                    });
+                }
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `reporte_${periodo}_${getTodayStr()}.csv`;
+            link.click();
+            toast('📤 Reporte exportado', 'success');
+        }
+
+        // ============================================
+        //  EXPORTAR DATOS
+        // ============================================
+        function exportarProductosCSV() {
+            let csv = 'Código,Nombre,Precio,Costo,Stock,Mínimo\n';
+            productos.forEach(p => {
+                csv += `${p.codigo},${p.nombre},${p.precio},${p.costo},${p.stock},${p.minimo || 3}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `productos_${getTodayStr()}.csv`;
+            link.click();
+            toast('📦 Productos exportados', 'success');
+        }
+
+        function exportarVentasCSV() {
+            const ventas = JSON.parse(localStorage.getItem('cell_la25_ventas') || '[]');
+            let csv = 'Fecha,Producto,Cantidad,Precio,Total,Pago\n';
+            ventas.forEach(v => {
+                const fecha = v.fecha ? new Date(v.fecha).toLocaleString('es-PA') : '';
+                if (v.items) {
+                    v.items.forEach(item => {
+                        csv +=
+                            `${fecha},${item.nombre},${item.cantidad},${item.precio},${item.cantidad * item.precio},${v.pago}\n`;
+                    });
+                }
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `ventas_${getTodayStr()}.csv`;
+            link.click();
+            toast('📊 Ventas exportadas', 'success');
+        }
+
+        function exportarStockCSV() {
+            const criticos = productos.filter(p => p.stock <= (p.minimo || 3));
+            if (criticos.length === 0) {
+                toast('✅ No hay productos críticos', 'success');
+                return;
+            }
+            let csv = 'Código,Nombre,Stock,Mínimo\n';
+            criticos.forEach(p => {
+                csv += `${p.codigo},${p.nombre},${p.stock},${p.minimo || 3}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `stock_critico_${getTodayStr()}.csv`;
+            link.click();
+            toast('⚠️ Stock crítico exportado', 'success');
+        }
+
+        function exportarBackup() {
+            const data = {
+                productos: productos,
+                ventas: JSON.parse(localStorage.getItem('cell_la25_ventas') || '[]'),
+                movimientos: JSON.parse(localStorage.getItem('cell_la25_movimientos') || '[]'),
+                devoluciones: JSON.parse(localStorage.getItem('cell_la25_devoluciones') || '[]'),
+                fecha_backup: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `backup_cell_la25_${getTodayStr()}.json`;
+            link.click();
+            toast('💾 Backup completo descargado', 'success');
+        }
+
+        function abrirExportar() {
+            if (!modoJefe) { toast('🔒 Solo jefe', 'error'); return; }
+            document.getElementById('modalExportar').classList.add('active');
+        }
+
         // ============================================
         //  BUSCAR (panel)
         // ============================================
@@ -2315,6 +2570,124 @@
                 </div>`
             ).join('');
         }
+
+        // ============================================
+        //  SHORTCUTS (Teclado)
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Esc para cerrar modales
+            if (e.key === 'Escape') {
+                if (document.getElementById('modalPago').classList.contains('active')) {
+                    document.getElementById('modalPago').classList.remove('active');
+                    pagoModalAbierto = false;
+                    toast('Cancelado', '');
+                    return;
+                }
+                if (document.getElementById('modalEditar').classList.contains('active')) {
+                    cerrarModal();
+                    return;
+                }
+                if (document.getElementById('modalAgregar').classList.contains('active')) {
+                    document.getElementById('modalAgregar').classList.remove('active');
+                    return;
+                }
+                if (document.getElementById('modalJefe').classList.contains('active')) {
+                    document.getElementById('modalJefe').classList.remove('active');
+                    return;
+                }
+                if (document.getElementById('modalDevolucion').classList.contains('active')) {
+                    document.getElementById('modalDevolucion').classList.remove('active');
+                    return;
+                }
+                if (document.getElementById('modalExportar').classList.contains('active')) {
+                    document.getElementById('modalExportar').classList.remove('active');
+                    return;
+                }
+                if (document.getElementById('modalPrintSelector').classList.contains('active')) {
+                    document.getElementById('modalPrintSelector').classList.remove('active');
+                    return;
+                }
+                document.getElementById('scanInput').focus();
+                return;
+            }
+
+            // F1 = Buscar
+            if (e.key === 'F1') {
+                e.preventDefault();
+                document.getElementById('scanInput').focus();
+                document.getElementById('scanInput').select();
+                toast('🔍 Buscar', '');
+                return;
+            }
+
+            // F2 = Jefe
+            if (e.key === 'F2') {
+                e.preventDefault();
+                toggleModo();
+                return;
+            }
+
+            // F3 = Reportes
+            if (e.key === 'F3') {
+                e.preventDefault();
+                document.querySelectorAll('#mainNav button').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('panel-reportes').classList.add('active');
+                document.querySelector('#mainNav button[data-panel="panel-reportes"]').classList.add('active');
+                actualizarReporte();
+                return;
+            }
+
+            // F4 = Inventario
+            if (e.key === 'F4') {
+                e.preventDefault();
+                document.querySelectorAll('#mainNav button').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('panel-inventario').classList.add('active');
+                document.querySelector('#mainNav button[data-panel="panel-inventario"]').classList.add('active');
+                return;
+            }
+
+            // Pago rápido: 1, 2, 3 cuando el modal de pago está abierto
+            if (document.getElementById('modalPago').classList.contains('active')) {
+                if (e.key === '1') {
+                    e.preventDefault();
+                    document.getElementById('pagoSelect').value = 'EFECTIVO';
+                    document.getElementById('pagoConfirmar').click();
+                    return;
+                }
+                if (e.key === '2') {
+                    e.preventDefault();
+                    document.getElementById('pagoSelect').value = 'YAPPY';
+                    document.getElementById('pagoConfirmar').click();
+                    return;
+                }
+                if (e.key === '3') {
+                    e.preventDefault();
+                    document.getElementById('pagoSelect').value = 'TARJETA DE CRÉDITO';
+                    document.getElementById('pagoConfirmar').click();
+                    return;
+                }
+            }
+
+            // Enter en modal de pago confirma
+            if (document.getElementById('modalPago').classList.contains('active') && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('pagoConfirmar').click();
+            }
+
+            // Enter en cualquier modal con botón confirmar
+            if (e.key === 'Enter') {
+                const modal = document.querySelector('.modal-overlay.active');
+                if (modal) {
+                    const confirmBtn = modal.querySelector('.btn-success');
+                    if (confirmBtn) {
+                        e.preventDefault();
+                        confirmBtn.click();
+                    }
+                }
+            }
+        });
 
         // ============================================
         //  INICIALIZACIÓN
@@ -2393,11 +2766,15 @@
             });
 
             document.getElementById('btnVaciarCarrito').addEventListener('click', vaciarCarrito);
-            document.getElementById('btnFinalizarCompra').addEventListener('click', abrirModalPago);
+            document.getElementById('btnFinalizarCompra').addEventListener('click', function() {
+                abrirModalPago(null);
+            });
 
             document.getElementById('pagoConfirmar').addEventListener('click', confirmarVenta);
             document.getElementById('pagoCancelar').addEventListener('click', function() {
                 document.getElementById('modalPago').classList.remove('active');
+                pagoModalAbierto = false;
+                toast('Cancelado', '');
             });
 
             document.getElementById('jefeConfirmar').addEventListener('click', verificarJefe);
@@ -2432,6 +2809,32 @@
 
             // Reportes
             document.getElementById('btnActualizarReporte').addEventListener('click', actualizarReporte);
+            document.getElementById('btnExportarReporte').addEventListener('click', exportarReporteCSV);
+
+            // Exportar
+            document.getElementById('btnExportar').addEventListener('click', abrirExportar);
+            document.getElementById('exportarProductos').addEventListener('click', function() {
+                document.getElementById('modalExportar').classList.remove('active');
+                exportarProductosCSV();
+            });
+            document.getElementById('exportarVentas').addEventListener('click', function() {
+                document.getElementById('modalExportar').classList.remove('active');
+                exportarVentasCSV();
+            });
+            document.getElementById('exportarStock').addEventListener('click', function() {
+                document.getElementById('modalExportar').classList.remove('active');
+                exportarStockCSV();
+            });
+            document.getElementById('exportarBackup').addEventListener('click', function() {
+                document.getElementById('modalExportar').classList.remove('active');
+                exportarBackup();
+            });
+            document.getElementById('exportarCancelar').addEventListener('click', function() {
+                document.getElementById('modalExportar').classList.remove('active');
+            });
+            document.getElementById('modalExportar').addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('active');
+            });
 
             document.getElementById('buscarInput').addEventListener('input', buscarProductos);
             document.getElementById('buscarInput').addEventListener('keydown', function(e) {
