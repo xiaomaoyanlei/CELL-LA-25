@@ -513,32 +513,34 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 9999 !important;
             padding: 20px;
         }
         .modal-overlay.active {
-            display: flex;
+            display: flex !important;
         }
         .modal-box {
             background: white;
             border-radius: 20px;
             padding: 24px;
-            max-width: 400px;
+            max-width: 420px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
             animation: modalIn 0.3s ease-out;
+            position: relative;
+            z-index: 10000 !important;
         }
         @keyframes modalIn {
             0% {
-                transform: scale(0.9);
+                transform: scale(0.9) translateY(20px);
                 opacity: 0;
             }
             100% {
-                transform: scale(1);
+                transform: scale(1) translateY(0);
                 opacity: 1;
             }
         }
@@ -616,7 +618,6 @@
             transform: scale(0.96);
         }
 
-        /* ===== 底部（版本号+更新按钮） ===== */
         .footer {
             text-align: center;
             padding: 16px 0 4px 0;
@@ -653,16 +654,10 @@
         .footer .version-area .btn-upgrade:active {
             transform: scale(0.95);
         }
-        .footer .version-area .btn-upgrade:hover {
-            background: #f0b020;
-        }
         .footer .version-history {
             font-size: 10px;
             color: #b0b8c8;
             margin-top: 4px;
-        }
-        .footer .version-history span {
-            margin: 0 4px;
         }
 
         @media (max-width: 480px) {
@@ -681,13 +676,11 @@
             }
             .modal-box {
                 padding: 18px;
+                margin: 10px;
             }
             .mode-tabs .tab {
                 font-size: 11px;
                 padding: 8px 4px;
-            }
-            .footer .version-area {
-                gap: 8px;
             }
         }
     </style>
@@ -730,21 +723,17 @@
         <button class="tab" data-mode="camera">📷 手机摄像头</button>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- 模式1：扫码枪 -->
-    <!-- ============================================================ -->
+    <!-- ===== 模式1：扫码枪 ===== -->
     <div class="mode-content active" id="modeGun">
         <div class="scan-hint">
-            🔫 <strong>扫码枪模式</strong> · 聚焦下方输入框，扣动扳机扫码 · 自动识别产品
+            🔫 <strong>扫码枪模式</strong> · 聚焦下方输入框，扣动扳机扫码 · <strong style="color:#b21f1f;">新码自动弹窗创建</strong>
         </div>
-
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="🔫 扫码枪对准条码..." autofocus>
             <button class="btn clear" id="clearBtn">✕</button>
             <button class="btn in" id="btnQuickIn">📥 +1</button>
             <button class="btn out" id="btnQuickOut">📤 -1</button>
         </div>
-
         <div class="form-card">
             <div class="form-title">📋 手动出入库</div>
             <div class="form-row">
@@ -753,13 +742,11 @@
                 <button class="btn-in" id="btnIn">入库</button>
                 <button class="btn-out" id="btnOut">出库</button>
             </div>
-            <div class="form-hint">💡 扫码后自动填入编码，也可手动输入</div>
+            <div class="form-hint">💡 扫码后自动填入编码，新码自动弹窗创建</div>
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- 模式2：手机摄像头 -->
-    <!-- ============================================================ -->
+    <!-- ===== 模式2：手机摄像头 ===== -->
     <div class="mode-content" id="modeCamera">
         <div class="camera-area">
             <button class="btn-camera" id="cameraScanBtn">📷 点击扫码</button>
@@ -768,14 +755,13 @@
                 <div id="scanner-view"></div>
                 <div class="scan-overlay"></div>
                 <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.6);font-size:11px;z-index:5;">
-                    将条码放入框内
+                    将条码放入框内 · 新码自动弹窗创建
                 </div>
             </div>
             <div style="margin-top:12px;font-size:12px;color:#8892a8;">
-                📷 扫码结果会自动填入下方，然后操作入库/出库
+                📷 扫码结果自动填入，<strong style="color:#b21f1f;">新码自动弹窗创建</strong>
             </div>
         </div>
-
         <div class="form-card">
             <div class="form-title">📋 摄像头扫码出入库</div>
             <div class="form-row">
@@ -784,7 +770,7 @@
                 <button class="btn-in" id="cameraBtnIn">入库</button>
                 <button class="btn-out" id="cameraBtnOut">出库</button>
             </div>
-            <div class="form-hint">💡 点击"📷 点击扫码"扫描条码，结果自动填入</div>
+            <div class="form-hint">💡 点击扫码，新码自动弹窗创建</div>
         </div>
     </div>
 
@@ -807,17 +793,17 @@
     <div class="modal-overlay" id="addProductModal">
         <div class="modal-box">
             <div class="modal-title">
-                🆕 添加新产品
-                <span class="badge-new">扫码识别</span>
+                🆕 扫码发现新产品
+                <span class="badge-new">请完善信息</span>
             </div>
             <div class="form-group">
                 <label>📱 产品编码</label>
-                <input type="text" id="modalCodigo" readonly style="background:#f0f2f5;">
-                <div class="hint">扫码自动获取</div>
+                <input type="text" id="modalCodigo" readonly style="background:#f0f2f5;font-weight:700;color:#1a2a6c;">
+                <div class="hint">✅ 扫码自动获取，不可修改</div>
             </div>
             <div class="form-group">
-                <label>📦 产品名称</label>
-                <input type="text" id="modalNombre" placeholder="例如：iPhone 15 Pro">
+                <label>📦 产品名称 <span style="color:#b21f1f;">*</span></label>
+                <input type="text" id="modalNombre" placeholder="例如：iPhone 15 Pro" autofocus>
             </div>
             <div class="form-group">
                 <label>💰 价格 (B/.)</label>
@@ -826,6 +812,7 @@
             <div class="form-group">
                 <label>📊 初始库存</label>
                 <input type="number" id="modalStock" placeholder="0" min="0" value="1">
+                <div class="hint">创建后自动入库该数量</div>
             </div>
             <div class="form-group">
                 <label>⚠️ 库存预警值</label>
@@ -838,16 +825,14 @@
         </div>
     </div>
 
-    <!-- ===== 底部（版本管理） ===== -->
+    <!-- ===== 底部 ===== -->
     <div class="footer">
         <div class="version-area">
             <span class="version-label" id="footerVersion">📌 v1.0.0</span>
             <button class="btn-upgrade" id="btnUpgradeVersion">⬆ 升级版本 (+0.1)</button>
             <span style="font-size:10px;color:#b0b8c8;">部署后自动 +0.1</span>
         </div>
-        <div class="version-history" id="versionHistory">
-            更新记录将显示在这里
-        </div>
+        <div class="version-history" id="versionHistory">更新记录将显示在这里</div>
         <div style="margin-top:6px;">实时数据 · CELL LA 25 · 双模扫码</div>
     </div>
 
@@ -866,6 +851,7 @@
         let operaciones = [];
         let lastScannedCode = '';
         let quaggaInit = false;
+        let isModalOpen = false;
 
         // ============================================================
         //  版本管理
@@ -873,50 +859,31 @@
         const VERSION_STORAGE_KEY = 'cell_la25_version';
         const VERSION_HISTORY_KEY = 'cell_la25_version_history';
 
-        // 获取当前版本号（从localStorage读取）
         function getCurrentVersion() {
             const saved = localStorage.getItem(VERSION_STORAGE_KEY);
-            if (saved) return saved;
-            // 默认 v1.0.0
-            return 'v1.0.0';
+            return saved || 'v1.0.0';
         }
 
-        // 保存版本号
         function setCurrentVersion(version) {
             localStorage.setItem(VERSION_STORAGE_KEY, version);
-            // 更新页面显示
             document.getElementById('headerVersion').textContent = version;
             document.getElementById('footerVersion').textContent = '📌 ' + version;
         }
 
-        // 版本号 +0.1
         function upgradeVersion() {
             const current = getCurrentVersion();
-            // 解析版本号 v1.0.0 → 1.0.0
             const parts = current.replace('v', '').split('.');
             let major = parseInt(parts[0]) || 1;
             let minor = parseInt(parts[1]) || 0;
             let patch = parseInt(parts[2]) || 0;
-
-            // 补丁版本 +0.1（每10次+0.1 → 相当于patch+1）
             patch += 1;
-            if (patch >= 10) {
-                patch = 0;
-                minor += 1;
-                if (minor >= 10) {
-                    minor = 0;
-                    major += 1;
-                }
-            }
-
+            if (patch >= 10) { patch = 0;
+                minor += 1; if (minor >= 10) { minor = 0;
+                    major += 1; } }
             const newVersion = 'v' + major + '.' + minor + '.' + patch;
             setCurrentVersion(newVersion);
-
-            // 记录更新日志
             const now = new Date().toLocaleString('zh-CN', { hour12: false });
             addVersionHistory(newVersion, now);
-
-            // 记录到操作日志
             operaciones.unshift({
                 tipo: 'VERSION',
                 mensaje: '⬆ 版本升级到 ' + newVersion,
@@ -924,22 +891,17 @@
             });
             if (operaciones.length > 50) operaciones.pop();
             renderLog();
-
             toast('✅ 版本升级到 ' + newVersion, 'success');
             return newVersion;
         }
 
-        // 版本历史记录
         function getVersionHistory() {
-            try {
-                const data = localStorage.getItem(VERSION_HISTORY_KEY);
-                return data ? JSON.parse(data) : [];
-            } catch { return []; }
+            try { const data = localStorage.getItem(VERSION_HISTORY_KEY); return data ? JSON.parse(data) : []; } catch { return []; }
         }
 
         function addVersionHistory(version, time) {
             const history = getVersionHistory();
-            history.unshift({ version: version, time: time });
+            history.unshift({ version, time });
             if (history.length > 20) history.pop();
             localStorage.setItem(VERSION_HISTORY_KEY, JSON.stringify(history));
             renderVersionHistory();
@@ -948,10 +910,7 @@
         function renderVersionHistory() {
             const history = getVersionHistory();
             const el = document.getElementById('versionHistory');
-            if (history.length === 0) {
-                el.textContent = '暂无更新记录';
-                return;
-            }
+            if (history.length === 0) { el.textContent = '暂无更新记录'; return; }
             let html = '📋 最近更新: ';
             history.slice(0, 5).forEach((item, index) => {
                 if (index > 0) html += ' · ';
@@ -960,22 +919,14 @@
             el.textContent = html;
         }
 
-        // 检测版本变化（页面加载时自动检测是否部署了新版本）
         function checkVersionOnLoad() {
-            // 用当前时间戳作为"部署标记"
-            // 如果页面加载时间比上次记录的时间晚，说明是新的部署
             const deployKey = 'cell_la25_deploy_time';
             const now = Date.now();
             const lastDeploy = parseInt(localStorage.getItem(deployKey)) || 0;
-
-            // 如果距离上次部署超过30秒，认为是新部署
             if (now - lastDeploy > 30000) {
-                // 自动升级版本
                 const oldVersion = getCurrentVersion();
                 const newVersion = upgradeVersion();
                 localStorage.setItem(deployKey, now.toString());
-
-                // 记录到操作日志
                 operaciones.unshift({
                     tipo: 'VERSION',
                     mensaje: '🚀 新部署自动升级: ' + oldVersion + ' → ' + newVersion,
@@ -983,10 +934,7 @@
                 });
                 if (operaciones.length > 50) operaciones.pop();
                 renderLog();
-
-                toast('🚀 检测到新部署，版本升级到 ' + newVersion, 'success');
             } else {
-                // 正常显示版本
                 const v = getCurrentVersion();
                 document.getElementById('headerVersion').textContent = v;
                 document.getElementById('footerVersion').textContent = '📌 ' + v;
@@ -995,7 +943,7 @@
         }
 
         // ============================================================
-        //  Supabase 请求
+        //  Supabase 请求（修复版）
         // ============================================================
         async function supabaseFetch(endpoint, options = {}) {
             const url = SUPABASE_URL + endpoint;
@@ -1003,12 +951,14 @@
                 'Content-Type': 'application/json',
                 'apikey': SUPABASE_KEY,
                 'Authorization': 'Bearer ' + SUPABASE_KEY,
+                'Prefer': 'return=representation',
                 ...options.headers
             };
             const response = await fetch(url, { ...options, headers });
             if (!response.ok) {
                 const text = await response.text();
-                throw new Error(`HTTP ${response.status}`);
+                console.error('❌ Supabase 错误:', response.status, text);
+                throw new Error(`HTTP ${response.status}: ${text}`);
             }
             return response.json();
         }
@@ -1029,7 +979,7 @@
                 console.error(e);
                 document.getElementById('syncStatus').textContent = '⚠️ 离线';
                 document.getElementById('syncStatus').className = 'sync-status offline';
-                toast('⚠️ 加载失败', 'error');
+                toast('⚠️ 加载失败: ' + e.message, 'error');
                 return false;
             }
         }
@@ -1059,31 +1009,42 @@
         }
 
         // ============================================================
-        //  核心：添加新产品
+        //  核心：创建产品（修复版）
         // ============================================================
         async function crearProducto(codigo, nombre, precio, stock, minimo) {
+            if (!nombre || nombre.trim() === '') {
+                toast('⚠️ 请填写产品名称', 'error');
+                return false;
+            }
+
+            // 检查是否已存在
+            if (productos.some(p => p.codigo === codigo)) {
+                toast('⚠️ 产品编码已存在: ' + codigo, 'error');
+                return false;
+            }
+
+            // 构造数据（确保字段名与数据库完全匹配）
+            const nuevoProducto = {
+                codigo: String(codigo).trim(),
+                nombre: String(nombre).trim(),
+                precio: parseFloat(precio) || 0,
+                stock: parseInt(stock) || 0,
+                minimo: parseInt(minimo) || 3
+            };
+
+            console.log('📤 创建产品数据:', nuevoProducto);
+
             try {
-                if (productos.some(p => p.codigo === codigo)) {
-                    toast('⚠️ 产品编码已存在', 'error');
-                    return false;
-                }
-
-                const nuevoProducto = {
-                    codigo: codigo,
-                    nombre: nombre,
-                    precio: parseFloat(precio) || 0,
-                    stock: parseInt(stock) || 0,
-                    minimo: parseInt(minimo) || 3
-                };
-
-                await supabaseFetch('/rest/v1/productos', {
+                // 使用 POST 创建
+                const result = await supabaseFetch('/rest/v1/productos', {
                     method: 'POST',
                     body: JSON.stringify(nuevoProducto)
                 });
 
-                productos.push(nuevoProducto);
-                aplicarFiltro();
-                renderAll();
+                console.log('✅ 创建成功:', result);
+
+                // 更新本地列表
+                await cargarProductos();
 
                 operaciones.unshift({
                     tipo: 'NEW',
@@ -1096,14 +1057,14 @@
                 toast('✅ 产品创建成功: ' + nombre, 'success');
                 return true;
             } catch (e) {
-                console.error(e);
+                console.error('❌ 创建失败:', e);
                 toast('❌ 创建失败: ' + e.message, 'error');
                 return false;
             }
         }
 
         // ============================================================
-        //  核心：出入库
+        //  核心：出入库（修复版）
         // ============================================================
         async function ejecutarOperacion(codigo, cantidad, tipo, source = '') {
             if (!codigo || cantidad <= 0) {
@@ -1158,7 +1119,7 @@
         }
 
         // ============================================================
-        //  统一：处理扫码结果
+        //  扫码处理
         // ============================================================
         function handleScannedCode(code, source = '') {
             if (!code || code.length < 3) return;
@@ -1167,6 +1128,7 @@
             if (code === lastScannedCode && source !== 'camera') return;
             lastScannedCode = code;
 
+            // 填入所有输入框
             document.getElementById('formCodigo').value = code;
             document.getElementById('cameraCodigo').value = code;
             document.getElementById('searchInput').value = code;
@@ -1190,25 +1152,35 @@
                 toast('🆕 新编码: ' + code + '，请完善信息', 'success');
                 setTimeout(() => {
                     mostrarModalCrear(code);
-                }, 400);
+                }, 300);
             }
         }
 
         // ============================================================
-        //  弹窗
+        //  弹窗管理
         // ============================================================
         function mostrarModalCrear(codigo) {
+            console.log('🆕 打开创建弹窗，编码:', codigo);
+            const modal = document.getElementById('addProductModal');
             document.getElementById('modalCodigo').value = codigo;
             document.getElementById('modalNombre').value = '';
             document.getElementById('modalPrecio').value = '';
             document.getElementById('modalStock').value = '1';
             document.getElementById('modalMinimo').value = '3';
-            document.getElementById('addProductModal').classList.add('active');
-            setTimeout(() => document.getElementById('modalNombre').focus(), 300);
+            modal.classList.add('active');
+            isModalOpen = true;
+            setTimeout(() => {
+                document.getElementById('modalNombre').focus();
+            }, 400);
         }
 
         function cerrarModal() {
-            document.getElementById('addProductModal').classList.remove('active');
+            const modal = document.getElementById('addProductModal');
+            modal.classList.remove('active');
+            isModalOpen = false;
+            setTimeout(() => {
+                document.getElementById('searchInput').focus();
+            }, 200);
         }
 
         // ============================================================
@@ -1230,7 +1202,7 @@
                 container.innerHTML = `
                     <div class="empty">
                         <span>📭</span>
-                        ${productos.length === 0 ? '暂无产品，扫码添加吧' : '未找到匹配结果'}
+                        ${productos.length === 0 ? '暂无产品，扫码添加吧 🆕' : '未找到匹配结果'}
                     </div>
                 `;
                 container.style.display = 'block';
@@ -1270,10 +1242,9 @@
             operaciones.slice(0, 20).forEach(o => {
                 const cls = o.tipo === 'IN' ? 'IN' : o.tipo === 'OUT' ? 'OUT' : o.tipo === 'VERSION' ? 'VERSION' :
                     'NEW';
-                const label = o.tipo === 'VERSION' ? '🔄' : '';
                 html += `
                     <div class="log-item">
-                        <span><span class="log-type ${cls}">${label} ${o.mensaje}</span></span>
+                        <span><span class="log-type ${cls}">${o.mensaje}</span></span>
                         <span class="log-time">${o.tiempo}</span>
                     </div>
                 `;
@@ -1373,10 +1344,7 @@
         //  初始化
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
-            // === 版本检测 ===
             checkVersionOnLoad();
-
-            // === 加载数据 ===
             cargarProductos();
             cargarImeiRecords();
 
@@ -1390,7 +1358,7 @@
                     if (val.length >= 3) {
                         handleScannedCode(val, 'gun');
                     }
-                }, 200);
+                }, 300);
             });
 
             searchInput.addEventListener('keydown', function(e) {
@@ -1461,8 +1429,8 @@
                 document.getElementById('cameraCodigo').value = '';
             });
 
-            // ===== 弹窗 =====
-            document.getElementById('modalConfirm').addEventListener('click', function() {
+            // ===== 弹窗事件 =====
+            document.getElementById('modalConfirm').addEventListener('click', async function() {
                 const codigo = document.getElementById('modalCodigo').value.trim();
                 const nombre = document.getElementById('modalNombre').value.trim();
                 const precio = document.getElementById('modalPrecio').value;
@@ -1475,24 +1443,32 @@
                     return;
                 }
 
-                crearProducto(codigo, nombre, precio, stock, minimo);
+                const success = await crearProducto(codigo, nombre, precio, stock, minimo);
+                if (success) {
+                    cerrarModal();
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('formCodigo').value = '';
+                    document.getElementById('cameraCodigo').value = '';
+                    document.getElementById('searchInput').focus();
+                }
+            });
+
+            document.getElementById('modalCancel').addEventListener('click', function() {
                 cerrarModal();
-                document.getElementById('searchInput').value = '';
                 document.getElementById('searchInput').focus();
-                document.getElementById('formCodigo').value = '';
-                document.getElementById('cameraCodigo').value = '';
             });
 
-            document.getElementById('modalCancel').addEventListener('click', cerrarModal);
             document.getElementById('addProductModal').addEventListener('click', function(e) {
-                if (e.target === this) cerrarModal();
+                if (e.target === this) {
+                    cerrarModal();
+                    document.getElementById('searchInput').focus();
+                }
             });
 
-            // ===== 版本升级按钮 =====
+            // ===== 版本升级 =====
             document.getElementById('btnUpgradeVersion').addEventListener('click', function() {
                 const oldVersion = getCurrentVersion();
                 const newVersion = upgradeVersion();
-                // 记录到操作日志
                 operaciones.unshift({
                     tipo: 'VERSION',
                     mensaje: '⬆ 手动升级: ' + oldVersion + ' → ' + newVersion,
@@ -1500,23 +1476,20 @@
                 });
                 if (operaciones.length > 50) operaciones.pop();
                 renderLog();
-                // 刷新版本历史
                 renderVersionHistory();
             });
 
             // ===== 键盘快捷键 =====
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'F1') {
-                    e.preventDefault();
-                    document.getElementById('btnQuickIn').click();
-                }
-                if (e.key === 'F2') {
-                    e.preventDefault();
-                    document.getElementById('btnQuickOut').click();
-                }
-                if (e.key === 'F3') {
-                    e.preventDefault();
-                    document.getElementById('cameraScanBtn').click();
+                if (e.key === 'F1') { e.preventDefault();
+                    document.getElementById('btnQuickIn').click(); }
+                if (e.key === 'F2') { e.preventDefault();
+                    document.getElementById('btnQuickOut').click(); }
+                if (e.key === 'F3') { e.preventDefault();
+                    document.getElementById('cameraScanBtn').click(); }
+                if (e.key === 'Escape' && isModalOpen) {
+                    cerrarModal();
+                    document.getElementById('searchInput').focus();
                 }
             });
 
@@ -1527,6 +1500,7 @@
             }, 30000);
 
             setTimeout(() => { document.getElementById('searchInput').focus(); }, 500);
+            console.log('✅ CELL LA 25 已启动 (HTTP 400 已修复)');
         });
     </script>
 </body>
