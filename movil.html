@@ -549,6 +549,9 @@
         .toast.error {
             background: #b21f1f;
         }
+        .toast.warning {
+            background: #b27c1a;
+        }
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -747,7 +750,7 @@
         <div class="badge-group">
             <span class="badge" id="syncStatus">🔄</span>
             <span class="badge">🔫📷 双模</span>
-            <span class="badge version" id="headerVersion">v2.1.0</span>
+            <span class="badge version" id="headerVersion">v2.2.0</span>
         </div>
     </div>
 
@@ -788,6 +791,11 @@
     <!-- ============================================================ -->
     <div class="tab-content active" id="tabStock">
 
+        <!-- ⚠️ 扫码提示 -->
+        <div style="background:#fff3cd;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#856404;border:1px solid #ffc107;">
+            ⚠️ <strong>只认商品条码（13位纯数字）</strong> · IMEI/SN 请到"IMEI出库"页操作
+        </div>
+
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="🔫 扫码枪 / 搜索产品..." autofocus>
             <button class="btn success" id="btnQuickIn">📥 +1</button>
@@ -796,17 +804,17 @@
         </div>
 
         <div class="camera-area">
-            <button class="btn-camera" id="cameraScanBtn">📷 手机扫码 (IMEI / 条码)</button>
+            <button class="btn-camera" id="cameraScanBtn">📷 手机扫码</button>
             <div id="scanner-container">
                 <button class="scan-close" id="closeScanner">✕ 关闭</button>
                 <div id="scanner-view"></div>
                 <div class="scan-overlay"></div>
                 <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.5);font-size:11px;z-index:5;">
-                    扫码模式: <span id="scanModeLabel">产品/IMEI</span>
+                    只认 <strong style="color:#fdbb2d;">13位商品条码</strong>
                 </div>
             </div>
             <div style="margin-top:8px;font-size:12px;color:#8896b0;">
-                💡 扫码自动识别：<strong>产品条码 → 快速出入库</strong> ｜ <strong>IMEI → 自动出库</strong>
+                💡 <strong>只认 13 位纯数字商品条码</strong> · IMEI/SN 请到 IMEI 出库页
             </div>
         </div>
 
@@ -820,8 +828,11 @@
     <div class="tab-content" id="tabImei">
         <div class="card">
             <div class="card-title">📱 IMEI 出库</div>
+            <div style="background:#f8d7da;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#721c24;border:1px solid #f5c6cb;">
+                📌 这里专门处理 IMEI 出库 · 扫描或输入 15 位 IMEI 号
+            </div>
             <div class="form-row">
-                <input type="text" id="imeiInput" placeholder="扫描或输入 IMEI 号" style="flex:2;">
+                <input type="text" id="imeiInput" placeholder="扫描或输入 IMEI 号 (15位)" style="flex:2;">
                 <button class="btn danger" id="imeiOutBtn">📤 IMEI 出库</button>
             </div>
             <div class="form-hint">💡 扫描 IMEI 自动出库，或手动输入后点击出库</div>
@@ -859,18 +870,18 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- Tab 4: 添加产品（含内存/存储） -->
+    <!-- Tab 4: 添加产品 -->
     <!-- ============================================================ -->
     <div class="tab-content" id="tabAdd">
         <div class="card">
             <div class="card-title">➕ 添加新产品</div>
             <div style="margin-bottom:10px;">
-                <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📱 产品编码</label>
-                <input type="text" id="manualCodigo" placeholder="输入编码" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
+                <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📱 产品编码 (13位)</label>
+                <input type="text" id="manualCodigo" placeholder="输入13位商品条码" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
             </div>
             <div style="margin-bottom:10px;">
                 <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📦 产品名称</label>
-                <input type="text" id="manualNombre" placeholder="例如：iPhone 15 Pro" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
+                <input type="text" id="manualNombre" placeholder="例如：HONOR X5c" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
             </div>
             <div class="form-row" style="margin-bottom:10px;">
                 <div style="flex:1;">
@@ -902,11 +913,11 @@
                 <input type="number" id="manualStock" placeholder="库存" value="1" style="flex:1;">
             </div>
             <button class="btn primary" id="manualAddBtn" style="width:100%;margin-top:12px;padding:14px;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;color:white;background:#0b1a33;">✅ 添加产品</button>
-            <div class="form-hint">💡 手动添加产品，包含内存(RAM)和存储(ROM)</div>
+            <div class="form-hint">💡 手动添加产品，编码必须是 13 位纯数字</div>
         </div>
     </div>
 
-    <!-- ===== 新增产品弹窗（扫码触发，含内存/存储） ===== -->
+    <!-- ===== 新增产品弹窗（扫码触发） ===== -->
     <div class="modal-overlay" id="addProductModal">
         <div class="modal-box">
             <div class="modal-title">
@@ -914,12 +925,12 @@
                 <span class="badge-new">请完善信息</span>
             </div>
             <div class="form-group">
-                <label>📱 产品编码</label>
+                <label>📱 产品编码 (13位)</label>
                 <input type="text" id="modalCodigo" readonly style="background:#f0f2f5;font-weight:700;">
             </div>
             <div class="form-group">
                 <label>📦 产品名称 <span style="color:#b21f1f;">*</span></label>
-                <input type="text" id="modalNombre" placeholder="例如：iPhone 15 Pro" autofocus>
+                <input type="text" id="modalNombre" placeholder="例如：HONOR X5c" autofocus>
             </div>
             <div class="form-row" style="margin-bottom:14px;gap:10px;">
                 <div style="flex:1;">
@@ -967,10 +978,10 @@
     <!-- ===== 底部 ===== -->
     <div class="footer">
         <div class="version-area">
-            <span class="version-label" id="footerVersion">📌 v2.1.0</span>
+            <span class="version-label" id="footerVersion">📌 v2.2.0</span>
             <span style="font-size:10px;color:#b0b8c8;">部署后自动 +0.1</span>
         </div>
-        <div style="margin-top:4px;">实时数据 · CELL LA 25 · 全网最全</div>
+        <div style="margin-top:4px;">实时数据 · CELL LA 25 · 只认 13 位商品条码</div>
     </div>
 
     <script>
@@ -993,7 +1004,7 @@
         //  版本管理
         // ============================================================
         const VERSION_KEY = 'cell_la25_version_v2';
-        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v2.1.0';
+        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v2.2.0';
 
         function updateVersionDisplay() {
             document.getElementById('headerVersion').textContent = currentVersion;
@@ -1003,7 +1014,7 @@
         function bumpVersion() {
             const parts = currentVersion.replace('v', '').split('.');
             let major = parseInt(parts[0]) || 2;
-            let minor = parseInt(parts[1]) || 1;
+            let minor = parseInt(parts[1]) || 2;
             let patch = parseInt(parts[2]) || 0;
             patch += 1;
             if (patch >= 10) { patch = 0;
@@ -1073,11 +1084,15 @@
         // ============================================================
         async function crearProducto(codigo, nombre, precio, stock, ram, rom) {
             if (!nombre || !nombre.trim()) { toast('⚠️ 请填写产品名称', 'error'); return false; }
+            // 检查编码是否为13位纯数字
+            if (!/^\d{13}$/.test(codigo)) {
+                toast('⚠️ 编码必须是 13 位纯数字！', 'error');
+                return false;
+            }
             if (productos.some(p => p.codigo === codigo)) {
                 toast('⚠️ 编码已存在: ' + codigo, 'error');
                 return false;
             }
-            // 组合规格显示
             const specs = ram + ' + ' + rom;
             const data = {
                 codigo: String(codigo).trim(),
@@ -1110,12 +1125,10 @@
         async function eliminarProducto(codigo) {
             if (!confirm('⚠️ 确定要删除产品 ' + codigo + ' 吗？\n将同时删除该产品的所有 IMEI 记录！')) return;
             try {
-                // 删除关联的 IMEI 记录
                 const imeis = imeiRecords.filter(r => r.producto_codigo === codigo);
                 for (const im of imeis) {
                     await supabaseFetch('/rest/v1/imei_records?imei=eq.' + im.imei, { method: 'DELETE' });
                 }
-                // 删除产品
                 await supabaseFetch('/rest/v1/productos?codigo=eq.' + codigo, { method: 'DELETE' });
                 const p = productos.find(pr => pr.codigo === codigo);
                 await cargarProductos();
@@ -1137,6 +1150,11 @@
 
         async function ejecutarOperacion(codigo, cantidad, tipo, source = '') {
             if (!codigo || cantidad <= 0) { toast('⚠️ 请输入编码和数量', 'error'); return false; }
+            // 检查是否为13位纯数字
+            if (!/^\d{13}$/.test(codigo)) {
+                toast('⚠️ 请扫描 13 位商品条码！', 'error');
+                return false;
+            }
             const idx = productos.findIndex(p => p.codigo === codigo);
             if (idx === -1) { mostrarModalCrear(codigo); return false; }
             const p = productos[idx];
@@ -1173,8 +1191,13 @@
         }
 
         async function imeiOut(imei) {
-            if (!imei || imei.length < 8) { toast('⚠️ 请输入有效的 IMEI', 'error'); return; }
+            if (!imei || imei.length < 8) { toast('⚠️ 请输入有效的 IMEI (15位数字)', 'error'); return; }
             imei = imei.trim();
+            // 检查是否为IMEI格式（14-16位纯数字）
+            if (!/^\d{14,16}$/.test(imei)) {
+                toast('⚠️ IMEI 格式错误，请输入 14-16 位纯数字', 'error');
+                return;
+            }
             const record = imeiRecords.find(r => r.imei === imei);
             if (!record) { toast('❌ IMEI 不存在: ' + imei, 'error'); return; }
             if (record.status === 'OUT') { toast('⚠️ IMEI ' + imei + ' 已出库', 'error'); return; }
@@ -1212,44 +1235,50 @@
         }
 
         // ============================================================
-        //  扫码处理
+        //  ⭐ 扫码处理（核心修改：只认 13 位纯数字）
         // ============================================================
         function handleScannedCode(code, source = '') {
             if (!code || code.length < 3) return;
             code = code.trim();
-            const isImei = /^\d{14,16}$/.test(code);
 
-            if (isImei) {
-                toast('📱 识别为 IMEI: ' + code, 'success');
-                document.querySelector('.tab[data-tab="tabImei"]')?.click();
-                document.getElementById('imeiInput').value = code;
-                const record = imeiRecords.find(r => r.imei === code);
-                const preview = document.getElementById('imeiPreview');
-                document.getElementById('previewImei').textContent = code;
-                if (record) {
-                    const p = productos.find(pr => pr.codigo === record.producto_codigo);
-                    document.getElementById('previewProducto').textContent = p ? p.nombre : record.producto_codigo;
-                    document.getElementById('previewStatus').textContent = record.status === 'IN' ? '✅ 可出库' : '📤 已出库';
-                    document.getElementById('previewStatus').style.color = record.status === 'IN' ? '#0f7b3a' : '#b21f1f';
-                    if (record.status === 'IN') {
-                        setTimeout(() => { imeiOut(code); }, 500);
-                    }
+            // ⭐ 判断是否为 13 位纯数字（商品条码）
+            const isEAN13 = /^\d{13}$/.test(code);
+
+            // 判断是否为 IMEI（14-16位纯数字）
+            const isIMEI = /^\d{14,16}$/.test(code);
+
+            // 判断是否为 SN（包含字母和数字混合）
+            const isSN = /^[A-Z0-9]{10,20}$/.test(code) && !/^\d+$/.test(code);
+
+            // ⭐⭐⭐ 核心规则：只认 13 位纯数字商品条码 ⭐⭐⭐
+            if (!isEAN13) {
+                // 提示用户
+                if (isIMEI) {
+                    toast('⚠️ 这是 IMEI 码（' + code.length + '位），请到 "IMEI出库" 页操作', 'warning');
+                } else if (isSN) {
+                    toast('⚠️ 这是 SN 码，不是商品条码，请扫描 13 位商品条码', 'warning');
                 } else {
-                    document.getElementById('previewProducto').textContent = '❌ 未找到';
-                    document.getElementById('previewStatus').textContent = '⚠️ 未入库，无法出库';
-                    document.getElementById('previewStatus').style.color = '#b21f1f';
+                    toast('⚠️ 只认 13 位纯数字商品条码，当前 ' + code.length + ' 位', 'warning');
                 }
-                preview.style.display = 'block';
+                // 清空输入框（如果是扫码枪输入的）
+                document.getElementById('searchInput').value = '';
+                // 如果有摄像头扫码，停止
+                if (source === 'camera') {
+                    stopCameraScanner();
+                }
                 return;
             }
 
-            // 产品码
+            // ===== 以下是 13 位商品条码的处理 =====
             document.getElementById('searchInput').value = code;
+
             const existente = productos.find(p => p.codigo === code);
+
             if (existente) {
                 toast('✅ 已找到: ' + existente.nombre + ' (库存: ' + existente.stock + ')', 'success');
-                const filtered = productos.filter(p => p.codigo === code || p.nombre.toLowerCase().includes(code.toLowerCase()));
-                filteredProductos = filtered;
+                filteredProductos = productos.filter(p =>
+                    p.codigo === code || p.nombre.toLowerCase().includes(code.toLowerCase())
+                );
                 renderProductos();
                 const cards = document.querySelectorAll('.producto-card');
                 cards.forEach(card => {
@@ -1260,11 +1289,19 @@
                         setTimeout(() => card.classList.remove('highlight'), 2500);
                     }
                 });
+                // 清空搜索框（方便下次扫码）
+                document.getElementById('searchInput').value = '';
             } else {
                 toast('🆕 新编码: ' + code + '，请完善信息', 'success');
                 setTimeout(() => mostrarModalCrear(code), 300);
             }
+
+            // 如果是摄像头扫码，停止摄像头
+            if (source === 'camera') {
+                stopCameraScanner();
+            }
         }
+
         let filteredProductos = [];
 
         // ============================================================
@@ -1436,14 +1473,15 @@
                     target: view,
                     constraints: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }
                 },
-                decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "upc_reader",
-                        "upc_e_reader", "code_93_reader"
-                    ] }
+                // ⭐ 只启用 EAN-13 条码识别
+                decoder: {
+                    readers: ["ean_reader"]
+                }
             }, function(err) {
                 if (err) {
                     toast('❌ 摄像头启动失败: ' + err, 'error');
                     container.classList.remove('active');
-                    document.getElementById('cameraScanBtn').textContent = '📷 手机扫码 (IMEI / 条码)';
+                    document.getElementById('cameraScanBtn').textContent = '📷 手机扫码';
                     document.getElementById('cameraScanBtn').classList.remove('scanning');
                     return;
                 }
@@ -1455,7 +1493,6 @@
                 const code = data.codeResult.code;
                 if (code) {
                     handleScannedCode(code, 'camera');
-                    stopCameraScanner();
                 }
             });
         }
@@ -1463,7 +1500,7 @@
         function stopCameraScanner() {
             if (quaggaInit) Quagga.stop();
             document.getElementById('scanner-container').classList.remove('active');
-            document.getElementById('cameraScanBtn').textContent = '📷 手机扫码 (IMEI / 条码)';
+            document.getElementById('cameraScanBtn').textContent = '📷 手机扫码';
             document.getElementById('cameraScanBtn').classList.remove('scanning');
         }
 
@@ -1495,23 +1532,15 @@
             cargarProductos();
             cargarImeiRecords();
 
-            // ===== 扫码枪输入 =====
+            // ===== 扫码枪输入（只认13位纯数字） =====
             const searchInput = document.getElementById('searchInput');
             searchInput.addEventListener('input', function() {
                 const val = this.value.trim();
                 clearTimeout(this._scanTimer);
                 this._scanTimer = setTimeout(() => {
                     if (val.length >= 3) {
-                        if (/^\d{14,16}$/.test(val)) {
-                            handleScannedCode(val);
-                            this.value = '';
-                        } else {
-                            filteredProductos = productos.filter(p =>
-                                p.nombre.toLowerCase().includes(val.toLowerCase()) ||
-                                p.codigo.toLowerCase().includes(val.toLowerCase())
-                            );
-                            renderProductos();
-                        }
+                        // ⭐ 直接调用 handleScannedCode 进行验证
+                        handleScannedCode(val, 'gun');
                     } else if (val.length === 0) {
                         filteredProductos = [];
                         renderProductos();
@@ -1524,17 +1553,19 @@
                     e.preventDefault();
                     const val = this.value.trim();
                     if (val.length >= 3) {
-                        handleScannedCode(val);
-                        this.value = '';
+                        handleScannedCode(val, 'gun');
                     }
                 }
             });
 
-            // ===== 快捷出入库 =====
+            // ===== 快捷出入库（先验证是否为13位商品码） =====
             document.getElementById('btnQuickIn').addEventListener('click', function() {
                 const codigo = document.getElementById('searchInput').value.trim();
                 if (!codigo) { toast('⚠️ 请先扫码或输入编码', 'error'); return; }
-                if (/^\d{14,16}$/.test(codigo)) { toast('⚠️ 这是 IMEI，请用 IMEI 出库', 'error'); return; }
+                if (!/^\d{13}$/.test(codigo)) {
+                    toast('⚠️ 只认 13 位商品条码！当前 ' + codigo.length + ' 位', 'error');
+                    return;
+                }
                 ejecutarOperacion(codigo, 1, 'IN', '枪');
                 document.getElementById('searchInput').value = '';
                 searchInput.focus();
@@ -1543,11 +1574,16 @@
             document.getElementById('btnQuickOut').addEventListener('click', function() {
                 const codigo = document.getElementById('searchInput').value.trim();
                 if (!codigo) { toast('⚠️ 请先扫码或输入编码', 'error'); return; }
+                // 检查是否为 IMEI（14-16位纯数字）
                 if (/^\d{14,16}$/.test(codigo)) {
+                    toast('⚠️ 这是 IMEI 码，请到 "IMEI出库" 页操作', 'warning');
                     document.querySelector('.tab[data-tab="tabImei"]')?.click();
                     document.getElementById('imeiInput').value = codigo;
-                    imeiOut(codigo);
                     document.getElementById('searchInput').value = '';
+                    return;
+                }
+                if (!/^\d{13}$/.test(codigo)) {
+                    toast('⚠️ 只认 13 位商品条码！当前 ' + codigo.length + ' 位', 'error');
                     return;
                 }
                 ejecutarOperacion(codigo, 1, 'OUT', '枪');
@@ -1610,6 +1646,10 @@
                 const ram = document.getElementById('manualRam').value;
                 const rom = document.getElementById('manualRom').value;
                 if (!codigo || !nombre) { toast('⚠️ 请填写编码和名称', 'error'); return; }
+                if (!/^\d{13}$/.test(codigo)) {
+                    toast('⚠️ 编码必须是 13 位纯数字！', 'error');
+                    return;
+                }
                 crearProducto(codigo, nombre, precio, stock, ram, rom).then(() => {
                     document.getElementById('manualCodigo').value = '';
                     document.getElementById('manualNombre').value = '';
@@ -1626,6 +1666,10 @@
                 const rom = document.getElementById('modalRom').value;
                 if (!nombre) { toast('⚠️ 请填写产品名称', 'error');
                     document.getElementById('modalNombre').focus(); return; }
+                if (!/^\d{13}$/.test(codigo)) {
+                    toast('⚠️ 编码必须是 13 位纯数字！', 'error');
+                    return;
+                }
                 const ok = await crearProducto(codigo, nombre, precio, stock, ram, rom);
                 if (ok) {
                     cerrarModal();
@@ -1659,7 +1703,7 @@
             }, 45000);
 
             setTimeout(() => { document.getElementById('searchInput').focus(); }, 400);
-            console.log('✅ CELL LA 25 v' + currentVersion + ' 已启动');
+            console.log('✅ CELL LA 25 v' + currentVersion + ' 已启动 - 只认13位商品条码');
         });
     </script>
 </body>
