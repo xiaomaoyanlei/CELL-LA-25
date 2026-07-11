@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>CELL LA 25 · 中文测试</title>
+    <title>CELL LA 25 · 双模扫码</title>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js">
+    </script>
     <style>
         * {
             margin: 0;
@@ -11,120 +13,457 @@
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            font-family: 'Courier New', monospace;
             background: #f5f7fb;
-            padding: 20px;
+            padding: 16px 12px 100px 12px;
             min-height: 100vh;
             color: #1a2a6c;
         }
         .header {
             background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
-            padding: 18px;
+            padding: 16px 18px;
             border-radius: 16px;
             color: white;
             margin-bottom: 18px;
-            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
         }
         .header h1 {
-            font-size: 22px;
+            font-size: 18px;
+            font-weight: 700;
         }
-        .header .sub {
-            font-size: 13px;
-            opacity: 0.85;
-            margin-top: 4px;
+        .header .sync-status {
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 8px;
+            border-radius: 20px;
         }
-        .card {
+        .header .sync-status.online {
+            background: #0f7b3a;
+        }
+        .header .sync-status.offline {
+            background: #b21f1f;
+        }
+        .header .badge-dual {
+            font-size: 9px;
+            background: rgba(255, 255, 255, 0.25);
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .header .badge-version {
+            font-size: 10px;
+            background: #fdbb2d;
+            color: #1a2a6c;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .stats-grid .stat-item {
+            background: white;
+            border-radius: 12px;
+            padding: 10px 6px;
+            text-align: center;
+            border: 1px solid #eef2f8;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+        .stats-grid .stat-item .label {
+            font-size: 9px;
+            color: #8892a8;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .stats-grid .stat-item .value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a6c;
+            margin-top: 2px;
+        }
+        .stats-grid .stat-item.critico .value {
+            color: #b21f1f;
+        }
+        .stats-grid .stat-item.total .value {
+            color: #0f7b3a;
+        }
+        .mode-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
             background: white;
             border-radius: 14px;
-            padding: 18px;
+            padding: 4px;
+            border: 1px solid #eef2f8;
+        }
+        .mode-tabs .tab {
+            flex: 1;
+            padding: 10px 8px;
+            text-align: center;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #8892a8;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+            background: transparent;
+            touch-action: manipulation;
+        }
+        .mode-tabs .tab.active {
+            background: #1a2a6c;
+            color: white;
+        }
+        .mode-tabs .tab:active {
+            transform: scale(0.96);
+        }
+        .mode-content {
+            display: none;
+        }
+        .mode-content.active {
+            display: block;
+        }
+        .search-box {
+            background: white;
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            border: 1px solid #eef2f8;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            flex-wrap: wrap;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 14px 16px;
+            border: 2px solid #1a2a6c;
+            border-radius: 10px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            background: #fafffe;
+            outline: none;
+            min-width: 120px;
+            height: 56px;
+        }
+        .search-box input:focus {
+            border-color: #fdbb2d;
+            box-shadow: 0 0 0 3px rgba(253, 187, 45, 0.3);
+        }
+        .search-box .btn {
+            padding: 14px 18px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            touch-action: manipulation;
+            flex-shrink: 0;
+            color: white;
+            height: 56px;
+        }
+        .search-box .btn.clear {
+            background: #8892a8;
+        }
+        .search-box .btn.in {
+            background: #0f7b3a;
+        }
+        .search-box .btn.out {
+            background: #b21f1f;
+        }
+        .search-box .btn:active {
+            transform: scale(0.96);
+        }
+        .scan-hint {
+            text-align: center;
+            font-size: 12px;
+            color: #8892a8;
+            margin-bottom: 14px;
+            padding: 8px;
+            background: #eef2f8;
+            border-radius: 10px;
+        }
+        .scan-hint strong {
+            color: #1a2a6c;
+        }
+        .camera-area {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+            border: 1px solid #eef2f8;
+            text-align: center;
+        }
+        .camera-area .btn-camera {
+            padding: 16px 30px;
+            border: none;
+            border-radius: 14px;
+            background: #1a2a6c;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            touch-action: manipulation;
+            width: 100%;
+        }
+        .camera-area .btn-camera:active {
+            transform: scale(0.96);
+        }
+        .camera-area .btn-camera.scanning {
+            background: #b21f1f;
+        }
+        #scanner-container {
+            background: #1a1a2e;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 12px;
+            display: none;
+            position: relative;
+            border: 2px solid #fdbb2d;
+        }
+        #scanner-container.active {
+            display: block;
+        }
+        #scanner-container video {
+            width: 100%;
+            display: block;
+        }
+        #scanner-container .scan-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 35%;
+            border: 3px dashed rgba(253, 187, 45, 0.7);
+            border-radius: 16px;
+            pointer-events: none;
+        }
+        .scan-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .form-card {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
             margin-bottom: 14px;
             border: 1px solid #eef2f8;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         }
-        .card .title {
-            font-size: 15px;
+        .form-card .form-title {
+            font-size: 14px;
             font-weight: 700;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             color: #1a2a6c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .card label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 4px;
+        .form-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
         }
-        .card input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid #dde2ea;
+        .form-row input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1.5px solid #e2e7f0;
             border-radius: 10px;
-            font-size: 16px;
-            font-family: inherit;
+            font-size: 15px;
+            font-family: 'Courier New', monospace;
             background: #fafbfc;
             outline: none;
-            margin-bottom: 10px;
+            min-width: 80px;
         }
-        .card input:focus {
+        .form-row input:focus {
             border-color: #1a2a6c;
-            background: white;
+            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
         }
-        .btn {
-            width: 100%;
-            padding: 14px;
+        .form-row input[type="number"] {
+            width: 80px;
+            flex: 0 0 80px;
+        }
+        .form-row .btn-in {
+            padding: 10px 20px;
             border: none;
             border-radius: 10px;
             font-weight: 700;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
-            color: white;
-            touch-action: manipulation;
-        }
-        .btn-blue {
-            background: #1a2a6c;
-        }
-        .btn-green {
             background: #0f7b3a;
+            color: white;
         }
-        .btn-red {
+        .form-row .btn-out {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
             background: #b21f1f;
+            color: white;
         }
-        .btn:active {
+        .form-row .btn-in:active,
+        .form-row .btn-out:active {
             transform: scale(0.96);
         }
-        .btn-row {
-            display: flex;
-            gap: 10px;
+        .form-hint {
+            font-size: 11px;
+            color: #8892a8;
+            margin-top: 6px;
         }
-        .btn-row .btn {
+        .productos-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .producto-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1px solid #eef2f8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            transition: 0.15s;
+        }
+        .producto-card.highlight {
+            border: 2px solid #fdbb2d;
+            background: #fffbe6;
+        }
+        .producto-card .info {
             flex: 1;
         }
-        .result-box {
-            background: #f8f9fc;
-            border-radius: 10px;
-            padding: 14px;
-            margin-top: 12px;
-            font-size: 14px;
+        .producto-card .info .nombre {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a2a6c;
+        }
+        .producto-card .info .codigo {
+            font-size: 12px;
+            color: #8892a8;
+            font-family: monospace;
+        }
+        .producto-card .stock-area {
+            text-align: right;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+        .producto-card .stock-area .stock {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .producto-card .stock-area .stock.alto {
+            color: #0f7b3a;
+        }
+        .producto-card .stock-area .stock.medio {
+            color: #b27c1a;
+        }
+        .producto-card .stock-area .stock.bajo {
+            color: #b21f1f;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .producto-card .stock-area .stock-label {
+            font-size: 10px;
+            color: #8892a8;
+            text-transform: uppercase;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+        .log-card {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            margin-top: 6px;
+            border: 1px solid #eef2f8;
+        }
+        .log-card .log-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a6c;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .log-card .log-title span {
+            font-weight: 400;
+            color: #8892a8;
+            font-size: 11px;
+        }
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 12px;
+            border-bottom: 1px solid #f0f2f5;
             color: #333;
-            border-left: 4px solid #8892a8;
-            word-break: break-all;
-            max-height: 350px;
-            overflow-y: auto;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            font-family: inherit;
+            flex-wrap: wrap;
+            gap: 4px;
         }
-        .result-box.ok {
-            border-left-color: #0f7b3a;
-            background: #f0fff4;
+        .log-item .log-type.IN {
+            color: #0f7b3a;
+            font-weight: 700;
         }
-        .result-box.err {
-            border-left-color: #b21f1f;
-            background: #fff5f5;
+        .log-item .log-type.OUT {
+            color: #b21f1f;
+            font-weight: 700;
         }
-        .result-box.wait {
-            border-left-color: #fdbb2d;
-            background: #fffef5;
+        .log-item .log-type.NEW {
+            color: #1a2a6c;
+            font-weight: 700;
+        }
+        .log-item .log-type.VERSION {
+            color: #b27c1a;
+            font-weight: 700;
+        }
+        .log-item .log-time {
+            color: #8892a8;
+            font-size: 10px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            color: #8892a8;
+        }
+        .empty {
+            text-align: center;
+            padding: 40px 0;
+            color: #8892a8;
+        }
+        .empty span {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
         }
         .toast {
             position: fixed;
@@ -136,13 +475,13 @@
             padding: 12px 24px;
             border-radius: 40px;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
             z-index: 999;
             opacity: 0;
             transition: 0.3s;
             pointer-events: none;
-            max-width: 92%;
+            max-width: 90%;
             text-align: center;
         }
         .toast.show {
@@ -154,322 +493,983 @@
         .toast.error {
             background: #b21f1f;
         }
-        .hint {
-            font-size: 12px;
-            color: #8892a8;
-            margin-top: 6px;
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999 !important;
+            padding: 20px;
         }
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #8892a8;
-            padding: 4px 0;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 10px;
+        .modal-overlay.active {
+            display: flex !important;
         }
-        .badge {
-            display: inline-block;
-            padding: 2px 12px;
+        .modal-box {
+            background: white;
             border-radius: 20px;
+            padding: 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: modalIn 0.3s ease-out;
+            position: relative;
+            z-index: 10000 !important;
+        }
+        @keyframes modalIn {
+            0% {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+        .modal-box .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2a6c;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-box .modal-title .badge-new {
+            background: #fdbb2d;
+            color: #1a2a6c;
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .modal-box .form-group {
+            margin-bottom: 12px;
+        }
+        .modal-box .form-group label {
+            display: block;
             font-size: 12px;
             font-weight: 600;
+            color: #8892a8;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
-        .badge.ok {
-            background: #d4edda;
-            color: #0f7b3a;
+        .modal-box .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #e2e7f0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Courier New', monospace;
+            background: #fafbfc;
+            outline: none;
         }
-        .badge.err {
-            background: #f8d7da;
-            color: #b21f1f;
+        .modal-box .form-group input:focus {
+            border-color: #1a2a6c;
+            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
         }
-        .badge.wait {
-            background: #fff3cd;
-            color: #b27c1a;
+        .modal-box .form-group .hint {
+            font-size: 11px;
+            color: #8892a8;
+            margin-top: 4px;
+        }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .modal-box .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .modal-box .modal-actions .btn-cancel {
+            background: #eef2f8;
+            color: #8892a8;
+        }
+        .modal-box .modal-actions .btn-confirm {
+            background: #1a2a6c;
+            color: white;
+        }
+        .modal-box .modal-actions .btn-confirm:active {
+            transform: scale(0.96);
+        }
+        .footer {
+            text-align: center;
+            padding: 16px 0 4px 0;
+            font-size: 11px;
+            color: #8892a8;
+        }
+        .footer .version-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+        .footer .version-area .version-label {
+            font-weight: 700;
+            color: #1a2a6c;
+            font-size: 13px;
+            background: #eef2f8;
+            padding: 2px 14px;
+            border-radius: 20px;
+        }
+        .footer .version-area .btn-upgrade {
+            padding: 4px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #fdbb2d;
+            color: #1a2a6c;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .footer .version-area .btn-upgrade:active {
+            transform: scale(0.95);
+        }
+        .footer .version-history {
+            font-size: 10px;
+            color: #b0b8c8;
+            margin-top: 4px;
+        }
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .search-box input {
+                font-size: 16px;
+                padding: 12px 14px;
+                height: 48px;
+            }
+            .search-box .btn {
+                height: 48px;
+                padding: 10px 14px;
+                font-size: 12px;
+            }
+            .modal-box {
+                padding: 18px;
+                margin: 10px;
+            }
+            .mode-tabs .tab {
+                font-size: 11px;
+                padding: 8px 4px;
+            }
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>📦 CELL LA 25 · 中文测试</h1>
-        <div class="sub">专门测试「创建产品」和「出入库」功能</div>
-    </div>
-
-    <div class="card">
-        <div class="title">📱 测试数据</div>
-        <label>产品编码（扫码自动填入）</label>
-        <input type="text" id="testCodigo" placeholder="输入编码，例如：TEST001" value="TEST001">
-        <label>产品名称</label>
-        <input type="text" id="testNombre" placeholder="输入产品名称" value="测试手机">
-        <label>价格（巴波亚 B/.）</label>
-        <input type="number" id="testPrecio" placeholder="0.00" value="999">
-        <label>库存数量</label>
-        <input type="number" id="testStock" placeholder="数量" value="10">
-        <button class="btn btn-blue" id="testBtn">🚀 创建产品</button>
-        <div class="hint">💡 点击按钮创建产品，结果会显示在下方</div>
-    </div>
-
-    <div class="card">
-        <div class="title">📦 测试出入库</div>
-        <div class="btn-row">
-            <button class="btn btn-green" id="testBtnIn">📥 入库 +1</button>
-            <button class="btn btn-red" id="testBtnOut">📤 出库 -1</button>
+        <h1>📦 CELL LA 25</h1>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span class="sync-status" id="syncStatus">🔄</span>
+            <span class="badge-dual">🔫📷 双模</span>
+            <span class="badge-version" id="headerVersion">v1.0.3</span>
         </div>
-        <div class="hint">💡 用上面的编码测试入库/出库（需要产品已存在）</div>
     </div>
 
-    <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span style="font-weight:700;font-size:15px;">📋 执行结果</span>
-            <button id="clearResult" style="background:none;border:none;color:#8892a8;cursor:pointer;font-size:13px;">清空</button>
+    <div class="stats-grid">
+        <div class="stat-item total">
+            <div class="label">产品数</div>
+            <div class="value" id="totalProductos">0</div>
         </div>
-        <div class="result-box wait" id="resultBox">⏳ 等待测试...</div>
+        <div class="stat-item">
+            <div class="label">总库存</div>
+            <div class="value" id="totalUnidades">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="label">IMEI总数</div>
+            <div class="value" id="totalImei">0</div>
+        </div>
+        <div class="stat-item critico">
+            <div class="label">⚠️ 临界</div>
+            <div class="value" id="totalCriticos">0</div>
+        </div>
+    </div>
+
+    <div class="mode-tabs">
+        <button class="tab active" data-mode="gun">🔫 扫码枪</button>
+        <button class="tab" data-mode="camera">📷 手机摄像头</button>
+    </div>
+
+    <!-- 扫码枪模式 -->
+    <div class="mode-content active" id="modeGun">
+        <div class="scan-hint">
+            🔫 <strong>扫码枪模式</strong> · 聚焦下方输入框，扣动扳机扫码 · <strong style="color:#b21f1f;">新码自动弹窗创建</strong>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔫 扫码枪对准条码..." autofocus>
+            <button class="btn clear" id="clearBtn">✕</button>
+            <button class="btn in" id="btnQuickIn">📥 +1</button>
+            <button class="btn out" id="btnQuickOut">📤 -1</button>
+        </div>
+        <div class="form-card">
+            <div class="form-title">📋 手动出入库</div>
+            <div class="form-row">
+                <input type="text" id="formCodigo" placeholder="产品编码">
+                <input type="number" id="formCantidad" placeholder="数量" value="1" min="1">
+                <button class="btn-in" id="btnIn">入库</button>
+                <button class="btn-out" id="btnOut">出库</button>
+            </div>
+            <div class="form-hint">💡 扫码后自动填入编码，新码自动弹窗创建</div>
+        </div>
+    </div>
+
+    <!-- 摄像头模式 -->
+    <div class="mode-content" id="modeCamera">
+        <div class="camera-area">
+            <button class="btn-camera" id="cameraScanBtn">📷 点击扫码</button>
+            <div id="scanner-container">
+                <button class="scan-close" id="closeScanner">✕ 关闭</button>
+                <div id="scanner-view"></div>
+                <div class="scan-overlay"></div>
+                <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.6);font-size:11px;z-index:5;">
+                    将条码放入框内 · 新码自动弹窗创建
+                </div>
+            </div>
+            <div style="margin-top:12px;font-size:12px;color:#8892a8;">
+                📷 扫码结果自动填入，<strong style="color:#b21f1f;">新码自动弹窗创建</strong>
+            </div>
+        </div>
+        <div class="form-card">
+            <div class="form-title">📋 摄像头扫码出入库</div>
+            <div class="form-row">
+                <input type="text" id="cameraCodigo" placeholder="扫码结果自动填入" style="flex:2;">
+                <input type="number" id="cameraCantidad" placeholder="数量" value="1" min="1">
+                <button class="btn-in" id="cameraBtnIn">入库</button>
+                <button class="btn-out" id="cameraBtnOut">出库</button>
+            </div>
+            <div class="form-hint">💡 点击扫码，新码自动弹窗创建</div>
+        </div>
+    </div>
+
+    <div id="loading" class="loading">🔄 加载产品...</div>
+    <div id="productosContainer" class="productos-list" style="display:none;"></div>
+
+    <div class="log-card">
+        <div class="log-title">
+            📜 操作记录
+            <span id="logCount">共 0 条</span>
+        </div>
+        <div id="logList">
+            <div style="color:#8892a8;font-size:12px;text-align:center;padding:8px 0;">暂无操作记录</div>
+        </div>
+    </div>
+
+    <!-- ===== 添加产品弹窗（彻底删除了 minimo） ===== -->
+    <div class="modal-overlay" id="addProductModal">
+        <div class="modal-box">
+            <div class="modal-title">
+                🆕 扫码发现新产品
+                <span class="badge-new">请完善信息</span>
+            </div>
+            <div class="form-group">
+                <label>📱 产品编码</label>
+                <input type="text" id="modalCodigo" readonly style="background:#f0f2f5;font-weight:700;color:#1a2a6c;">
+                <div class="hint">✅ 扫码自动获取，不可修改</div>
+            </div>
+            <div class="form-group">
+                <label>📦 产品名称 <span style="color:#b21f1f;">*</span></label>
+                <input type="text" id="modalNombre" placeholder="例如：iPhone 15 Pro" autofocus>
+            </div>
+            <div class="form-group">
+                <label>💰 价格 (B/.)</label>
+                <input type="number" id="modalPrecio" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>📊 初始库存</label>
+                <input type="number" id="modalStock" placeholder="0" min="0" value="1">
+                <div class="hint">创建后自动入库该数量</div>
+            </div>
+            <!-- ⚠️ 已彻底删除 库存预警值 输入框 -->
+            <div class="modal-actions">
+                <button class="btn-cancel" id="modalCancel">取消</button>
+                <button class="btn-confirm" id="modalConfirm">✅ 创建产品</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="version-area">
+            <span class="version-label" id="footerVersion">📌 v1.0.3</span>
+            <button class="btn-upgrade" id="btnUpgradeVersion">⬆ 升级版本 (+0.1)</button>
+            <span style="font-size:10px;color:#b0b8c8;">部署后自动 +0.1</span>
+        </div>
+        <div class="version-history" id="versionHistory">更新记录将显示在这里</div>
+        <div style="margin-top:6px;">实时数据 · CELL LA 25 · 双模扫码</div>
     </div>
 
     <div class="toast" id="toast"></div>
 
     <script>
         // ============================================================
-        //  Supabase 配置
+        //  配置
         // ============================================================
         const SUPABASE_URL = 'https://hruwxcqedhogseqpbcio.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhydXd4Y3FlZGhvZ3NlcXBiY2lvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzUyNzExMywiZXhwIjoyMDk5MTAzMTEzfQ.VfnKr375IEpv83neEhQ9h5mLgpknIp1pyZjDaG1jCOw';
 
         let productos = [];
+        let filteredProductos = [];
+        let imeiRecords = [];
+        let operaciones = [];
+        let lastScannedCode = '';
+        let quaggaInit = false;
+        let isModalOpen = false;
 
         // ============================================================
-        //  提示消息
+        //  版本管理
         // ============================================================
-        function 提示(msg, 类型) {
-            const el = document.getElementById('toast');
-            el.textContent = msg;
-            el.className = 'toast show ' + (类型 || '');
-            clearTimeout(el._timer);
-            el._timer = setTimeout(() => { el.className = 'toast'; }, 3000);
+        const VERSION_STORAGE_KEY = 'cell_la25_version';
+        const VERSION_HISTORY_KEY = 'cell_la25_version_history';
+
+        function getCurrentVersion() {
+            const saved = localStorage.getItem(VERSION_STORAGE_KEY);
+            return saved || 'v1.0.3';
         }
 
-        function 显示结果(msg, 状态) {
-            const box = document.getElementById('resultBox');
-            box.textContent = msg;
-            box.className = 'result-box';
-            if (状态) box.classList.add(状态);
+        function setCurrentVersion(version) {
+            localStorage.setItem(VERSION_STORAGE_KEY, version);
+            document.getElementById('headerVersion').textContent = version;
+            document.getElementById('footerVersion').textContent = '📌 ' + version;
+        }
+
+        function upgradeVersion() {
+            const current = getCurrentVersion();
+            const parts = current.replace('v', '').split('.');
+            let major = parseInt(parts[0]) || 1;
+            let minor = parseInt(parts[1]) || 0;
+            let patch = parseInt(parts[2]) || 0;
+            patch += 1;
+            if (patch >= 10) { patch = 0;
+                minor += 1; if (minor >= 10) { minor = 0;
+                    major += 1; } }
+            const newVersion = 'v' + major + '.' + minor + '.' + patch;
+            setCurrentVersion(newVersion);
+            const now = new Date().toLocaleString('zh-CN', { hour12: false });
+            addVersionHistory(newVersion, now);
+            operaciones.unshift({
+                tipo: 'VERSION',
+                mensaje: '⬆ 版本升级到 ' + newVersion,
+                tiempo: now
+            });
+            if (operaciones.length > 50) operaciones.pop();
+            renderLog();
+            toast('✅ 版本升级到 ' + newVersion, 'success');
+            return newVersion;
+        }
+
+        function getVersionHistory() {
+            try { const data = localStorage.getItem(VERSION_HISTORY_KEY); return data ? JSON.parse(data) : []; } catch { return []; }
+        }
+
+        function addVersionHistory(version, time) {
+            const history = getVersionHistory();
+            history.unshift({ version, time });
+            if (history.length > 20) history.pop();
+            localStorage.setItem(VERSION_HISTORY_KEY, JSON.stringify(history));
+            renderVersionHistory();
+        }
+
+        function renderVersionHistory() {
+            const history = getVersionHistory();
+            const el = document.getElementById('versionHistory');
+            if (history.length === 0) { el.textContent = '暂无更新记录'; return; }
+            let html = '📋 最近更新: ';
+            history.slice(0, 5).forEach((item, index) => {
+                if (index > 0) html += ' · ';
+                html += item.version + ' (' + item.time + ')';
+            });
+            el.textContent = html;
+        }
+
+        function checkVersionOnLoad() {
+            const deployKey = 'cell_la25_deploy_time';
+            const now = Date.now();
+            const lastDeploy = parseInt(localStorage.getItem(deployKey)) || 0;
+            if (now - lastDeploy > 30000) {
+                const oldVersion = getCurrentVersion();
+                const newVersion = upgradeVersion();
+                localStorage.setItem(deployKey, now.toString());
+                operaciones.unshift({
+                    tipo: 'VERSION',
+                    mensaje: '🚀 新部署自动升级: ' + oldVersion + ' → ' + newVersion,
+                    tiempo: new Date().toLocaleString('zh-CN', { hour12: false })
+                });
+                if (operaciones.length > 50) operaciones.pop();
+                renderLog();
+            } else {
+                const v = getCurrentVersion();
+                document.getElementById('headerVersion').textContent = v;
+                document.getElementById('footerVersion').textContent = '📌 ' + v;
+                renderVersionHistory();
+            }
         }
 
         // ============================================================
-        //  Supabase 请求（带中文错误翻译）
+        //  Supabase 请求
         // ============================================================
-        async function 请求数据库(地址, 选项 = {}) {
-            const url = SUPABASE_URL + 地址;
-            const 头 = {
+        async function supabaseFetch(endpoint, options = {}) {
+            const url = SUPABASE_URL + endpoint;
+            const headers = {
                 'Content-Type': 'application/json',
                 'apikey': SUPABASE_KEY,
                 'Authorization': 'Bearer ' + SUPABASE_KEY,
                 'Prefer': 'return=representation',
-                ...选项.headers
+                ...options.headers
             };
+            const response = await fetch(url, { ...options, headers });
+            if (!response.ok) {
+                const text = await response.text();
+                console.error('❌ Supabase 错误:', response.status, text);
+                throw new Error(`HTTP ${response.status}: ${text}`);
+            }
+            return response.json();
+        }
+
+        // ============================================================
+        //  加载数据
+        // ============================================================
+        async function cargarProductos() {
             try {
-                const 回应 = await fetch(url, { ...选项, headers: 头 });
-                const 内容 = await 回应.text();
-                return {
-                    成功: 回应.ok,
-                    状态码: 回应.status,
-                    数据: 内容
-                };
-            } catch (错误) {
-                return {
-                    成功: false,
-                    状态码: 0,
-                    数据: '网络错误: ' + 错误.message
-                };
+                const data = await supabaseFetch('/rest/v1/productos?select=*');
+                productos = data;
+                aplicarFiltro();
+                document.getElementById('syncStatus').textContent = '✅ 在线';
+                document.getElementById('syncStatus').className = 'sync-status online';
+                renderAll();
+                return true;
+            } catch (e) {
+                console.error(e);
+                document.getElementById('syncStatus').textContent = '⚠️ 离线';
+                document.getElementById('syncStatus').className = 'sync-status offline';
+                toast('⚠️ 加载失败: ' + e.message, 'error');
+                return false;
             }
         }
 
-        // ============================================================
-        //  加载产品列表
-        // ============================================================
-        async function 加载产品() {
+        async function cargarImeiRecords() {
             try {
-                const 结果 = await 请求数据库('/rest/v1/productos?select=*');
-                if (结果.成功) {
-                    productos = JSON.parse(结果.数据);
-                    显示结果('✅ 加载成功，共有 ' + productos.length + ' 个产品', 'ok');
-                } else {
-                    显示结果('❌ 加载失败\n状态码: ' + 结果.状态码 + '\n' + 翻译错误(结果.数据), 'err');
-                }
-            } catch (错误) {
-                显示结果('❌ 加载失败: ' + 错误.message, 'err');
+                const data = await supabaseFetch('/rest/v1/imei_records?select=*&order=created_at.desc&limit=100');
+                imeiRecords = data || [];
+                document.getElementById('totalImei').textContent = imeiRecords.length;
+                return true;
+            } catch (e) {
+                imeiRecords = [];
+                return false;
+            }
+        }
+
+        function aplicarFiltro() {
+            const q = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!q) {
+                filteredProductos = [...productos];
+            } else {
+                filteredProductos = productos.filter(p =>
+                    p.nombre.toLowerCase().includes(q) ||
+                    p.codigo.toLowerCase().includes(q)
+                );
             }
         }
 
         // ============================================================
-        //  翻译错误信息（把英文翻译成中文）
+        //  ⭐ 核心：创建产品（彻底删除了 minimo 字段）
         // ============================================================
-        function 翻译错误(英文) {
-            if (!英文) return '未知错误';
-            if (英文.includes('duplicate key')) return '❌ 编码已存在，请换一个编码';
-            if (英文.includes('violates not-null')) return '❌ 缺少必填字段，请检查编码和名称';
-            if (英文.includes('invalid input')) return '❌ 数据格式不正确，请检查编码和名称';
-            if (英文.includes('permission denied')) return '❌ 没有权限，请检查 Supabase 密钥';
-            if (英文.includes('timeout')) return '❌ 连接超时，请检查网络';
-            if (英文.includes('not found')) return '❌ 地址不存在，请检查 Supabase 配置';
-            if (英文.length > 200) return '❌ ' + 英文.substring(0, 200) + '...';
-            return '❌ ' + 英文;
-        }
-
-        // ============================================================
-        //  创建产品（测试专用）
-        // ============================================================
-        async function 创建产品() {
-            const 编码 = document.getElementById('testCodigo').value.trim();
-            const 名称 = document.getElementById('testNombre').value.trim();
-            const 价格 = parseFloat(document.getElementById('testPrecio').value) || 0;
-            const 库存 = parseInt(document.getElementById('testStock').value) || 0;
-
-            if (!编码) {
-                提示('⚠️ 请填写产品编码', 'error');
-                return;
-            }
-            if (!名称) {
-                提示('⚠️ 请填写产品名称', 'error');
-                return;
+        async function crearProducto(codigo, nombre, precio, stock) {
+            if (!nombre || nombre.trim() === '') {
+                toast('⚠️ 请填写产品名称', 'error');
+                return false;
             }
 
-            // 检查是否已存在
-            if (productos.some(p => p.codigo === 编码)) {
-                提示('⚠️ 编码已存在: ' + 编码, 'error');
-                显示结果('⚠️ 编码 "' + 编码 + '" 已经存在，请换个编码试试', 'err');
-                return;
+            if (productos.some(p => p.codigo === codigo)) {
+                toast('⚠️ 产品编码已存在: ' + codigo, 'error');
+                return false;
             }
 
-            const 数据 = {
-                codigo: 编码,
-                nombre: 名称,
-                precio: 价格,
-                stock: 库存,
-                minimo: 3
+            // ⭐ 注意：这里只发送 4 个字段，没有 minimo！
+            const nuevoProducto = {
+                codigo: String(codigo).trim(),
+                nombre: String(nombre).trim(),
+                precio: parseFloat(precio) || 0,
+                stock: parseInt(stock) || 0
             };
 
-            显示结果('⏳ 正在创建...\n发送数据: ' + JSON.stringify(数据, null, 2), 'wait');
+            console.log('📤 发送数据:', JSON.stringify(nuevoProducto));
 
             try {
-                const 结果 = await 请求数据库('/rest/v1/productos', {
+                const result = await supabaseFetch('/rest/v1/productos', {
                     method: 'POST',
-                    body: JSON.stringify(数据)
+                    body: JSON.stringify(nuevoProducto)
                 });
 
-                if (结果.成功) {
-                    const 返回数据 = 结果.数据 ? JSON.parse(结果.数据) : null;
-                    提示('✅ 创建成功: ' + 名称, 'success');
-                    显示结果(
-                        '✅ 创建成功！\n\n' +
-                        '产品名称: ' + 名称 + '\n' +
-                        '产品编码: ' + 编码 + '\n' +
-                        '价 格: B/.' + 价格 + '\n' +
-                        '库 存: ' + 库存 + ' 件\n' +
-                        '状态码: HTTP ' + 结果.状态码 + '\n\n' +
-                        '📌 产品已添加到数据库，可以在列表中找到。',
-                        'ok'
-                    );
-                    await 加载产品();
-                } else {
-                    const 中文错误 = 翻译错误(结果.数据);
-                    提示('❌ 创建失败: ' + 中文错误, 'error');
-                    显示结果(
-                        '❌ 创建失败\n\n' +
-                        '状态码: HTTP ' + 结果.状态码 + '\n' +
-                        '错误详情: ' + 中文错误 + '\n\n' +
-                        '💡 可能的原因：\n' +
-                        '• 编码已存在（换一个试试）\n' +
-                        '• 编码或名称格式不对\n' +
-                        '• 数据库连接问题',
-                        'err'
-                    );
-                }
-            } catch (错误) {
-                提示('❌ 创建失败: ' + 错误.message, 'error');
-                显示结果('❌ 创建失败\n' + 错误.message, 'err');
+                console.log('✅ 创建成功:', result);
+                await cargarProductos();
+
+                operaciones.unshift({
+                    tipo: 'NEW',
+                    mensaje: '🆕 新增: ' + nombre + ' (' + codigo + ') 库存:' + stock,
+                    tiempo: new Date().toLocaleTimeString('zh-CN', { hour12: false })
+                });
+                if (operaciones.length > 50) operaciones.pop();
+                renderLog();
+
+                toast('✅ 产品创建成功: ' + nombre, 'success');
+                return true;
+            } catch (e) {
+                console.error('❌ 创建失败:', e);
+                toast('❌ 创建失败: ' + e.message, 'error');
+                return false;
             }
         }
 
         // ============================================================
-        //  测试入库 / 出库
+        //  核心：出入库
         // ============================================================
-        async function 测试出入库(类型) {
-            const 编码 = document.getElementById('testCodigo').value.trim();
-            if (!编码) {
-                提示('⚠️ 请先填写产品编码', 'error');
-                return;
+        async function ejecutarOperacion(codigo, cantidad, tipo, source = '') {
+            if (!codigo || cantidad <= 0) {
+                toast('⚠️ 请输入编码和数量', 'error');
+                return false;
             }
 
-            const 产品 = productos.find(p => p.codigo === 编码);
-            if (!产品) {
-                提示('❌ 产品不存在: ' + 编码, 'error');
-                显示结果('❌ 产品 "' + 编码 + '" 不存在，请先创建', 'err');
-                return;
+            const idx = productos.findIndex(p => p.codigo === codigo);
+            if (idx === -1) {
+                mostrarModalCrear(codigo);
+                return false;
             }
 
-            const 变化 = 类型 === '入库' ? 1 : -1;
-            const 新库存 = Math.max(0, 产品.stock + 变化);
+            const producto = productos[idx];
+            const delta = tipo === 'IN' ? cantidad : -cantidad;
+            const nuevoStock = Math.max(0, producto.stock + delta);
 
-            if (类型 === '出库' && 产品.stock < 1) {
-                提示('❌ 库存不足，当前库存: ' + 产品.stock, 'error');
-                显示结果('❌ 库存不足\n当前库存: ' + 产品.stock + ' 件', 'err');
-                return;
+            if (tipo === 'OUT' && producto.stock < cantidad) {
+                toast('❌ 库存不足 (当前: ' + producto.stock + ')', 'error');
+                return false;
             }
 
             try {
-                const 结果 = await 请求数据库('/rest/v1/productos?codigo=eq.' + 编码, {
+                await supabaseFetch('/rest/v1/productos?codigo=eq.' + codigo, {
                     method: 'PATCH',
-                    body: JSON.stringify({ stock: 新库存 })
+                    body: JSON.stringify({ stock: nuevoStock })
                 });
 
-                if (结果.成功) {
-                    提示('✅ ' + 类型 + '成功: ' + 产品.nombre, 'success');
-                    显示结果(
-                        '✅ ' + 类型 + '成功！\n\n' +
-                        '产品: ' + 产品.nombre + '\n' +
-                        '编码: ' + 编码 + '\n' +
-                        '变化: ' + (类型 === '入库' ? '+1' : '-1') + '\n' +
-                        '库存变化: ' + 产品.stock + ' → ' + 新库存 + '\n' +
-                        '状态码: HTTP ' + 结果.状态码,
-                        'ok'
-                    );
-                    await 加载产品();
-                } else {
-                    提示('❌ ' + 类型 + '失败', 'error');
-                    显示结果('❌ ' + 类型 + '失败\n状态码: ' + 结果.状态码 + '\n' + 翻译错误(结果.数据), 'err');
-                }
-            } catch (错误) {
-                提示('❌ ' + 类型 + '失败: ' + 错误.message, 'error');
-                显示结果('❌ ' + 类型 + '失败\n' + 错误.message, 'err');
+                producto.stock = nuevoStock;
+                productos[idx] = producto;
+                aplicarFiltro();
+                renderAll();
+
+                const emoji = tipo === 'IN' ? '📥' : '📤';
+                const label = tipo === 'IN' ? '入库' : '出库';
+                operaciones.unshift({
+                    tipo: tipo,
+                    mensaje: emoji + ' ' + label + ' ' + producto.nombre + ' ×' + cantidad + ' → ' + nuevoStock + (source ?
+                        ' (' + source + ')' : ''),
+                    tiempo: new Date().toLocaleTimeString('zh-CN', { hour12: false })
+                });
+                if (operaciones.length > 50) operaciones.pop();
+                renderLog();
+
+                toast(`✅ ${producto.nombre} · ${label} ${tipo==='IN'?'+':'-'}${cantidad} → ${nuevoStock}`, 'success');
+                return true;
+            } catch (e) {
+                console.error(e);
+                toast('❌ 操作失败: ' + e.message, 'error');
+                return false;
             }
         }
+
+        // ============================================================
+        //  扫码处理
+        // ============================================================
+        function handleScannedCode(code, source = '') {
+            if (!code || code.length < 3) return;
+            code = code.trim();
+
+            if (code === lastScannedCode && source !== 'camera') return;
+            lastScannedCode = code;
+
+            document.getElementById('formCodigo').value = code;
+            document.getElementById('cameraCodigo').value = code;
+            document.getElementById('searchInput').value = code;
+
+            const existente = productos.find(p => p.codigo === code);
+
+            if (existente) {
+                toast('✅ 已找到: ' + existente.nombre + ' (库存: ' + existente.stock + ')', 'success');
+                aplicarFiltro();
+                renderProductos();
+                const cards = document.querySelectorAll('.producto-card');
+                cards.forEach(card => {
+                    card.classList.remove('highlight');
+                    if (card.textContent.includes(code)) {
+                        card.classList.add('highlight');
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => { card.classList.remove('highlight'); }, 2500);
+                    }
+                });
+            } else {
+                toast('🆕 新编码: ' + code + '，请完善信息', 'success');
+                setTimeout(() => {
+                    mostrarModalCrear(code);
+                }, 300);
+            }
+        }
+
+        // ============================================================
+        //  弹窗管理
+        // ============================================================
+        function mostrarModalCrear(codigo) {
+            console.log('🆕 打开创建弹窗，编码:', codigo);
+            const modal = document.getElementById('addProductModal');
+            document.getElementById('modalCodigo').value = codigo;
+            document.getElementById('modalNombre').value = '';
+            document.getElementById('modalPrecio').value = '';
+            document.getElementById('modalStock').value = '1';
+            modal.classList.add('active');
+            isModalOpen = true;
+            setTimeout(() => {
+                document.getElementById('modalNombre').focus();
+            }, 400);
+        }
+
+        function cerrarModal() {
+            const modal = document.getElementById('addProductModal');
+            modal.classList.remove('active');
+            isModalOpen = false;
+            setTimeout(() => {
+                document.getElementById('searchInput').focus();
+            }, 200);
+        }
+
+        // ============================================================
+        //  渲染
+        // ============================================================
+        function renderStats() {
+            const total = productos.length;
+            const totalUds = productos.reduce((s, p) => s + p.stock, 0);
+            // 临界值用固定值 3（因为数据库里没有 minimo 字段）
+            const criticos = productos.filter(p => p.stock <= 3).length;
+            document.getElementById('totalProductos').textContent = total;
+            document.getElementById('totalUnidades').textContent = totalUds;
+            document.getElementById('totalCriticos').textContent = criticos;
+        }
+
+        function renderProductos() {
+            const container = document.getElementById('productosContainer');
+            const loading = document.getElementById('loading');
+            if (filteredProductos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty">
+                        <span>📭</span>
+                        ${productos.length === 0 ? '暂无产品，扫码添加吧 🆕' : '未找到匹配结果'}
+                    </div>
+                `;
+                container.style.display = 'block';
+                loading.style.display = 'none';
+                return;
+            }
+            let html = '';
+            filteredProductos.forEach(p => {
+                // 临界值用固定值 3
+                const status = getStockStatus(p.stock, 3);
+                html += `
+                    <div class="producto-card" data-codigo="${p.codigo}">
+                        <div class="info">
+                            <div class="nombre">${p.nombre}</div>
+                            <div class="codigo">${p.codigo}</div>
+                        </div>
+                        <div class="stock-area">
+                            <div class="stock ${status.class}">${p.stock}</div>
+                            <div class="stock-label">${status.label}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            container.style.display = 'flex';
+            loading.style.display = 'none';
+        }
+
+        function renderLog() {
+            const list = document.getElementById('logList');
+            const count = document.getElementById('logCount');
+            count.textContent = '共 ' + operaciones.length + ' 条';
+            if (operaciones.length === 0) {
+                list.innerHTML = '<div style="color:#8892a8;font-size:12px;text-align:center;padding:8px 0;">暂无操作记录</div>';
+                return;
+            }
+            let html = '';
+            operaciones.slice(0, 20).forEach(o => {
+                const cls = o.tipo === 'IN' ? 'IN' : o.tipo === 'OUT' ? 'OUT' : o.tipo === 'VERSION' ? 'VERSION' :
+                    'NEW';
+                html += `
+                    <div class="log-item">
+                        <span><span class="log-type ${cls}">${o.mensaje}</span></span>
+                        <span class="log-time">${o.tiempo}</span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        function renderAll() {
+            renderStats();
+            renderProductos();
+            renderLog();
+        }
+
+        function getStockStatus(stock, minimo) {
+            if (stock <= 0) return { label: '无库存', class: 'bajo' };
+            if (stock <= (minimo || 3)) return { label: '临界', class: 'bajo' };
+            if (stock >= 10) return { label: '充足', class: 'alto' };
+            return { label: '中等', class: 'medio' };
+        }
+
+        // ============================================================
+        //  Toast
+        // ============================================================
+        function toast(msg, tipo) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast show ' + (tipo || '');
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => { el.className = 'toast'; }, 3000);
+        }
+
+        // ============================================================
+        //  摄像头扫码
+        // ============================================================
+        function startCameraScanner() {
+            const container = document.getElementById('scanner-container');
+            const view = document.getElementById('scanner-view');
+            container.classList.add('active');
+            document.getElementById('cameraScanBtn').textContent = '⏹ 停止扫码';
+            document.getElementById('cameraScanBtn').classList.add('scanning');
+
+            if (quaggaInit) { Quagga.start(); return; }
+
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: view,
+                    constraints: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }
+                },
+                decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "upc_reader",
+                        "upc_e_reader"
+                    ] }
+            }, function(err) {
+                if (err) {
+                    toast('❌ 摄像头启动失败: ' + err, 'error');
+                    container.classList.remove('active');
+                    document.getElementById('cameraScanBtn').textContent = '📷 点击扫码';
+                    document.getElementById('cameraScanBtn').classList.remove('scanning');
+                    return;
+                }
+                quaggaInit = true;
+                Quagga.start();
+            });
+
+            Quagga.onDetected(function(data) {
+                const code = data.codeResult.code;
+                if (code) {
+                    handleScannedCode(code, 'camera');
+                    stopCameraScanner();
+                }
+            });
+        }
+
+        function stopCameraScanner() {
+            if (quaggaInit) Quagga.stop();
+            document.getElementById('scanner-container').classList.remove('active');
+            document.getElementById('cameraScanBtn').textContent = '📷 点击扫码';
+            document.getElementById('cameraScanBtn').classList.remove('scanning');
+        }
+
+        // ============================================================
+        //  模式切换
+        // ============================================================
+        document.querySelectorAll('.mode-tabs .tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.mode-tabs .tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.mode-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('mode' + this.dataset.mode.charAt(0).toUpperCase() + this.dataset.mode
+                    .slice(1)).classList.add('active');
+                stopCameraScanner();
+            });
+        });
 
         // ============================================================
         //  初始化
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
-            加载产品();
+            checkVersionOnLoad();
+            cargarProductos();
+            cargarImeiRecords();
 
-            document.getElementById('testBtn').addEventListener('click', 创建产品);
-            document.getElementById('testBtnIn').addEventListener('click', function() { 测试出入库('入库'); });
-            document.getElementById('testBtnOut').addEventListener('click', function() { 测试出入库('出库'); });
+            // ===== 扫码枪模式 =====
+            const searchInput = document.getElementById('searchInput');
 
-            document.getElementById('clearResult').addEventListener('click', function() {
-                document.getElementById('resultBox').textContent = '⏳ 等待测试...';
-                document.getElementById('resultBox').className = 'result-box wait';
+            searchInput.addEventListener('input', function() {
+                const val = this.value.trim();
+                clearTimeout(this._scanTimer);
+                this._scanTimer = setTimeout(() => {
+                    if (val.length >= 3) {
+                        handleScannedCode(val, 'gun');
+                    }
+                }, 300);
             });
 
-            // 按回车键触发创建
-            document.getElementById('testNombre').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') 创建产品();
-            });
-            document.getElementById('testCodigo').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') 创建产品();
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = this.value.trim();
+                    if (val.length >= 3) {
+                        handleScannedCode(val, 'gun');
+                    }
+                }
             });
 
-            console.log('✅ 中文测试版已启动');
+            document.getElementById('clearBtn').addEventListener('click', function() {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchInput').focus();
+                aplicarFiltro();
+                renderProductos();
+            });
+
+            document.getElementById('btnQuickIn').addEventListener('click', function() {
+                const codigo = document.getElementById('searchInput').value.trim();
+                if (!codigo) { toast('⚠️ 请先扫码', 'error'); return; }
+                ejecutarOperacion(codigo, 1, 'IN', '枪');
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchInput').focus();
+            });
+
+            document.getElementById('btnQuickOut').addEventListener('click', function() {
+                const codigo = document.getElementById('searchInput').value.trim();
+                if (!codigo) { toast('⚠️ 请先扫码', 'error'); return; }
+                ejecutarOperacion(codigo, 1, 'OUT', '枪');
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchInput').focus();
+            });
+
+            document.getElementById('btnIn').addEventListener('click', function() {
+                const codigo = document.getElementById('formCodigo').value.trim();
+                const cant = parseInt(document.getElementById('formCantidad').value) || 1;
+                ejecutarOperacion(codigo, cant, 'IN', '手动');
+            });
+            document.getElementById('btnOut').addEventListener('click', function() {
+                const codigo = document.getElementById('formCodigo').value.trim();
+                const cant = parseInt(document.getElementById('formCantidad').value) || 1;
+                ejecutarOperacion(codigo, cant, 'OUT', '手动');
+            });
+
+            // ===== 摄像头模式 =====
+            document.getElementById('cameraScanBtn').addEventListener('click', function() {
+                if (document.getElementById('scanner-container').classList.contains('active')) {
+                    stopCameraScanner();
+                } else {
+                    startCameraScanner();
+                }
+            });
+
+            document.getElementById('closeScanner').addEventListener('click', stopCameraScanner);
+
+            document.getElementById('cameraBtnIn').addEventListener('click', function() {
+                const codigo = document.getElementById('cameraCodigo').value.trim();
+                const cant = parseInt(document.getElementById('cameraCantidad').value) || 1;
+                ejecutarOperacion(codigo, cant, 'IN', '摄像头');
+                document.getElementById('cameraCodigo').value = '';
+            });
+            document.getElementById('cameraBtnOut').addEventListener('click', function() {
+                const codigo = document.getElementById('cameraCodigo').value.trim();
+                const cant = parseInt(document.getElementById('cameraCantidad').value) || 1;
+                ejecutarOperacion(codigo, cant, 'OUT', '摄像头');
+                document.getElementById('cameraCodigo').value = '';
+            });
+
+            // ===== 弹窗事件 =====
+            document.getElementById('modalConfirm').addEventListener('click', async function() {
+                const codigo = document.getElementById('modalCodigo').value.trim();
+                const nombre = document.getElementById('modalNombre').value.trim();
+                const precio = document.getElementById('modalPrecio').value;
+                const stock = document.getElementById('modalStock').value;
+
+                if (!nombre) {
+                    toast('⚠️ 请填写产品名称', 'error');
+                    document.getElementById('modalNombre').focus();
+                    return;
+                }
+
+                const success = await crearProducto(codigo, nombre, precio, stock);
+                if (success) {
+                    cerrarModal();
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('formCodigo').value = '';
+                    document.getElementById('cameraCodigo').value = '';
+                    document.getElementById('searchInput').focus();
+                }
+            });
+
+            document.getElementById('modalCancel').addEventListener('click', function() {
+                cerrarModal();
+                document.getElementById('searchInput').focus();
+            });
+
+            document.getElementById('addProductModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    cerrarModal();
+                    document.getElementById('searchInput').focus();
+                }
+            });
+
+            // ===== 版本升级 =====
+            document.getElementById('btnUpgradeVersion').addEventListener('click', function() {
+                const oldVersion = getCurrentVersion();
+                const newVersion = upgradeVersion();
+                operaciones.unshift({
+                    tipo: 'VERSION',
+                    mensaje: '⬆ 手动升级: ' + oldVersion + ' → ' + newVersion,
+                    tiempo: new Date().toLocaleString('zh-CN', { hour12: false })
+                });
+                if (operaciones.length > 50) operaciones.pop();
+                renderLog();
+                renderVersionHistory();
+            });
+
+            // ===== 键盘快捷键 =====
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F1') { e.preventDefault();
+                    document.getElementById('btnQuickIn').click(); }
+                if (e.key === 'F2') { e.preventDefault();
+                    document.getElementById('btnQuickOut').click(); }
+                if (e.key === 'F3') { e.preventDefault();
+                    document.getElementById('cameraScanBtn').click(); }
+                if (e.key === 'Escape' && isModalOpen) {
+                    cerrarModal();
+                    document.getElementById('searchInput').focus();
+                }
+            });
+
+            // ===== 自动刷新 =====
+            setInterval(() => {
+                cargarProductos();
+                cargarImeiRecords();
+            }, 30000);
+
+            setTimeout(() => { document.getElementById('searchInput').focus(); }, 500);
+            console.log('✅ CELL LA 25 v1.0.3 已启动 - 彻底删除了 minimo 字段');
         });
     </script>
 </body>
