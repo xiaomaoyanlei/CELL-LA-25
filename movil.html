@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>CELL LA 25 - Stock Móvil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #f5f7fb;
+            padding: 16px 12px 40px 12px;
+            min-height: 100vh;
+            color: #1a2a6c;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            padding: 16px 18px;
+            border-radius: 16px;
+            color: white;
+            margin-bottom: 18px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .header .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 10px;
+        }
+        .header .sync-status {
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        .header .sync-status.online {
+            background: #0f7b3a;
+        }
+        .header .sync-status.offline {
+            background: #b21f1f;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .stats-grid .stat-item {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 10px;
+            text-align: center;
+            border: 1px solid #eef2f8;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+        .stats-grid .stat-item .label {
+            font-size: 10px;
+            color: #8892a8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stats-grid .stat-item .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a2a6c;
+            margin-top: 2px;
+        }
+        .stats-grid .stat-item.critico .value {
+            color: #b21f1f;
+        }
+        .stats-grid .stat-item.total .value {
+            color: #0f7b3a;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            border: 1px solid #eef2f8;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+        .search-box input {
+            flex: 1;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e7f0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            background: #fafbfc;
+            outline: none;
+            transition: 0.2s;
+        }
+        .search-box input:focus {
+            border-color: #1a2a6c;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
+        }
+        .search-box .btn {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            background: #1a2a6c;
+            color: white;
+            touch-action: manipulation;
+            flex-shrink: 0;
+        }
+        .search-box .btn:active {
+            transform: scale(0.96);
+        }
+
+        .productos-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 80px;
+        }
+
+        .producto-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1px solid #eef2f8;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.15s;
+        }
+        .producto-card:active {
+            transform: scale(0.98);
+        }
+        .producto-card .info {
+            flex: 1;
+        }
+        .producto-card .info .nombre {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a2a6c;
+        }
+        .producto-card .info .codigo {
+            font-size: 12px;
+            color: #8892a8;
+            font-family: monospace;
+            margin-top: 2px;
+        }
+        .producto-card .stock-area {
+            text-align: right;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+        .producto-card .stock-area .stock {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .producto-card .stock-area .stock.alto {
+            color: #0f7b3a;
+        }
+        .producto-card .stock-area .stock.medio {
+            color: #b27c1a;
+        }
+        .producto-card .stock-area .stock.bajo {
+            color: #b21f1f;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .producto-card .stock-area .stock-label {
+            font-size: 10px;
+            color: #8892a8;
+            text-transform: uppercase;
+        }
+        .producto-card .stock-area .precio {
+            font-size: 13px;
+            color: #8892a8;
+            margin-top: 2px;
+        }
+
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            color: #8892a8;
+            font-size: 15px;
+        }
+        .empty {
+            text-align: center;
+            padding: 40px 0;
+            color: #8892a8;
+            font-size: 15px;
+        }
+        .empty span {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2a6c;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            z-index: 999;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .toast.success {
+            background: #0f7b3a;
+        }
+        .toast.error {
+            background: #b21f1f;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px 0 10px 0;
+            font-size: 11px;
+            color: #8892a8;
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 6px;
+            }
+            .stats-grid .stat-item .value {
+                font-size: 17px;
+            }
+            .producto-card {
+                padding: 12px 14px;
+            }
+            .producto-card .info .nombre {
+                font-size: 14px;
+            }
+            .producto-card .stock-area .stock {
+                font-size: 16px;
+            }
+            .search-box input {
+                font-size: 15px;
+                padding: 10px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>📦 CELL LA 25</h1>
+        <div style="display:flex;align-items:center;gap:6px;">
+            <span class="sync-status" id="syncStatus">🔄</span>
+            <span class="badge">Stock Móvil</span>
+        </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-item total">
+            <div class="label">Productos</div>
+            <div class="value" id="totalProductos">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="label">Total Unidades</div>
+            <div class="value" id="totalUnidades">0</div>
+        </div>
+        <div class="stat-item critico">
+            <div class="label">⚠️ Críticos</div>
+            <div class="value" id="totalCriticos">0</div>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 Buscar producto..." autofocus>
+        <button class="btn" id="clearBtn">✕</button>
+    </div>
+
+    <div id="loading" class="loading">🔄 Cargando productos...</div>
+    <div id="productosContainer" class="productos-list" style="display:none;"></div>
+
+    <div class="toast" id="toast"></div>
+    <div class="footer">Datos en tiempo real · CELL LA 25</div>
+
+    <script>
+        // ============================================
+        //  CONFIG
+        // ============================================
+        const SUPABASE_URL = 'https://hruwxcqedhogseqpbcio.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhydXd4Y3FlZGhvZ3NlcXBiY2lvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzUyNzExMywiZXhwIjoyMDk5MTAzMTEzfQ.VfnKr375IEpv83neEhQ9h5mLgpknIp1pyZjDaG1jCOw';
+
+        let productos = [];
+        let filteredProductos = [];
+
+        // ============================================
+        //  SUPABASE
+        // ============================================
+        async function supabaseFetch(endpoint, options = {}) {
+            const url = SUPABASE_URL + endpoint;
+            const headers = {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_KEY,
+                'Authorization': 'Bearer ' + SUPABASE_KEY,
+                ...options.headers
+            };
+            const response = await fetch(url, { ...options, headers });
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        }
+
+        async function cargarProductos() {
+            try {
+                const data = await supabaseFetch('/rest/v1/productos?select=*');
+                productos = data;
+                filteredProductos = [...productos];
+                document.getElementById('syncStatus').textContent = '✅ Cloud';
+                document.getElementById('syncStatus').className = 'sync-status online';
+                renderAll();
+                return true;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('syncStatus').textContent = '⚠️ Offline';
+                document.getElementById('syncStatus').className = 'sync-status offline';
+                toast('⚠️ Error al cargar datos', 'error');
+                return false;
+            }
+        }
+
+        // ============================================
+        //  HELPERS
+        // ============================================
+        function formatMoneda(val) {
+            return 'B/.' + val.toFixed(2);
+        }
+
+        function toast(msg, tipo) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast show ' + (tipo || '');
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => { el.className = 'toast'; }, 2500);
+        }
+
+        function getStockStatus(stock, minimo) {
+            if (stock <= 0) return { label: 'Sin stock', class: 'bajo' };
+            if (stock <= (minimo || 3)) return { label: 'Crítico', class: 'bajo' };
+            if (stock >= 10) return { label: 'Alto', class: 'alto' };
+            return { label: 'Medio', class: 'medio' };
+        }
+
+        // ============================================
+        //  RENDER
+        // ============================================
+        function renderStats() {
+            const total = productos.length;
+            const totalUds = productos.reduce((sum, p) => sum + p.stock, 0);
+            const criticos = productos.filter(p => p.stock <= (p.minimo || 3)).length;
+
+            document.getElementById('totalProductos').textContent = total;
+            document.getElementById('totalUnidades').textContent = totalUds;
+            document.getElementById('totalCriticos').textContent = criticos;
+        }
+
+        function renderProductos() {
+            const container = document.getElementById('productosContainer');
+            const loading = document.getElementById('loading');
+
+            if (filteredProductos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty">
+                        <span>📭</span>
+                        ${productos.length === 0 ? 'No hay productos' : 'No se encontraron resultados'}
+                    </div>
+                `;
+                container.style.display = 'block';
+                loading.style.display = 'none';
+                return;
+            }
+
+            let html = '';
+            filteredProductos.forEach(p => {
+                const status = getStockStatus(p.stock, p.minimo);
+                html += `
+                    <div class="producto-card">
+                        <div class="info">
+                            <div class="nombre">${p.nombre}</div>
+                            <div class="codigo">${p.codigo}</div>
+                        </div>
+                        <div class="stock-area">
+                            <div class="stock ${status.class}">${p.stock}</div>
+                            <div class="stock-label">${status.label}</div>
+                            <div class="precio">${formatMoneda(p.precio)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            container.style.display = 'flex';
+            loading.style.display = 'none';
+        }
+
+        function renderAll() {
+            renderStats();
+            renderProductos();
+        }
+
+        // ============================================
+        //  BUSCAR
+        // ============================================
+        function buscar(query) {
+            const q = query.toLowerCase().trim();
+            if (!q) {
+                filteredProductos = [...productos];
+            } else {
+                filteredProductos = productos.filter(p =>
+                    p.nombre.toLowerCase().includes(q) ||
+                    p.codigo.toLowerCase().includes(q)
+                );
+            }
+            renderProductos();
+        }
+
+        // ============================================
+        //  INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarProductos();
+
+            // Búsqueda en tiempo real
+            document.getElementById('searchInput').addEventListener('input', function() {
+                buscar(this.value);
+            });
+
+            // Limpiar búsqueda
+            document.getElementById('clearBtn').addEventListener('click', function() {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchInput').focus();
+                filteredProductos = [...productos];
+                renderProductos();
+            });
+
+            // Actualizar cada 30 segundos
+            setInterval(() => {
+                cargarProductos();
+            }, 30000);
+
+            // Enfocar input al cargar
+            setTimeout(() => {
+                document.getElementById('searchInput').focus();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
