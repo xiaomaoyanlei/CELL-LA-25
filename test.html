@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>CELL LA 25 · 测试版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #f5f7fb;
+            padding: 20px;
+            min-height: 100vh;
+            color: #1a2a6c;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            padding: 16px 18px;
+            border-radius: 16px;
+            color: white;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 14px;
+            border: 1px solid #eef2f8;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+        .card label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8892a8;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .card input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e7f0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            background: #fafbfc;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        .card input:focus {
+            border-color: #1a2a6c;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+            touch-action: manipulation;
+        }
+        .btn-primary {
+            background: #1a2a6c;
+        }
+        .btn-success {
+            background: #0f7b3a;
+        }
+        .btn-danger {
+            background: #b21f1f;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .result-box {
+            background: #f0f4ff;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #333;
+            border-left: 3px solid #1a2a6c;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .result-box.error {
+            border-left-color: #b21f1f;
+            background: #fff0f0;
+        }
+        .result-box.success {
+            border-left-color: #0f7b3a;
+            background: #f0fff4;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2a6c;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            z-index: 999;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .toast.success {
+            background: #0f7b3a;
+        }
+        .toast.error {
+            background: #b21f1f;
+        }
+        .hint {
+            font-size: 12px;
+            color: #8892a8;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>📦 CELL LA 25 · 测试版</h1>
+        <div style="font-size:12px;opacity:0.8;">只测试「创建产品」功能</div>
+    </div>
+
+    <div class="card">
+        <label>📱 产品编码</label>
+        <input type="text" id="testCodigo" placeholder="输入编码或扫码" value="TEST001">
+        <label>📦 产品名称</label>
+        <input type="text" id="testNombre" placeholder="输入产品名称" value="测试手机">
+        <label>💰 价格</label>
+        <input type="number" id="testPrecio" placeholder="0.00" value="999">
+        <label>📊 库存</label>
+        <input type="number" id="testStock" placeholder="数量" value="10">
+        <button class="btn btn-primary" id="testBtn">🚀 测试创建</button>
+        <div class="hint">💡 点击按钮测试创建，结果会显示在下方</div>
+    </div>
+
+    <div class="card">
+        <div style="display:flex;gap:10px;">
+            <button class="btn btn-success" id="testBtnIn" style="flex:1;">📥 入库 +1</button>
+            <button class="btn btn-danger" id="testBtnOut" style="flex:1;">📤 出库 -1</button>
+        </div>
+        <div class="hint" style="margin-top:8px;">💡 测试入库/出库（需要产品已存在）</div>
+    </div>
+
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;">📋 执行结果</span>
+            <button id="clearResult" style="background:none;border:none;color:#8892a8;cursor:pointer;">清空</button>
+        </div>
+        <div class="result-box" id="resultBox">等待测试...</div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================================
+        //  Supabase 配置
+        // ============================================================
+        const SUPABASE_URL = 'https://hruwxcqedhogseqpbcio.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhydXd4Y3FlZGhvZ3NlcXBiY2lvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzUyNzExMywiZXhwIjoyMDk5MTAzMTEzfQ.VfnKr375IEpv83neEhQ9h5mLgpknIp1pyZjDaG1jCOw';
+
+        let productos = [];
+
+        // ============================================================
+        //  工具函数
+        // ============================================================
+        function toast(msg, tipo) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast show ' + (tipo || '');
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => { el.className = 'toast'; }, 3000);
+        }
+
+        function showResult(msg, type) {
+            const box = document.getElementById('resultBox');
+            box.textContent = msg;
+            box.className = 'result-box';
+            if (type) box.classList.add(type);
+        }
+
+        // ============================================================
+        //  Supabase 请求（最简单版）
+        // ============================================================
+        async function supabaseFetch(endpoint, options = {}) {
+            const url = SUPABASE_URL + endpoint;
+            const headers = {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_KEY,
+                'Authorization': 'Bearer ' + SUPABASE_KEY,
+                'Prefer': 'return=representation',
+                ...options.headers
+            };
+            const response = await fetch(url, { ...options, headers });
+            const text = await response.text();
+            return { ok: response.ok, status: response.status, data: text };
+        }
+
+        // ============================================================
+        //  加载产品列表
+        // ============================================================
+        async function cargarProductos() {
+            try {
+                const result = await supabaseFetch('/rest/v1/productos?select=*');
+                if (result.ok) {
+                    productos = JSON.parse(result.data);
+                    showResult('✅ 加载成功，共 ' + productos.length + ' 个产品', 'success');
+                } else {
+                    showResult('❌ 加载失败: HTTP ' + result.status + '\n' + result.data, 'error');
+                }
+            } catch (e) {
+                showResult('❌ 加载失败: ' + e.message, 'error');
+            }
+        }
+
+        // ============================================================
+        //  创建产品（测试专用）
+        // ============================================================
+        async function testCrearProducto() {
+            const codigo = document.getElementById('testCodigo').value.trim();
+            const nombre = document.getElementById('testNombre').value.trim();
+            const precio = parseFloat(document.getElementById('testPrecio').value) || 0;
+            const stock = parseInt(document.getElementById('testStock').value) || 0;
+
+            if (!codigo || !nombre) {
+                toast('⚠️ 请填写编码和名称', 'error');
+                return;
+            }
+
+            // 检查是否已存在
+            if (productos.some(p => p.codigo === codigo)) {
+                toast('⚠️ 编码已存在: ' + codigo, 'error');
+                showResult('⚠️ 编码 "' + codigo + '" 已存在，请换个编码', 'error');
+                return;
+            }
+
+            const data = {
+                codigo: codigo,
+                nombre: nombre,
+                precio: precio,
+                stock: stock,
+                minimo: 3
+            };
+
+            showResult('⏳ 正在创建...\n发送数据: ' + JSON.stringify(data, null, 2));
+
+            try {
+                const result = await supabaseFetch('/rest/v1/productos', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+
+                if (result.ok) {
+                    toast('✅ 创建成功: ' + nombre, 'success');
+                    showResult('✅ 创建成功！\n状态: HTTP ' + result.status + '\n返回数据: ' + result.data, 'success');
+                    await cargarProductos();
+                } else {
+                    toast('❌ 创建失败: HTTP ' + result.status, 'error');
+                    showResult('❌ 创建失败\nHTTP状态: ' + result.status + '\n错误详情: ' + result.data, 'error');
+                }
+            } catch (e) {
+                toast('❌ 创建失败: ' + e.message, 'error');
+                showResult('❌ 创建失败\n' + e.message, 'error');
+            }
+        }
+
+        // ============================================================
+        //  测试入库
+        // ============================================================
+        async function testInOut(tipo) {
+            const codigo = document.getElementById('testCodigo').value.trim();
+            if (!codigo) {
+                toast('⚠️ 请填写编码', 'error');
+                return;
+            }
+
+            // 查找产品
+            const producto = productos.find(p => p.codigo === codigo);
+            if (!producto) {
+                toast('❌ 产品不存在: ' + codigo, 'error');
+                showResult('❌ 产品 "' + codigo + '" 不存在，请先创建', 'error');
+                return;
+            }
+
+            const delta = tipo === 'IN' ? 1 : -1;
+            const nuevoStock = Math.max(0, producto.stock + delta);
+
+            if (tipo === 'OUT' && producto.stock < 1) {
+                toast('❌ 库存不足', 'error');
+                showResult('❌ 库存不足，当前库存: ' + producto.stock, 'error');
+                return;
+            }
+
+            try {
+                const result = await supabaseFetch('/rest/v1/productos?codigo=eq.' + codigo, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ stock: nuevoStock })
+                });
+
+                if (result.ok) {
+                    const label = tipo === 'IN' ? '入库' : '出库';
+                    toast('✅ ' + label + '成功: ' + producto.nombre, 'success');
+                    showResult('✅ ' + label + '成功\n' + producto.nombre + ' 库存: ' + producto.stock + ' → ' + nuevoStock,
+                        'success');
+                    await cargarProductos();
+                } else {
+                    showResult('❌ 操作失败\nHTTP ' + result.status + '\n' + result.data, 'error');
+                }
+            } catch (e) {
+                showResult('❌ 操作失败\n' + e.message, 'error');
+            }
+        }
+
+        // ============================================================
+        //  初始化
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarProductos();
+
+            document.getElementById('testBtn').addEventListener('click', testCrearProducto);
+            document.getElementById('testBtnIn').addEventListener('click', function() { testInOut('IN'); });
+            document.getElementById('testBtnOut').addEventListener('click', function() { testInOut('OUT'); });
+
+            document.getElementById('clearResult').addEventListener('click', function() {
+                document.getElementById('resultBox').textContent = '等待测试...';
+                document.getElementById('resultBox').className = 'result-box';
+            });
+
+            // 按回车触发创建
+            document.getElementById('testNombre').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') testCrearProducto();
+            });
+            document.getElementById('testCodigo').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') testCrearProducto();
+            });
+
+            console.log('✅ 测试版已启动');
+        });
+    </script>
+</body>
+</html>
