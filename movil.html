@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>CELL LA 25 - Stock Móvil</title>
+    <title>CELL LA 25 · 扫码库存</title>
+    <!-- 引入 QuaggaJS 用于扫码 -->
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -95,6 +97,7 @@
             gap: 10px;
             align-items: center;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            flex-wrap: wrap;
         }
         .search-box input {
             flex: 1;
@@ -106,6 +109,7 @@
             background: #fafbfc;
             outline: none;
             transition: 0.2s;
+            min-width: 150px;
         }
         .search-box input:focus {
             border-color: #1a2a6c;
@@ -126,6 +130,66 @@
         }
         .search-box .btn:active {
             transform: scale(0.96);
+        }
+        .search-box .btn.scan {
+            background: #0f7b3a;
+        }
+        .search-box .btn.scan:active {
+            background: #0a5f2b;
+        }
+        .search-box .btn.income {
+            background: #b27c1a;
+        }
+        .search-box .btn.outcome {
+            background: #b21f1f;
+        }
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        /* 扫码区域 */
+        #scanner-container {
+            background: #1a1a2e;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            display: none;
+            position: relative;
+            border: 2px solid #fdbb2d;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        #scanner-container.active {
+            display: block;
+        }
+        #scanner-container video {
+            width: 100%;
+            display: block;
+        }
+        #scanner-container .scan-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 40%;
+            border: 3px dashed rgba(253, 187, 45, 0.7);
+            border-radius: 16px;
+            pointer-events: none;
+        }
+        .scan-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 10;
         }
 
         .productos-list {
@@ -192,15 +256,34 @@
             color: #8892a8;
             margin-top: 2px;
         }
+        .producto-card .acciones {
+            display: flex;
+            gap: 6px;
+            margin-left: 10px;
+        }
+        .producto-card .acciones button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            touch-action: manipulation;
+            color: white;
+        }
+        .producto-card .acciones .btn-in {
+            background: #0f7b3a;
+        }
+        .producto-card .acciones .btn-out {
+            background: #b21f1f;
+        }
+        .producto-card .acciones button:active {
+            transform: scale(0.94);
+        }
 
         @keyframes pulse {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.4;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
 
         .loading {
@@ -267,6 +350,7 @@
             }
             .producto-card {
                 padding: 12px 14px;
+                flex-wrap: wrap;
             }
             .producto-card .info .nombre {
                 font-size: 14px;
@@ -278,6 +362,12 @@
                 font-size: 15px;
                 padding: 10px 12px;
             }
+            .producto-card .acciones {
+                margin-left: 0;
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 6px;
+            }
         }
     </style>
 </head>
@@ -287,48 +377,59 @@
         <h1>📦 CELL LA 25</h1>
         <div style="display:flex;align-items:center;gap:6px;">
             <span class="sync-status" id="syncStatus">🔄</span>
-            <span class="badge">Stock Móvil</span>
+            <span class="badge">扫码·库存</span>
         </div>
     </div>
 
     <div class="stats-grid" id="statsGrid">
         <div class="stat-item total">
-            <div class="label">Productos</div>
+            <div class="label">产品数</div>
             <div class="value" id="totalProductos">0</div>
         </div>
         <div class="stat-item">
-            <div class="label">Total Unidades</div>
+            <div class="label">总库存</div>
             <div class="value" id="totalUnidades">0</div>
         </div>
         <div class="stat-item critico">
-            <div class="label">⚠️ Críticos</div>
+            <div class="label">⚠️ 临界</div>
             <div class="value" id="totalCriticos">0</div>
         </div>
     </div>
 
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="🔍 Buscar producto..." autofocus>
-        <button class="btn" id="clearBtn">✕</button>
+        <input type="text" id="searchInput" placeholder="🔍 搜索产品 / 扫码结果..." autofocus>
+        <div class="btn-group">
+            <button class="btn scan" id="scanBtn">📷 扫码</button>
+            <button class="btn" id="clearBtn">✕</button>
+        </div>
     </div>
 
-    <div id="loading" class="loading">🔄 Cargando productos...</div>
+    <!-- 扫码区域 -->
+    <div id="scanner-container">
+        <button class="scan-close" id="closeScanner">✕ 关闭</button>
+        <div id="scanner-view"></div>
+        <div class="scan-overlay"></div>
+    </div>
+
+    <div id="loading" class="loading">🔄 加载产品...</div>
     <div id="productosContainer" class="productos-list" style="display:none;"></div>
 
     <div class="toast" id="toast"></div>
-    <div class="footer">Datos en tiempo real · CELL LA 25</div>
+    <div class="footer">实时数据 · CELL LA 25 · 扫码入库/出库</div>
 
     <script>
         // ============================================
-        //  CONFIG
+        //  CONFIG SUPABASE
         // ============================================
         const SUPABASE_URL = 'https://hruwxcqedhogseqpbcio.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhydXd4Y3FlZGhvZ3NlcXBiY2lvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzUyNzExMywiZXhwIjoyMDk5MTAzMTEzfQ.VfnKr375IEpv83neEhQ9h5mLgpknIp1pyZjDaG1jCOw';
 
         let productos = [];
         let filteredProductos = [];
+        let scannerActive = false;
 
         // ============================================
-        //  SUPABASE
+        //  SUPABASE FETCH
         // ============================================
         async function supabaseFetch(endpoint, options = {}) {
             const url = SUPABASE_URL + endpoint;
@@ -346,21 +447,75 @@
             return response.json();
         }
 
+        // ============================================
+        //  CRUD 库存操作 (直接更新到Supabase)
+        // ============================================
+        async function actualizarStock(codigo, delta) {
+            // 找到本地产品
+            const idx = productos.findIndex(p => p.codigo === codigo);
+            if (idx === -1) {
+                toast('❌ 未找到产品: ' + codigo, 'error');
+                return false;
+            }
+            const producto = productos[idx];
+            const nuevoStock = Math.max(0, producto.stock + delta);
+            if (nuevoStock === producto.stock) {
+                toast('⚠️ 库存无变化', 'error');
+                return false;
+            }
+
+            try {
+                // 更新 Supabase
+                const endpoint = `/rest/v1/productos?codigo=eq.${codigo}`;
+                await supabaseFetch(endpoint, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ stock: nuevoStock })
+                });
+                // 更新本地
+                producto.stock = nuevoStock;
+                productos[idx] = producto;
+                // 重新过滤 & 渲染
+                aplicarFiltro();
+                renderAll();
+                toast(`✅ ${producto.nombre} · 库存 ${delta > 0 ? '+' : ''}${delta} → ${nuevoStock}`, 'success');
+                return true;
+            } catch (e) {
+                console.error(e);
+                toast('❌ 更新失败: ' + e.message, 'error');
+                return false;
+            }
+        }
+
+        // ============================================
+        //  加载产品
+        // ============================================
         async function cargarProductos() {
             try {
                 const data = await supabaseFetch('/rest/v1/productos?select=*');
                 productos = data;
-                filteredProductos = [...productos];
-                document.getElementById('syncStatus').textContent = '✅ Cloud';
+                aplicarFiltro();
+                document.getElementById('syncStatus').textContent = '✅ 在线';
                 document.getElementById('syncStatus').className = 'sync-status online';
                 renderAll();
                 return true;
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('syncStatus').textContent = '⚠️ Offline';
+                document.getElementById('syncStatus').textContent = '⚠️ 离线';
                 document.getElementById('syncStatus').className = 'sync-status offline';
-                toast('⚠️ Error al cargar datos', 'error');
+                toast('⚠️ 加载数据失败', 'error');
                 return false;
+            }
+        }
+
+        function aplicarFiltro() {
+            const q = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!q) {
+                filteredProductos = [...productos];
+            } else {
+                filteredProductos = productos.filter(p =>
+                    p.nombre.toLowerCase().includes(q) ||
+                    p.codigo.toLowerCase().includes(q)
+                );
             }
         }
 
@@ -380,10 +535,10 @@
         }
 
         function getStockStatus(stock, minimo) {
-            if (stock <= 0) return { label: 'Sin stock', class: 'bajo' };
-            if (stock <= (minimo || 3)) return { label: 'Crítico', class: 'bajo' };
-            if (stock >= 10) return { label: 'Alto', class: 'alto' };
-            return { label: 'Medio', class: 'medio' };
+            if (stock <= 0) return { label: '无库存', class: 'bajo' };
+            if (stock <= (minimo || 3)) return { label: '临界', class: 'bajo' };
+            if (stock >= 10) return { label: '充足', class: 'alto' };
+            return { label: '中等', class: 'medio' };
         }
 
         // ============================================
@@ -393,7 +548,6 @@
             const total = productos.length;
             const totalUds = productos.reduce((sum, p) => sum + p.stock, 0);
             const criticos = productos.filter(p => p.stock <= (p.minimo || 3)).length;
-
             document.getElementById('totalProductos').textContent = total;
             document.getElementById('totalUnidades').textContent = totalUds;
             document.getElementById('totalCriticos').textContent = criticos;
@@ -402,24 +556,22 @@
         function renderProductos() {
             const container = document.getElementById('productosContainer');
             const loading = document.getElementById('loading');
-
             if (filteredProductos.length === 0) {
                 container.innerHTML = `
                     <div class="empty">
                         <span>📭</span>
-                        ${productos.length === 0 ? 'No hay productos' : 'No se encontraron resultados'}
+                        ${productos.length === 0 ? '暂无产品' : '未找到匹配结果'}
                     </div>
                 `;
                 container.style.display = 'block';
                 loading.style.display = 'none';
                 return;
             }
-
             let html = '';
             filteredProductos.forEach(p => {
                 const status = getStockStatus(p.stock, p.minimo);
                 html += `
-                    <div class="producto-card">
+                    <div class="producto-card" data-codigo="${p.codigo}">
                         <div class="info">
                             <div class="nombre">${p.nombre}</div>
                             <div class="codigo">${p.codigo}</div>
@@ -429,13 +581,26 @@
                             <div class="stock-label">${status.label}</div>
                             <div class="precio">${formatMoneda(p.precio)}</div>
                         </div>
+                        <div class="acciones">
+                            <button class="btn-in" data-codigo="${p.codigo}" data-delta="1">+1 入库</button>
+                            <button class="btn-out" data-codigo="${p.codigo}" data-delta="-1">-1 出库</button>
+                        </div>
                     </div>
                 `;
             });
-
             container.innerHTML = html;
             container.style.display = 'flex';
             loading.style.display = 'none';
+
+            // 绑定库存按钮事件
+            container.querySelectorAll('.btn-in, .btn-out').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const codigo = this.dataset.codigo;
+                    const delta = parseInt(this.dataset.delta);
+                    actualizarStock(codigo, delta);
+                });
+            });
         }
 
         function renderAll() {
@@ -444,19 +609,63 @@
         }
 
         // ============================================
-        //  BUSCAR
+        //  扫码功能 (QuaggaJS)
         // ============================================
-        function buscar(query) {
-            const q = query.toLowerCase().trim();
-            if (!q) {
-                filteredProductos = [...productos];
-            } else {
-                filteredProductos = productos.filter(p =>
-                    p.nombre.toLowerCase().includes(q) ||
-                    p.codigo.toLowerCase().includes(q)
-                );
+        let quaggaInitialized = false;
+
+        function startScanner() {
+            const container = document.getElementById('scanner-container');
+            const view = document.getElementById('scanner-view');
+            container.classList.add('active');
+
+            if (quaggaInitialized) {
+                Quagga.start();
+                return;
             }
-            renderProductos();
+
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: view,
+                    constraints: {
+                        facingMode: "environment",
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    }
+                },
+                decoder: {
+                    readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "upc_reader", "upc_e_reader"]
+                }
+            }, function(err) {
+                if (err) {
+                    console.error(err);
+                    toast('❌ 无法启动摄像头: ' + err, 'error');
+                    container.classList.remove('active');
+                    return;
+                }
+                quaggaInitialized = true;
+                Quagga.start();
+            });
+
+            Quagga.onDetected(function(data) {
+                const code = data.codeResult.code;
+                if (code) {
+                    toast('📷 扫码结果: ' + code, 'success');
+                    document.getElementById('searchInput').value = code;
+                    document.getElementById('searchInput').dispatchEvent(new Event('input'));
+                    // 自动停止扫码
+                    stopScanner();
+                }
+            });
+        }
+
+        function stopScanner() {
+            if (quaggaInitialized) {
+                Quagga.stop();
+            }
+            document.getElementById('scanner-container').classList.remove('active');
+            scannerActive = false;
         }
 
         // ============================================
@@ -465,28 +674,37 @@
         document.addEventListener('DOMContentLoaded', function() {
             cargarProductos();
 
-            // Búsqueda en tiempo real
+            // 搜索输入
             document.getElementById('searchInput').addEventListener('input', function() {
-                buscar(this.value);
-            });
-
-            // Limpiar búsqueda
-            document.getElementById('clearBtn').addEventListener('click', function() {
-                document.getElementById('searchInput').value = '';
-                document.getElementById('searchInput').focus();
-                filteredProductos = [...productos];
+                aplicarFiltro();
                 renderProductos();
             });
 
-            // Actualizar cada 30 segundos
-            setInterval(() => {
-                cargarProductos();
-            }, 30000);
-
-            // Enfocar input al cargar
-            setTimeout(() => {
+            // 清空搜索
+            document.getElementById('clearBtn').addEventListener('click', function() {
+                document.getElementById('searchInput').value = '';
                 document.getElementById('searchInput').focus();
-            }, 500);
+                aplicarFiltro();
+                renderProductos();
+            });
+
+            // 扫码按钮
+            document.getElementById('scanBtn').addEventListener('click', function() {
+                if (document.getElementById('scanner-container').classList.contains('active')) {
+                    stopScanner();
+                } else {
+                    startScanner();
+                }
+            });
+
+            // 关闭扫码
+            document.getElementById('closeScanner').addEventListener('click', stopScanner);
+
+            // 每30秒刷新
+            setInterval(() => { cargarProductos(); }, 30000);
+
+            // 聚焦输入
+            setTimeout(() => { document.getElementById('searchInput').focus(); }, 500);
         });
     </script>
 </body>
