@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>📦 全网最全 · 手机入库系统</title>
+    <title>📦 CELL LA 25 · 全网最全</title>
     <!-- 引入 QuaggaJS 用于手机摄像头扫码 -->
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js">
     </script>
     <style>
-        /* ===== 全局重置 & 字体 ===== */
         * {
             margin: 0;
             padding: 0;
@@ -21,8 +20,6 @@
             min-height: 100vh;
             color: #0b1a33;
         }
-
-        /* ===== 头部 ===== */
         .header {
             background: linear-gradient(145deg, #0b1a33 0%, #1a3a6b 100%);
             padding: 18px 20px;
@@ -66,8 +63,6 @@
             color: #0b1a33;
             font-weight: 700;
         }
-
-        /* ===== 统计卡片 ===== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -104,8 +99,6 @@
         .stats-grid .stat-item .value.warning {
             color: #b27c1a;
         }
-
-        /* ===== Tab 导航 ===== */
         .tab-bar {
             display: flex;
             gap: 6px;
@@ -140,15 +133,12 @@
         .tab-bar .tab:active {
             transform: scale(0.96);
         }
-
         .tab-content {
             display: none;
         }
         .tab-content.active {
             display: block;
         }
-
-        /* ===== 搜索 & 扫码枪输入区 ===== */
         .search-box {
             background: white;
             border-radius: 16px;
@@ -198,26 +188,15 @@
         .search-box .btn:active {
             transform: scale(0.95);
         }
-        .search-box .btn.primary {
-            background: #0b1a33;
-        }
-        .search-box .btn.primary:hover {
-            background: #1a3a6b;
-        }
         .search-box .btn.success {
             background: #0f7b3a;
         }
         .search-box .btn.danger {
             background: #b21f1f;
         }
-        .search-box .btn.warning {
-            background: #b27c1a;
-        }
         .search-box .btn.gray {
             background: #8896b0;
         }
-
-        /* ===== 摄像头扫码区 ===== */
         .camera-area {
             background: white;
             border-radius: 16px;
@@ -289,8 +268,6 @@
             cursor: pointer;
             z-index: 10;
         }
-
-        /* ===== 通用卡片 ===== */
         .card {
             background: white;
             border-radius: 16px;
@@ -308,16 +285,13 @@
             align-items: center;
             gap: 8px;
         }
-
-        /* ===== 表单行 ===== */
         .form-row {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
             align-items: center;
         }
-        .form-row input,
-        .form-row select {
+        .form-row input {
             flex: 1;
             padding: 10px 14px;
             border: 1.5px solid #e2e7f0;
@@ -329,8 +303,7 @@
             min-width: 80px;
             transition: 0.2s;
         }
-        .form-row input:focus,
-        .form-row select:focus {
+        .form-row input:focus {
             border-color: #0b1a33;
             box-shadow: 0 0 0 3px rgba(11, 26, 51, 0.06);
             background: white;
@@ -367,8 +340,6 @@
             color: #8896b0;
             margin-top: 6px;
         }
-
-        /* ===== 产品列表 ===== */
         .productos-list {
             display: flex;
             flex-direction: column;
@@ -443,8 +414,6 @@
                 opacity: 0.4;
             }
         }
-
-        /* ===== IMEI 记录列表 ===== */
         .imei-list {
             max-height: 300px;
             overflow-y: auto;
@@ -482,8 +451,6 @@
             color: #8896b0;
             font-size: 11px;
         }
-
-        /* ===== 操作日志 ===== */
         .log-item {
             display: flex;
             justify-content: space-between;
@@ -514,8 +481,6 @@
             color: #8896b0;
             font-size: 10px;
         }
-
-        /* ===== Toast ===== */
         .toast {
             position: fixed;
             bottom: 24px;
@@ -544,8 +509,6 @@
         .toast.error {
             background: #b21f1f;
         }
-
-        /* ===== 弹窗 ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -653,8 +616,6 @@
             background: #0b1a33;
             color: white;
         }
-
-        /* ===== 底部 ===== */
         .footer {
             text-align: center;
             padding: 16px 0 4px 0;
@@ -677,8 +638,6 @@
             padding: 2px 16px;
             border-radius: 20px;
         }
-
-        /* ===== 响应式 ===== */
         @media (max-width: 640px) {
             .stats-grid {
                 grid-template-columns: repeat(3, 1fr);
@@ -718,8 +677,6 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-
-        /* ===== 滚动条美化 ===== */
         ::-webkit-scrollbar {
             width: 4px;
             height: 4px;
@@ -738,7 +695,7 @@
 
     <!-- ===== 头部 ===== -->
     <div class="header">
-        <h1>📦 手机入库 · 全网最全</h1>
+        <h1>📦 CELL LA 25</h1>
         <div class="badge-group">
             <span class="badge" id="syncStatus">🔄</span>
             <span class="badge">🔫📷 双模</span>
@@ -783,7 +740,6 @@
     <!-- ============================================================ -->
     <div class="tab-content active" id="tabStock">
 
-        <!-- 扫码枪 / 搜索输入 -->
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="🔫 扫码枪 / 搜索产品..." autofocus>
             <button class="btn success" id="btnQuickIn">📥 +1</button>
@@ -791,7 +747,6 @@
             <button class="btn gray" id="clearBtn">✕</button>
         </div>
 
-        <!-- 手机摄像头扫码 -->
         <div class="camera-area">
             <button class="btn-camera" id="cameraScanBtn">📷 手机扫码 (IMEI / 条码)</button>
             <div id="scanner-container">
@@ -799,7 +754,7 @@
                 <div id="scanner-view"></div>
                 <div class="scan-overlay"></div>
                 <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.5);font-size:11px;z-index:5;">
-                    扫码枪模式: <span id="scanModeLabel">产品/IMEI</span>
+                    扫码模式: <span id="scanModeLabel">产品/IMEI</span>
                 </div>
             </div>
             <div style="margin-top:8px;font-size:12px;color:#8896b0;">
@@ -807,8 +762,7 @@
             </div>
         </div>
 
-        <!-- 产品列表 -->
-        <div id="loading" class="loading" style="text-align:center;padding:30px 0;color:#8896b0;">🔄 加载产品...</div>
+        <div id="loading" style="text-align:center;padding:30px 0;color:#8896b0;">🔄 加载产品...</div>
         <div id="productosContainer" class="productos-list" style="display:none;"></div>
     </div>
 
@@ -862,13 +816,13 @@
     <div class="tab-content" id="tabAdd">
         <div class="card">
             <div class="card-title">➕ 手动添加产品</div>
-            <div class="form-group" style="margin-bottom:10px;">
-                <label>📱 产品编码</label>
-                <input type="text" id="manualCodigo" placeholder="输入编码">
+            <div style="margin-bottom:10px;">
+                <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📱 产品编码</label>
+                <input type="text" id="manualCodigo" placeholder="输入编码" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
             </div>
-            <div class="form-group" style="margin-bottom:10px;">
-                <label>📦 产品名称</label>
-                <input type="text" id="manualNombre" placeholder="例如：iPhone 15 Pro">
+            <div style="margin-bottom:10px;">
+                <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📦 产品名称</label>
+                <input type="text" id="manualNombre" placeholder="例如：iPhone 15 Pro" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
             </div>
             <div class="form-row">
                 <input type="number" id="manualPrecio" placeholder="价格" value="0" step="0.01" style="flex:1;">
@@ -879,7 +833,7 @@
         </div>
     </div>
 
-    <!-- ===== 新增产品弹窗（扫码触发） ===== -->
+    <!-- ===== 新增产品弹窗 ===== -->
     <div class="modal-overlay" id="addProductModal">
         <div class="modal-box">
             <div class="modal-title">
@@ -918,7 +872,7 @@
             <span class="version-label" id="footerVersion">📌 v2.0.0</span>
             <span style="font-size:10px;color:#b0b8c8;">部署后自动 +0.1</span>
         </div>
-        <div style="margin-top:4px;">实时数据 · 手机入库系统 · 全网最全</div>
+        <div style="margin-top:4px;">实时数据 · CELL LA 25 · 全网最全</div>
     </div>
 
     <script>
@@ -936,8 +890,6 @@
         let operaciones = [];
         let quaggaInit = false;
         let isModalOpen = false;
-        let isScanning = false;
-        let todayStr = new Date().toISOString().split('T')[0];
 
         // ============================================================
         //  版本管理
@@ -964,19 +916,6 @@
             updateVersionDisplay();
             return currentVersion;
         }
-
-        // 检测部署自动升级
-        (function checkDeploy() {
-            const deployKey = 'cell_la25_deploy_time_v2';
-            const now = Date.now();
-            const lastDeploy = parseInt(localStorage.getItem(deployKey)) || 0;
-            if (now - lastDeploy > 30000) {
-                bumpVersion();
-                localStorage.setItem(deployKey, now.toString());
-            } else {
-                updateVersionDisplay();
-            }
-        })();
 
         // ============================================================
         //  Supabase 请求
@@ -1032,7 +971,7 @@
         }
 
         // ============================================================
-        //  核心：创建产品
+        //  核心函数
         // ============================================================
         async function crearProducto(codigo, nombre, precio, stock) {
             if (!nombre || !nombre.trim()) { toast('⚠️ 请填写产品名称', 'error'); return false; }
@@ -1065,9 +1004,6 @@
             }
         }
 
-        // ============================================================
-        //  核心：出入库
-        // ============================================================
         async function ejecutarOperacion(codigo, cantidad, tipo, source = '') {
             if (!codigo || cantidad <= 0) { toast('⚠️ 请输入编码和数量', 'error'); return false; }
             const idx = productos.findIndex(p => p.codigo === codigo);
@@ -1105,42 +1041,25 @@
             }
         }
 
-        // ============================================================
-        //  IMEI 出库
-        // ============================================================
         async function imeiOut(imei) {
             if (!imei || imei.length < 8) { toast('⚠️ 请输入有效的 IMEI', 'error'); return; }
             imei = imei.trim();
-
-            // 查找 IMEI 记录
             const record = imeiRecords.find(r => r.imei === imei);
-            if (!record) {
-                toast('❌ IMEI 不存在: ' + imei, 'error');
-                return;
-            }
-            if (record.status === 'OUT') {
-                toast('⚠️ IMEI ' + imei + ' 已出库', 'error');
-                return;
-            }
-
-            // 查找产品
+            if (!record) { toast('❌ IMEI 不存在: ' + imei, 'error'); return; }
+            if (record.status === 'OUT') { toast('⚠️ IMEI ' + imei + ' 已出库', 'error'); return; }
             const p = productos.find(pr => pr.codigo === record.producto_codigo);
             if (!p) { toast('❌ 产品不存在', 'error'); return; }
             if (p.stock < 1) { toast('❌ 库存不足', 'error'); return; }
-
             try {
-                // 更新 IMEI 状态
                 await supabaseFetch('/rest/v1/imei_records?imei=eq.' + imei, {
                     method: 'PATCH',
                     body: JSON.stringify({ status: 'OUT', updated_at: new Date().toISOString() })
                 });
-                // 减库存
                 await supabaseFetch('/rest/v1/productos?codigo=eq.' + p.codigo, {
                     method: 'PATCH',
                     body: JSON.stringify({ stock: p.stock - 1 })
                 });
                 p.stock -= 1;
-                // 更新 IMEI 列表
                 const idx = imeiRecords.findIndex(r => r.imei === imei);
                 if (idx !== -1) imeiRecords[idx].status = 'OUT';
                 renderAll();
@@ -1162,22 +1081,17 @@
         }
 
         // ============================================================
-        //  扫码处理（支持产品码和 IMEI）
+        //  扫码处理
         // ============================================================
         function handleScannedCode(code, source = '') {
             if (!code || code.length < 3) return;
             code = code.trim();
-
-            // 判断是 IMEI 还是产品码（IMEI 通常 15 位纯数字）
             const isImei = /^\d{14,16}$/.test(code);
 
             if (isImei) {
-                // ===== IMEI 自动出库 =====
                 toast('📱 识别为 IMEI: ' + code, 'success');
-                // 切换到 IMEI Tab
-                switchTab('tabImei');
+                document.querySelector('.tab[data-tab="tabImei"]')?.click();
                 document.getElementById('imeiInput').value = code;
-                // 查询并显示预览
                 const record = imeiRecords.find(r => r.imei === code);
                 const preview = document.getElementById('imeiPreview');
                 document.getElementById('previewImei').textContent = code;
@@ -1187,7 +1101,6 @@
                     document.getElementById('previewStatus').textContent = record.status === 'IN' ? '✅ 可出库' : '📤 已出库';
                     document.getElementById('previewStatus').style.color = record.status === 'IN' ? '#0f7b3a' : '#b21f1f';
                     if (record.status === 'IN') {
-                        // 自动出库
                         setTimeout(() => { imeiOut(code); }, 500);
                     }
                 } else {
@@ -1199,15 +1112,14 @@
                 return;
             }
 
-            // ===== 产品码处理 =====
+            // 产品码
             document.getElementById('searchInput').value = code;
-            document.getElementById('formCodigo').value = code;
             const existente = productos.find(p => p.codigo === code);
             if (existente) {
                 toast('✅ 已找到: ' + existente.nombre + ' (库存: ' + existente.stock + ')', 'success');
-                aplicarFiltro(code);
+                const filtered = productos.filter(p => p.codigo === code || p.nombre.toLowerCase().includes(code.toLowerCase()));
+                filteredProductos = filtered;
                 renderProductos();
-                // 高亮
                 const cards = document.querySelectorAll('.producto-card');
                 cards.forEach(card => {
                     card.classList.remove('highlight');
@@ -1222,27 +1134,16 @@
                 setTimeout(() => mostrarModalCrear(code), 300);
             }
         }
+        let filteredProductos = [];
 
         // ============================================================
         //  渲染函数
         // ============================================================
-        function aplicarFiltro(q) {
-            const query = (q || document.getElementById('searchInput').value || '').toLowerCase().trim();
-            if (!query) { filteredProductos = [...productos]; return; }
-            filteredProductos = productos.filter(p =>
-                p.nombre.toLowerCase().includes(query) ||
-                p.codigo.toLowerCase().includes(query)
-            );
-        }
-        let filteredProductos = [];
-
         function renderStats() {
             const total = productos.length;
             const totalUds = productos.reduce((s, p) => s + p.stock, 0);
-            const criticos = productos.filter(p => p.stock <= (p.minimo || 3)).length;
             document.getElementById('totalProductos').textContent = total;
             document.getElementById('totalUnidades').textContent = totalUds;
-            document.getElementById('totalCriticos').textContent = criticos;
             // 今日统计
             const today = new Date().toISOString().split('T')[0];
             const todayLogs = operaciones.filter(o => o.time && o.time.includes(today));
@@ -1369,16 +1270,12 @@
         // ============================================================
         //  Tab 切换
         // ============================================================
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelector(`.tab[data-tab="${tabId}"]`)?.classList.add('active');
-            document.getElementById(tabId)?.classList.add('active');
-        }
-
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
-                switchTab(this.dataset.tab);
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
             });
         });
 
@@ -1447,6 +1344,17 @@
         //  初始化
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
+            // 检测部署自动升级
+            const deployKey = 'cell_la25_deploy_time_v2';
+            const now = Date.now();
+            const lastDeploy = parseInt(localStorage.getItem(deployKey)) || 0;
+            if (now - lastDeploy > 30000) {
+                bumpVersion();
+                localStorage.setItem(deployKey, now.toString());
+            } else {
+                updateVersionDisplay();
+            }
+
             cargarProductos();
             cargarImeiRecords();
 
@@ -1457,16 +1365,18 @@
                 clearTimeout(this._scanTimer);
                 this._scanTimer = setTimeout(() => {
                     if (val.length >= 3) {
-                        // 判断是否是 IMEI
                         if (/^\d{14,16}$/.test(val)) {
                             handleScannedCode(val);
                             this.value = '';
                         } else {
-                            aplicarFiltro(val);
+                            filteredProductos = productos.filter(p =>
+                                p.nombre.toLowerCase().includes(val.toLowerCase()) ||
+                                p.codigo.toLowerCase().includes(val.toLowerCase())
+                            );
                             renderProductos();
                         }
                     } else if (val.length === 0) {
-                        aplicarFiltro('');
+                        filteredProductos = [];
                         renderProductos();
                     }
                 }, 250);
@@ -1497,8 +1407,7 @@
                 const codigo = document.getElementById('searchInput').value.trim();
                 if (!codigo) { toast('⚠️ 请先扫码或输入编码', 'error'); return; }
                 if (/^\d{14,16}$/.test(codigo)) {
-                    // 自动跳转到 IMEI 出库
-                    switchTab('tabImei');
+                    document.querySelector('.tab[data-tab="tabImei"]')?.click();
                     document.getElementById('imeiInput').value = codigo;
                     imeiOut(codigo);
                     document.getElementById('searchInput').value = '';
@@ -1511,7 +1420,7 @@
 
             document.getElementById('clearBtn').addEventListener('click', function() {
                 document.getElementById('searchInput').value = '';
-                aplicarFiltro('');
+                filteredProductos = [];
                 renderProductos();
                 searchInput.focus();
             });
@@ -1581,7 +1490,7 @@
                     cerrarModal();
                     document.getElementById('searchInput').value = '';
                     document.getElementById('searchInput').focus();
-                    aplicarFiltro('');
+                    filteredProductos = [];
                     renderProductos();
                 }
             });
@@ -1609,7 +1518,7 @@
             }, 45000);
 
             setTimeout(() => { document.getElementById('searchInput').focus(); }, 400);
-            console.log('✅ 全网最全手机入库系统 v' + currentVersion + ' 已启动');
+            console.log('✅ CELL LA 25 v' + currentVersion + ' 已启动');
         });
     </script>
 </body>
