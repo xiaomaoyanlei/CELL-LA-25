@@ -55,6 +55,14 @@
             padding: 2px 10px;
             border-radius: 20px;
         }
+        .header .badge-version {
+            font-size: 10px;
+            background: #fdbb2d;
+            color: #1a2a6c;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
 
         .stats-grid {
             display: grid;
@@ -89,7 +97,6 @@
             color: #0f7b3a;
         }
 
-        /* ===== 模式切换 ===== */
         .mode-tabs {
             display: flex;
             gap: 6px;
@@ -128,7 +135,6 @@
             display: block;
         }
 
-        /* ===== 扫码枪模式 ===== */
         .search-box {
             background: white;
             border-radius: 14px;
@@ -195,7 +201,6 @@
             color: #1a2a6c;
         }
 
-        /* ===== 摄像头模式 ===== */
         .camera-area {
             background: white;
             border-radius: 14px;
@@ -264,7 +269,6 @@
             z-index: 10;
         }
 
-        /* ===== 手动操作 ===== */
         .form-card {
             background: white;
             border-radius: 14px;
@@ -337,7 +341,6 @@
             margin-top: 6px;
         }
 
-        /* ===== 产品列表 ===== */
         .productos-list {
             display: flex;
             flex-direction: column;
@@ -450,6 +453,10 @@
             color: #1a2a6c;
             font-weight: 700;
         }
+        .log-item .log-type.VERSION {
+            color: #b27c1a;
+            font-weight: 700;
+        }
         .log-item .log-time {
             color: #8892a8;
             font-size: 10px;
@@ -471,7 +478,6 @@
             margin-bottom: 10px;
         }
 
-        /* ===== Toast ===== */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -501,7 +507,6 @@
             background: #b21f1f;
         }
 
-        /* ===== 弹窗 ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -611,11 +616,53 @@
             transform: scale(0.96);
         }
 
+        /* ===== 底部（版本号+更新按钮） ===== */
         .footer {
             text-align: center;
             padding: 16px 0 4px 0;
             font-size: 11px;
             color: #8892a8;
+        }
+        .footer .version-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+        .footer .version-area .version-label {
+            font-weight: 700;
+            color: #1a2a6c;
+            font-size: 13px;
+            background: #eef2f8;
+            padding: 2px 14px;
+            border-radius: 20px;
+        }
+        .footer .version-area .btn-upgrade {
+            padding: 4px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #fdbb2d;
+            color: #1a2a6c;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .footer .version-area .btn-upgrade:active {
+            transform: scale(0.95);
+        }
+        .footer .version-area .btn-upgrade:hover {
+            background: #f0b020;
+        }
+        .footer .version-history {
+            font-size: 10px;
+            color: #b0b8c8;
+            margin-top: 4px;
+        }
+        .footer .version-history span {
+            margin: 0 4px;
         }
 
         @media (max-width: 480px) {
@@ -639,6 +686,9 @@
                 font-size: 11px;
                 padding: 8px 4px;
             }
+            .footer .version-area {
+                gap: 8px;
+            }
         }
     </style>
 </head>
@@ -650,6 +700,7 @@
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <span class="sync-status" id="syncStatus">🔄</span>
             <span class="badge-dual">🔫📷 双模</span>
+            <span class="badge-version" id="headerVersion">v1.0.0</span>
         </div>
     </div>
 
@@ -787,7 +838,19 @@
         </div>
     </div>
 
-    <div class="footer">实时数据 · CELL LA 25 · 双模扫码</div>
+    <!-- ===== 底部（版本管理） ===== -->
+    <div class="footer">
+        <div class="version-area">
+            <span class="version-label" id="footerVersion">📌 v1.0.0</span>
+            <button class="btn-upgrade" id="btnUpgradeVersion">⬆ 升级版本 (+0.1)</button>
+            <span style="font-size:10px;color:#b0b8c8;">部署后自动 +0.1</span>
+        </div>
+        <div class="version-history" id="versionHistory">
+            更新记录将显示在这里
+        </div>
+        <div style="margin-top:6px;">实时数据 · CELL LA 25 · 双模扫码</div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script>
@@ -803,6 +866,133 @@
         let operaciones = [];
         let lastScannedCode = '';
         let quaggaInit = false;
+
+        // ============================================================
+        //  版本管理
+        // ============================================================
+        const VERSION_STORAGE_KEY = 'cell_la25_version';
+        const VERSION_HISTORY_KEY = 'cell_la25_version_history';
+
+        // 获取当前版本号（从localStorage读取）
+        function getCurrentVersion() {
+            const saved = localStorage.getItem(VERSION_STORAGE_KEY);
+            if (saved) return saved;
+            // 默认 v1.0.0
+            return 'v1.0.0';
+        }
+
+        // 保存版本号
+        function setCurrentVersion(version) {
+            localStorage.setItem(VERSION_STORAGE_KEY, version);
+            // 更新页面显示
+            document.getElementById('headerVersion').textContent = version;
+            document.getElementById('footerVersion').textContent = '📌 ' + version;
+        }
+
+        // 版本号 +0.1
+        function upgradeVersion() {
+            const current = getCurrentVersion();
+            // 解析版本号 v1.0.0 → 1.0.0
+            const parts = current.replace('v', '').split('.');
+            let major = parseInt(parts[0]) || 1;
+            let minor = parseInt(parts[1]) || 0;
+            let patch = parseInt(parts[2]) || 0;
+
+            // 补丁版本 +0.1（每10次+0.1 → 相当于patch+1）
+            patch += 1;
+            if (patch >= 10) {
+                patch = 0;
+                minor += 1;
+                if (minor >= 10) {
+                    minor = 0;
+                    major += 1;
+                }
+            }
+
+            const newVersion = 'v' + major + '.' + minor + '.' + patch;
+            setCurrentVersion(newVersion);
+
+            // 记录更新日志
+            const now = new Date().toLocaleString('zh-CN', { hour12: false });
+            addVersionHistory(newVersion, now);
+
+            // 记录到操作日志
+            operaciones.unshift({
+                tipo: 'VERSION',
+                mensaje: '⬆ 版本升级到 ' + newVersion,
+                tiempo: now
+            });
+            if (operaciones.length > 50) operaciones.pop();
+            renderLog();
+
+            toast('✅ 版本升级到 ' + newVersion, 'success');
+            return newVersion;
+        }
+
+        // 版本历史记录
+        function getVersionHistory() {
+            try {
+                const data = localStorage.getItem(VERSION_HISTORY_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch { return []; }
+        }
+
+        function addVersionHistory(version, time) {
+            const history = getVersionHistory();
+            history.unshift({ version: version, time: time });
+            if (history.length > 20) history.pop();
+            localStorage.setItem(VERSION_HISTORY_KEY, JSON.stringify(history));
+            renderVersionHistory();
+        }
+
+        function renderVersionHistory() {
+            const history = getVersionHistory();
+            const el = document.getElementById('versionHistory');
+            if (history.length === 0) {
+                el.textContent = '暂无更新记录';
+                return;
+            }
+            let html = '📋 最近更新: ';
+            history.slice(0, 5).forEach((item, index) => {
+                if (index > 0) html += ' · ';
+                html += item.version + ' (' + item.time + ')';
+            });
+            el.textContent = html;
+        }
+
+        // 检测版本变化（页面加载时自动检测是否部署了新版本）
+        function checkVersionOnLoad() {
+            // 用当前时间戳作为"部署标记"
+            // 如果页面加载时间比上次记录的时间晚，说明是新的部署
+            const deployKey = 'cell_la25_deploy_time';
+            const now = Date.now();
+            const lastDeploy = parseInt(localStorage.getItem(deployKey)) || 0;
+
+            // 如果距离上次部署超过30秒，认为是新部署
+            if (now - lastDeploy > 30000) {
+                // 自动升级版本
+                const oldVersion = getCurrentVersion();
+                const newVersion = upgradeVersion();
+                localStorage.setItem(deployKey, now.toString());
+
+                // 记录到操作日志
+                operaciones.unshift({
+                    tipo: 'VERSION',
+                    mensaje: '🚀 新部署自动升级: ' + oldVersion + ' → ' + newVersion,
+                    tiempo: new Date().toLocaleString('zh-CN', { hour12: false })
+                });
+                if (operaciones.length > 50) operaciones.pop();
+                renderLog();
+
+                toast('🚀 检测到新部署，版本升级到 ' + newVersion, 'success');
+            } else {
+                // 正常显示版本
+                const v = getCurrentVersion();
+                document.getElementById('headerVersion').textContent = v;
+                document.getElementById('footerVersion').textContent = '📌 ' + v;
+                renderVersionHistory();
+            }
+        }
 
         // ============================================================
         //  Supabase 请求
@@ -913,7 +1103,7 @@
         }
 
         // ============================================================
-        //  核心：出入库（统一入口）
+        //  核心：出入库
         // ============================================================
         async function ejecutarOperacion(codigo, cantidad, tipo, source = '') {
             if (!codigo || cantidad <= 0) {
@@ -968,7 +1158,7 @@
         }
 
         // ============================================================
-        //  统一：处理扫码结果（两种模式共用）
+        //  统一：处理扫码结果
         // ============================================================
         function handleScannedCode(code, source = '') {
             if (!code || code.length < 3) return;
@@ -977,7 +1167,6 @@
             if (code === lastScannedCode && source !== 'camera') return;
             lastScannedCode = code;
 
-            // 填入所有编码输入框
             document.getElementById('formCodigo').value = code;
             document.getElementById('cameraCodigo').value = code;
             document.getElementById('searchInput').value = code;
@@ -988,7 +1177,6 @@
                 toast('✅ 已找到: ' + existente.nombre + ' (库存: ' + existente.stock + ')', 'success');
                 aplicarFiltro();
                 renderProductos();
-                // 高亮匹配的产品
                 const cards = document.querySelectorAll('.producto-card');
                 cards.forEach(card => {
                     card.classList.remove('highlight');
@@ -1080,10 +1268,12 @@
             }
             let html = '';
             operaciones.slice(0, 20).forEach(o => {
-                const cls = o.tipo === 'IN' ? 'IN' : o.tipo === 'OUT' ? 'OUT' : 'NEW';
+                const cls = o.tipo === 'IN' ? 'IN' : o.tipo === 'OUT' ? 'OUT' : o.tipo === 'VERSION' ? 'VERSION' :
+                    'NEW';
+                const label = o.tipo === 'VERSION' ? '🔄' : '';
                 html += `
                     <div class="log-item">
-                        <span><span class="log-type ${cls}">${o.mensaje}</span></span>
+                        <span><span class="log-type ${cls}">${label} ${o.mensaje}</span></span>
                         <span class="log-time">${o.tiempo}</span>
                     </div>
                 `;
@@ -1116,7 +1306,7 @@
         }
 
         // ============================================================
-        //  摄像头扫码 (QuaggaJS)
+        //  摄像头扫码
         // ============================================================
         function startCameraScanner() {
             const container = document.getElementById('scanner-container');
@@ -1175,7 +1365,6 @@
                 this.classList.add('active');
                 document.getElementById('mode' + this.dataset.mode.charAt(0).toUpperCase() + this.dataset.mode
                     .slice(1)).classList.add('active');
-                // 切换模式时停止摄像头
                 stopCameraScanner();
             });
         });
@@ -1184,6 +1373,10 @@
         //  初始化
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
+            // === 版本检测 ===
+            checkVersionOnLoad();
+
+            // === 加载数据 ===
             cargarProductos();
             cargarImeiRecords();
 
@@ -1217,7 +1410,6 @@
                 renderProductos();
             });
 
-            // 快捷出入库
             document.getElementById('btnQuickIn').addEventListener('click', function() {
                 const codigo = document.getElementById('searchInput').value.trim();
                 if (!codigo) { toast('⚠️ 请先扫码', 'error'); return; }
@@ -1234,7 +1426,6 @@
                 document.getElementById('searchInput').focus();
             });
 
-            // 手动出入库
             document.getElementById('btnIn').addEventListener('click', function() {
                 const codigo = document.getElementById('formCodigo').value.trim();
                 const cant = parseInt(document.getElementById('formCantidad').value) || 1;
@@ -1297,7 +1488,23 @@
                 if (e.target === this) cerrarModal();
             });
 
-            // ===== 键盘快捷键（全局） =====
+            // ===== 版本升级按钮 =====
+            document.getElementById('btnUpgradeVersion').addEventListener('click', function() {
+                const oldVersion = getCurrentVersion();
+                const newVersion = upgradeVersion();
+                // 记录到操作日志
+                operaciones.unshift({
+                    tipo: 'VERSION',
+                    mensaje: '⬆ 手动升级: ' + oldVersion + ' → ' + newVersion,
+                    tiempo: new Date().toLocaleString('zh-CN', { hour12: false })
+                });
+                if (operaciones.length > 50) operaciones.pop();
+                renderLog();
+                // 刷新版本历史
+                renderVersionHistory();
+            });
+
+            // ===== 键盘快捷键 =====
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'F1') {
                     e.preventDefault();
