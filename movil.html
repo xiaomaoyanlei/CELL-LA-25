@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <title>📦 CELL LA 25 · 全网最全</title>
-    <!-- 引入 QuaggaJS 用于手机摄像头扫码 -->
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js">
     </script>
     <style>
@@ -291,7 +290,8 @@
             flex-wrap: wrap;
             align-items: center;
         }
-        .form-row input {
+        .form-row input,
+        .form-row select {
             flex: 1;
             padding: 10px 14px;
             border: 1.5px solid #e2e7f0;
@@ -303,7 +303,8 @@
             min-width: 80px;
             transition: 0.2s;
         }
-        .form-row input:focus {
+        .form-row input:focus,
+        .form-row select:focus {
             border-color: #0b1a33;
             box-shadow: 0 0 0 3px rgba(11, 26, 51, 0.06);
             background: white;
@@ -376,10 +377,45 @@
             font-family: monospace;
             margin-top: 2px;
         }
+        .producto-card .info .specs {
+            font-size: 12px;
+            color: #0b1a33;
+            margin-top: 2px;
+            background: #eef2f8;
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
         .producto-card .info .meta {
             font-size: 11px;
             color: #8896b0;
             margin-top: 2px;
+        }
+        .producto-card .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-left: 8px;
+        }
+        .producto-card .actions .btn-sm {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            touch-action: manipulation;
+            color: white;
+        }
+        .producto-card .actions .btn-sm.danger {
+            background: #b21f1f;
+        }
+        .producto-card .actions .btn-sm.success {
+            background: #0f7b3a;
+        }
+        .producto-card .actions .btn-sm:active {
+            transform: scale(0.95);
         }
         .producto-card .stock-area {
             text-align: right;
@@ -475,6 +511,10 @@
         }
         .log-item .log-type.IMEI {
             color: #b27c1a;
+            font-weight: 700;
+        }
+        .log-item .log-type.DELETE {
+            color: #b21f1f;
             font-weight: 700;
         }
         .log-item .log-time {
@@ -573,7 +613,8 @@
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
-        .modal-box .form-group input {
+        .modal-box .form-group input,
+        .modal-box .form-group select {
             width: 100%;
             padding: 12px 14px;
             border: 1.5px solid #e2e7f0;
@@ -584,7 +625,8 @@
             outline: none;
             transition: 0.2s;
         }
-        .modal-box .form-group input:focus {
+        .modal-box .form-group input:focus,
+        .modal-box .form-group select:focus {
             border-color: #0b1a33;
             box-shadow: 0 0 0 3px rgba(11, 26, 51, 0.06);
             background: white;
@@ -671,6 +713,12 @@
             .header h1 {
                 font-size: 16px;
             }
+            .producto-card .actions {
+                margin-left: 0;
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 6px;
+            }
         }
         @media (max-width: 400px) {
             .stats-grid {
@@ -699,7 +747,7 @@
         <div class="badge-group">
             <span class="badge" id="syncStatus">🔄</span>
             <span class="badge">🔫📷 双模</span>
-            <span class="badge version" id="headerVersion">v2.0.0</span>
+            <span class="badge version" id="headerVersion">v2.1.0</span>
         </div>
     </div>
 
@@ -732,7 +780,7 @@
         <button class="tab active" data-tab="tabStock">📦 库存</button>
         <button class="tab" data-tab="tabImei">📱 IMEI 出库</button>
         <button class="tab" data-tab="tabLog">📜 日志</button>
-        <button class="tab" data-tab="tabAdd">➕ 手动添加</button>
+        <button class="tab" data-tab="tabAdd">➕ 添加产品</button>
     </div>
 
     <!-- ============================================================ -->
@@ -811,11 +859,11 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- Tab 4: 手动添加 -->
+    <!-- Tab 4: 添加产品（含内存/存储） -->
     <!-- ============================================================ -->
     <div class="tab-content" id="tabAdd">
         <div class="card">
-            <div class="card-title">➕ 手动添加产品</div>
+            <div class="card-title">➕ 添加新产品</div>
             <div style="margin-bottom:10px;">
                 <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📱 产品编码</label>
                 <input type="text" id="manualCodigo" placeholder="输入编码" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
@@ -824,16 +872,41 @@
                 <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📦 产品名称</label>
                 <input type="text" id="manualNombre" placeholder="例如：iPhone 15 Pro" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
             </div>
+            <div class="form-row" style="margin-bottom:10px;">
+                <div style="flex:1;">
+                    <label style="display:block;font-size:11px;font-weight:600;color:#8896b0;margin-bottom:2px;text-transform:uppercase;">🧠 RAM</label>
+                    <select id="manualRam" style="width:100%;padding:10px 12px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:14px;background:#fafbfc;outline:none;">
+                        <option value="2GB">2GB</option>
+                        <option value="3GB">3GB</option>
+                        <option value="4GB">4GB</option>
+                        <option value="6GB">6GB</option>
+                        <option value="8GB" selected>8GB</option>
+                        <option value="12GB">12GB</option>
+                        <option value="16GB">16GB</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label style="display:block;font-size:11px;font-weight:600;color:#8896b0;margin-bottom:2px;text-transform:uppercase;">💾 ROM</label>
+                    <select id="manualRom" style="width:100%;padding:10px 12px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:14px;background:#fafbfc;outline:none;">
+                        <option value="32GB">32GB</option>
+                        <option value="64GB">64GB</option>
+                        <option value="128GB" selected>128GB</option>
+                        <option value="256GB">256GB</option>
+                        <option value="512GB">512GB</option>
+                        <option value="1TB">1TB</option>
+                    </select>
+                </div>
+            </div>
             <div class="form-row">
                 <input type="number" id="manualPrecio" placeholder="价格" value="0" step="0.01" style="flex:1;">
                 <input type="number" id="manualStock" placeholder="库存" value="1" style="flex:1;">
             </div>
             <button class="btn primary" id="manualAddBtn" style="width:100%;margin-top:12px;padding:14px;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;color:white;background:#0b1a33;">✅ 添加产品</button>
-            <div class="form-hint">💡 手动添加产品到数据库</div>
+            <div class="form-hint">💡 手动添加产品，包含内存(RAM)和存储(ROM)</div>
         </div>
     </div>
 
-    <!-- ===== 新增产品弹窗 ===== -->
+    <!-- ===== 新增产品弹窗（扫码触发，含内存/存储） ===== -->
     <div class="modal-overlay" id="addProductModal">
         <div class="modal-box">
             <div class="modal-title">
@@ -847,6 +920,31 @@
             <div class="form-group">
                 <label>📦 产品名称 <span style="color:#b21f1f;">*</span></label>
                 <input type="text" id="modalNombre" placeholder="例如：iPhone 15 Pro" autofocus>
+            </div>
+            <div class="form-row" style="margin-bottom:14px;gap:10px;">
+                <div style="flex:1;">
+                    <label style="display:block;font-size:11px;font-weight:600;color:#8896b0;margin-bottom:2px;text-transform:uppercase;">🧠 RAM</label>
+                    <select id="modalRam" style="width:100%;padding:10px 12px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:14px;background:#fafbfc;outline:none;">
+                        <option value="2GB">2GB</option>
+                        <option value="3GB">3GB</option>
+                        <option value="4GB">4GB</option>
+                        <option value="6GB">6GB</option>
+                        <option value="8GB" selected>8GB</option>
+                        <option value="12GB">12GB</option>
+                        <option value="16GB">16GB</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label style="display:block;font-size:11px;font-weight:600;color:#8896b0;margin-bottom:2px;text-transform:uppercase;">💾 ROM</label>
+                    <select id="modalRom" style="width:100%;padding:10px 12px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:14px;background:#fafbfc;outline:none;">
+                        <option value="32GB">32GB</option>
+                        <option value="64GB">64GB</option>
+                        <option value="128GB" selected>128GB</option>
+                        <option value="256GB">256GB</option>
+                        <option value="512GB">512GB</option>
+                        <option value="1TB">1TB</option>
+                    </select>
+                </div>
             </div>
             <div class="form-group">
                 <label>💰 价格 (B/.)</label>
@@ -869,7 +967,7 @@
     <!-- ===== 底部 ===== -->
     <div class="footer">
         <div class="version-area">
-            <span class="version-label" id="footerVersion">📌 v2.0.0</span>
+            <span class="version-label" id="footerVersion">📌 v2.1.0</span>
             <span style="font-size:10px;color:#b0b8c8;">部署后自动 +0.1</span>
         </div>
         <div style="margin-top:4px;">实时数据 · CELL LA 25 · 全网最全</div>
@@ -895,7 +993,7 @@
         //  版本管理
         // ============================================================
         const VERSION_KEY = 'cell_la25_version_v2';
-        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v2.0.0';
+        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v2.1.0';
 
         function updateVersionDisplay() {
             document.getElementById('headerVersion').textContent = currentVersion;
@@ -905,7 +1003,7 @@
         function bumpVersion() {
             const parts = currentVersion.replace('v', '').split('.');
             let major = parseInt(parts[0]) || 2;
-            let minor = parseInt(parts[1]) || 0;
+            let minor = parseInt(parts[1]) || 1;
             let patch = parseInt(parts[2]) || 0;
             patch += 1;
             if (patch >= 10) { patch = 0;
@@ -973,33 +1071,66 @@
         // ============================================================
         //  核心函数
         // ============================================================
-        async function crearProducto(codigo, nombre, precio, stock) {
+        async function crearProducto(codigo, nombre, precio, stock, ram, rom) {
             if (!nombre || !nombre.trim()) { toast('⚠️ 请填写产品名称', 'error'); return false; }
             if (productos.some(p => p.codigo === codigo)) {
                 toast('⚠️ 编码已存在: ' + codigo, 'error');
                 return false;
             }
+            // 组合规格显示
+            const specs = ram + ' + ' + rom;
             const data = {
                 codigo: String(codigo).trim(),
                 nombre: String(nombre).trim(),
                 precio: parseFloat(precio) || 0,
                 stock: parseInt(stock) || 0,
-                minimo: 3
+                minimo: 3,
+                ram: ram || '8GB',
+                rom: rom || '128GB',
+                specs: specs
             };
             try {
                 await supabaseFetch('/rest/v1/productos', { method: 'POST', body: JSON.stringify(data) });
                 await cargarProductos();
                 operaciones.unshift({
                     tipo: 'NEW',
-                    msg: '🆕 新增: ' + data.nombre + ' (' + data.codigo + ') 库存:' + data.stock,
+                    msg: '🆕 新增: ' + data.nombre + ' (' + data.codigo + ') ' + specs + ' 库存:' + data.stock,
                     time: new Date().toLocaleTimeString('zh-CN', { hour12: false })
                 });
                 if (operaciones.length > 100) operaciones.pop();
                 renderLog();
-                toast('✅ 产品创建成功: ' + data.nombre, 'success');
+                toast('✅ 产品创建成功: ' + data.nombre + ' ' + specs, 'success');
                 return true;
             } catch (e) {
                 toast('❌ 创建失败: ' + e.message, 'error');
+                return false;
+            }
+        }
+
+        async function eliminarProducto(codigo) {
+            if (!confirm('⚠️ 确定要删除产品 ' + codigo + ' 吗？\n将同时删除该产品的所有 IMEI 记录！')) return;
+            try {
+                // 删除关联的 IMEI 记录
+                const imeis = imeiRecords.filter(r => r.producto_codigo === codigo);
+                for (const im of imeis) {
+                    await supabaseFetch('/rest/v1/imei_records?imei=eq.' + im.imei, { method: 'DELETE' });
+                }
+                // 删除产品
+                await supabaseFetch('/rest/v1/productos?codigo=eq.' + codigo, { method: 'DELETE' });
+                const p = productos.find(pr => pr.codigo === codigo);
+                await cargarProductos();
+                await cargarImeiRecords();
+                operaciones.unshift({
+                    tipo: 'DELETE',
+                    msg: '🗑️ 删除产品: ' + (p ? p.nombre : codigo) + ' (' + codigo + ')',
+                    time: new Date().toLocaleTimeString('zh-CN', { hour12: false })
+                });
+                if (operaciones.length > 100) operaciones.pop();
+                renderLog();
+                toast('🗑️ 产品已删除: ' + (p ? p.nombre : codigo), 'success');
+                return true;
+            } catch (e) {
+                toast('❌ 删除失败: ' + e.message, 'error');
                 return false;
             }
         }
@@ -1144,7 +1275,6 @@
             const totalUds = productos.reduce((s, p) => s + p.stock, 0);
             document.getElementById('totalProductos').textContent = total;
             document.getElementById('totalUnidades').textContent = totalUds;
-            // 今日统计
             const today = new Date().toISOString().split('T')[0];
             const todayLogs = operaciones.filter(o => o.time && o.time.includes(today));
             const ins = todayLogs.filter(o => o.tipo === 'IN').length;
@@ -1168,16 +1298,23 @@
             list.forEach(p => {
                 const status = getStockStatus(p.stock, p.minimo || 3);
                 const imeiCount = imeiRecords.filter(r => r.producto_codigo === p.codigo && r.status === 'IN').length;
+                const specs = p.specs || (p.ram ? p.ram + ' + ' + p.rom : '');
                 html += `
                     <div class="producto-card" data-codigo="${p.codigo}">
                         <div class="info">
                             <div class="nombre">${p.nombre}</div>
-                            <div class="codigo">${p.codigo}  📱IMEI: ${imeiCount}</div>
-                            <div class="meta">💰 B/.${p.precio.toFixed(2)}</div>
+                            <div class="codigo">${p.codigo}</div>
+                            ${specs ? `<div class="specs">🧠 ${specs}</div>` : ''}
+                            <div class="meta">💰 B/.${p.precio.toFixed(2)}  📱IMEI: ${imeiCount}</div>
                         </div>
                         <div class="stock-area">
                             <div class="stock ${status.class}">${p.stock}</div>
                             <div class="stock-label">${status.label}</div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-sm success" onclick="ejecutarOperacion('${p.codigo}',1,'IN','按钮')">+1</button>
+                            <button class="btn-sm danger" onclick="ejecutarOperacion('${p.codigo}',1,'OUT','按钮')">-1</button>
+                            <button class="btn-sm danger" onclick="eliminarProducto('${p.codigo}')" style="background:#b21f1f;">🗑️</button>
                         </div>
                     </div>
                 `;
@@ -1224,7 +1361,8 @@
             }
             let html = '';
             operaciones.slice(0, 30).forEach(o => {
-                const cls = o.tipo === 'IN' ? 'IN' : o.tipo === 'OUT' ? 'OUT' : o.tipo === 'IMEI' ? 'IMEI' : 'NEW';
+                const cls = o.tipo === 'IN' ? 'IN' : o.tipo === 'OUT' ? 'OUT' : o.tipo === 'IMEI' ? 'IMEI' : o
+                    .tipo === 'DELETE' ? 'DELETE' : 'NEW';
                 html += `
                     <div class="log-item">
                         <span><span class="log-type ${cls}">${o.msg}</span></span>
@@ -1344,7 +1482,6 @@
         //  初始化
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
-            // 检测部署自动升级
             const deployKey = 'cell_la25_deploy_time_v2';
             const now = Date.now();
             const lastDeploy = parseInt(localStorage.getItem(deployKey)) || 0;
@@ -1470,8 +1607,10 @@
                 const nombre = document.getElementById('manualNombre').value.trim();
                 const precio = document.getElementById('manualPrecio').value;
                 const stock = document.getElementById('manualStock').value;
+                const ram = document.getElementById('manualRam').value;
+                const rom = document.getElementById('manualRom').value;
                 if (!codigo || !nombre) { toast('⚠️ 请填写编码和名称', 'error'); return; }
-                crearProducto(codigo, nombre, precio, stock).then(() => {
+                crearProducto(codigo, nombre, precio, stock, ram, rom).then(() => {
                     document.getElementById('manualCodigo').value = '';
                     document.getElementById('manualNombre').value = '';
                 });
@@ -1483,9 +1622,11 @@
                 const nombre = document.getElementById('modalNombre').value.trim();
                 const precio = document.getElementById('modalPrecio').value;
                 const stock = document.getElementById('modalStock').value;
+                const ram = document.getElementById('modalRam').value;
+                const rom = document.getElementById('modalRom').value;
                 if (!nombre) { toast('⚠️ 请填写产品名称', 'error');
                     document.getElementById('modalNombre').focus(); return; }
-                const ok = await crearProducto(codigo, nombre, precio, stock);
+                const ok = await crearProducto(codigo, nombre, precio, stock, ram, rom);
                 if (ok) {
                     cerrarModal();
                     document.getElementById('searchInput').value = '';
