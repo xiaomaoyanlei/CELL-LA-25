@@ -4,10 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <title>📦 CELL LA 25 · 全网最全</title>
-    <!-- 引入 QuaggaJS 用于手机摄像头扫码 -->
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js">
     </script>
     <style>
+        /* ===== 样式与之前一致，为了节省篇幅此处省略，请用之前完整版 ===== */
+        /* 为了完整，保留最小样式 */
         * {
             margin: 0;
             padding: 0;
@@ -751,7 +752,7 @@
         <div class="badge-group">
             <span class="badge" id="syncStatus">🔄</span>
             <span class="badge">🔫📷 双模</span>
-            <span class="badge version" id="headerVersion">v2.4.0</span>
+            <span class="badge version" id="headerVersion">v2.5.0</span>
         </div>
     </div>
 
@@ -788,21 +789,18 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- Tab 1: 库存 + 扫码枪 -->
+    <!-- Tab 1: 库存 -->
     <!-- ============================================================ -->
     <div class="tab-content active" id="tabStock">
-
         <div style="background:#fff3cd;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#856404;border:1px solid #ffc107;">
             ⚠️ <strong>只认 15 位纯数字（IMEI）</strong> · 其他一律提示“请扫描 15 位纯数字”
         </div>
-
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="🔫 扫码枪 / 搜索产品..." autofocus>
             <button class="btn success" id="btnQuickIn">📥 +1</button>
             <button class="btn danger" id="btnQuickOut">📤 -1</button>
             <button class="btn gray" id="clearBtn">✕</button>
         </div>
-
         <div class="camera-area">
             <button class="btn-camera" id="cameraScanBtn">📷 手机扫码</button>
             <div id="scanner-container">
@@ -817,7 +815,6 @@
                 💡 <strong>只认 15 位纯数字（IMEI）</strong> · 其他一律提示错误
             </div>
         </div>
-
         <div id="loading" style="text-align:center;padding:30px 0;color:#8896b0;">🔄 加载产品...</div>
         <div id="productosContainer" class="productos-list" style="display:none;"></div>
     </div>
@@ -842,7 +839,6 @@
                 📌 状态: <span id="previewStatus" style="font-weight:700;">—</span>
             </div>
         </div>
-
         <div class="card">
             <div class="card-title">
                 📋 IMEI 记录
@@ -870,7 +866,7 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- Tab 4: 添加产品（含手机扫码按钮） -->
+    <!-- Tab 4: 添加产品 -->
     <!-- ============================================================ -->
     <div class="tab-content" id="tabAdd">
         <div class="card">
@@ -923,7 +919,7 @@
         </div>
     </div>
 
-    <!-- ===== 新增产品弹窗（扫码触发） ===== -->
+    <!-- ===== 新增产品弹窗 ===== -->
     <div class="modal-overlay" id="addProductModal">
         <div class="modal-box">
             <div class="modal-title">
@@ -984,7 +980,7 @@
     <!-- ===== 底部 ===== -->
     <div class="footer">
         <div class="version-area">
-            <span class="version-label" id="footerVersion">📌 v2.4.0</span>
+            <span class="version-label" id="footerVersion">📌 v2.5.0</span>
             <span style="font-size:10px;color:#b0b8c8;">部署后自动 +0.1</span>
         </div>
         <div style="margin-top:4px;">实时数据 · CELL LA 25 · 只认 15 位纯数字（IMEI）</div>
@@ -1003,15 +999,14 @@
         let productos = [];
         let imeiRecords = [];
         let operaciones = [];
-        let quaggaInit = false;
         let isModalOpen = false;
-        let currentScanSource = 'stock'; // 'stock' or 'add'
+        let scannerActive = false;
 
         // ============================================================
         //  版本管理
         // ============================================================
         const VERSION_KEY = 'cell_la25_version_v2';
-        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v2.4.0';
+        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v2.5.0';
 
         function updateVersionDisplay() {
             document.getElementById('headerVersion').textContent = currentVersion;
@@ -1021,7 +1016,7 @@
         function bumpVersion() {
             const parts = currentVersion.replace('v', '').split('.');
             let major = parseInt(parts[0]) || 2;
-            let minor = parseInt(parts[1]) || 4;
+            let minor = parseInt(parts[1]) || 5;
             let patch = parseInt(parts[2]) || 0;
             patch += 1;
             if (patch >= 10) { patch = 0;
@@ -1246,7 +1241,7 @@
         }
 
         // ============================================================
-        //  ⭐ 扫码处理（只认 15 位纯数字）
+        //  扫码处理
         // ============================================================
         function handleScannedCode(code, source = '') {
             if (!code || code.length < 3) return;
@@ -1261,9 +1256,7 @@
                 return;
             }
 
-            // ===== 15 位纯数字处理 =====
             document.getElementById('searchInput').value = code;
-            // 如果是从添加产品页扫码，也填入手动添加的编码框
             document.getElementById('manualCodigo').value = code;
 
             const existente = productos.find(p => p.codigo === code);
@@ -1285,7 +1278,6 @@
                     }
                 });
                 document.getElementById('searchInput').value = '';
-                // 切换到库存 Tab
                 document.querySelector('.tab[data-tab="tabStock"]')?.click();
             } else if (imeiExistente && imeiExistente.status === 'IN') {
                 toast('📱 识别为 IMEI，跳转出库...', 'success');
@@ -1461,64 +1453,134 @@
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 this.classList.add('active');
                 document.getElementById(this.dataset.tab).classList.add('active');
+                // 切换 Tab 时自动关闭摄像头
+                if (scannerActive) {
+                    stopCameraScanner();
+                }
             });
         });
 
         // ============================================================
-        //  摄像头扫码（共用）
+        //  ⭐ 摄像头扫码（修复黑屏Bug）
         // ============================================================
+        let quaggaInit = false;
+        let quaggaRunning = false;
+
         function startCameraScanner() {
             const container = document.getElementById('scanner-container');
             const view = document.getElementById('scanner-view');
+
+            // 如果摄像头已经在运行，先彻底停止再重启
+            if (scannerActive) {
+                stopCameraScanner();
+                // 等待500ms再重启
+                setTimeout(() => {
+                    startCameraScanner();
+                }, 500);
+                return;
+            }
+
             container.classList.add('active');
             document.getElementById('cameraScanBtn').textContent = '⏹ 停止扫码';
             document.getElementById('cameraScanBtn').classList.add('scanning');
-            // 同时改变添加页的按钮文字
             document.getElementById('cameraScanBtnAdd').textContent = '⏹ 停止扫码';
             document.getElementById('cameraScanBtnAdd').classList.add('scanning');
 
-            if (quaggaInit) { Quagga.start(); return; }
+            // 如果 Quagga 已初始化但未运行，直接启动
+            if (quaggaInit && !quaggaRunning) {
+                Quagga.start();
+                quaggaRunning = true;
+                scannerActive = true;
+                return;
+            }
 
+            // 如果已经初始化并正在运行，不重复初始化
+            if (quaggaInit && quaggaRunning) {
+                scannerActive = true;
+                return;
+            }
+
+            // 首次初始化
             Quagga.init({
                 inputStream: {
                     name: "Live",
                     type: "LiveStream",
                     target: view,
-                    constraints: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }
+                    constraints: {
+                        facingMode: "environment",
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    }
                 },
                 decoder: {
                     readers: ["ean_reader", "code_128_reader", "code_39_reader", "upc_reader", "upc_e_reader"]
                 }
             }, function(err) {
                 if (err) {
+                    console.error('Quagga init error:', err);
                     toast('❌ 摄像头启动失败: ' + err, 'error');
                     container.classList.remove('active');
                     document.getElementById('cameraScanBtn').textContent = '📷 手机扫码';
                     document.getElementById('cameraScanBtn').classList.remove('scanning');
                     document.getElementById('cameraScanBtnAdd').textContent = '📷 手机扫码 (15位IMEI)';
                     document.getElementById('cameraScanBtnAdd').classList.remove('scanning');
+                    scannerActive = false;
                     return;
                 }
                 quaggaInit = true;
                 Quagga.start();
+                quaggaRunning = true;
+                scannerActive = true;
+                console.log('📷 摄像头已启动');
             });
 
+            // 检测到条码
             Quagga.onDetected(function(data) {
                 const code = data.codeResult.code;
                 if (code) {
                     handleScannedCode(code, 'camera');
+                    // 扫码成功后自动停止摄像头（释放资源）
+                    setTimeout(() => {
+                        if (scannerActive) {
+                            stopCameraScanner();
+                        }
+                    }, 300);
                 }
             });
         }
 
         function stopCameraScanner() {
-            if (quaggaInit) Quagga.stop();
+            try {
+                if (quaggaRunning) {
+                    Quagga.stop();
+                    quaggaRunning = false;
+                }
+                // 清除 Quagga 的 video 流
+                const video = document.querySelector('#scanner-view video');
+                if (video && video.srcObject) {
+                    const tracks = video.srcObject.getTracks();
+                    tracks.forEach(track => track.stop());
+                    video.srcObject = null;
+                }
+            } catch (e) {
+                console.warn('停止摄像头时出错:', e);
+            }
+
             document.getElementById('scanner-container').classList.remove('active');
             document.getElementById('cameraScanBtn').textContent = '📷 手机扫码';
             document.getElementById('cameraScanBtn').classList.remove('scanning');
             document.getElementById('cameraScanBtnAdd').textContent = '📷 手机扫码 (15位IMEI)';
             document.getElementById('cameraScanBtnAdd').classList.remove('scanning');
+            scannerActive = false;
+            console.log('📷 摄像头已停止');
         }
+
+        // 页面关闭时释放摄像头
+        window.addEventListener('beforeunload', function() {
+            if (quaggaRunning) {
+                try { Quagga.stop(); } catch (e) {}
+            }
+        });
 
         // ============================================================
         //  Toast
@@ -1607,7 +1669,7 @@
 
             // ===== 摄像头扫码（库存页） =====
             document.getElementById('cameraScanBtn').addEventListener('click', function() {
-                if (document.getElementById('scanner-container').classList.contains('active')) {
+                if (scannerActive) {
                     stopCameraScanner();
                 } else {
                     startCameraScanner();
@@ -1616,7 +1678,7 @@
 
             // ===== 摄像头扫码（添加产品页） =====
             document.getElementById('cameraScanBtnAdd').addEventListener('click', function() {
-                if (document.getElementById('scanner-container').classList.contains('active')) {
+                if (scannerActive) {
                     stopCameraScanner();
                 } else {
                     startCameraScanner();
@@ -1711,6 +1773,10 @@
                     document.getElementById('cameraScanBtn').click(); }
                 if (e.key === 'Escape' && isModalOpen) { cerrarModal();
                     document.getElementById('searchInput').focus(); }
+                // ESC 也可以关闭摄像头
+                if (e.key === 'Escape' && scannerActive) {
+                    stopCameraScanner();
+                }
             });
 
             // ===== 自动刷新 =====
@@ -1720,7 +1786,7 @@
             }, 45000);
 
             setTimeout(() => { document.getElementById('searchInput').focus(); }, 400);
-            console.log('✅ CELL LA 25 v' + currentVersion + ' 已启动 - 只认15位纯数字');
+            console.log('✅ CELL LA 25 v' + currentVersion + ' 已启动 - 摄像头黑屏已修复');
         });
     </script>
 </body>
