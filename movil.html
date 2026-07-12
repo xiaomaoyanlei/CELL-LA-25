@@ -33,7 +33,6 @@
             border-radius: 10px;
         }
 
-        /* ===== 毛玻璃卡片 ===== */
         .glass {
             background: rgba(255, 255, 255, 0.06);
             backdrop-filter: blur(20px);
@@ -43,7 +42,6 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
 
-        /* ===== 头部 ===== */
         .header {
             background: linear-gradient(145deg, rgba(26, 58, 107, 0.4), rgba(11, 26, 51, 0.6));
             backdrop-filter: blur(20px);
@@ -123,7 +121,6 @@
             background: rgba(255, 255, 255, 0.15);
         }
 
-        /* ===== 统计卡片 ===== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -163,7 +160,6 @@
             color: #ffb74d;
         }
 
-        /* ===== Tab 导航 ===== */
         .tab-bar {
             display: flex;
             gap: 6px;
@@ -206,7 +202,6 @@
             display: block;
         }
 
-        /* ===== 搜索框 ===== */
         .search-box {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
@@ -285,7 +280,6 @@
             color: #fdbb2d;
         }
 
-        /* ===== 摄像头扫码 ===== */
         .camera-area {
             background: rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(10px);
@@ -363,7 +357,6 @@
             z-index: 10;
         }
 
-        /* ===== 卡片通用 ===== */
         .card {
             background: rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(10px);
@@ -389,7 +382,6 @@
             color: rgba(255, 255, 255, 0.3);
         }
 
-        /* ===== 表单 ===== */
         .form-row {
             display: flex;
             gap: 10px;
@@ -459,7 +451,6 @@
             margin-top: 6px;
         }
 
-        /* ===== 产品列表 ===== */
         .productos-list {
             display: flex;
             flex-direction: column;
@@ -644,7 +635,6 @@
             font-size: 10px;
         }
 
-        /* ===== IMEI列表 ===== */
         .imei-list {
             max-height: 300px;
             overflow-y: auto;
@@ -683,7 +673,6 @@
             font-size: 11px;
         }
 
-        /* ===== 日志 ===== */
         .log-item {
             display: flex;
             justify-content: space-between;
@@ -731,7 +720,6 @@
             font-size: 10px;
         }
 
-        /* ===== Toast ===== */
         .toast {
             position: fixed;
             bottom: 24px;
@@ -767,7 +755,6 @@
             background: rgba(178, 124, 26, 0.8);
         }
 
-        /* ===== 弹窗 ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -893,7 +880,6 @@
             border: 1px solid rgba(253, 187, 45, 0.08);
         }
 
-        /* ===== 报表看板 ===== */
         .report-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -954,7 +940,6 @@
             font-weight: 600;
         }
 
-        /* ===== 批量操作 ===== */
         .batch-area {
             display: flex;
             gap: 10px;
@@ -1032,7 +1017,7 @@
             -webkit-text-fill-color: transparent;
         }
         .login-box .logo p {
-            color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.15);
             font-size: 13px;
             margin-top: 4px;
         }
@@ -1095,23 +1080,7 @@
         .login-box .login-error.show {
             display: block;
         }
-        .login-box .login-hint {
-            color: rgba(255, 255, 255, 0.15);
-            font-size: 11px;
-            text-align: center;
-            margin-top: 12px;
-        }
-        .login-box .login-hint span {
-            display: inline-block;
-            margin: 0 6px;
-            padding: 2px 10px;
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 4px;
-            font-family: monospace;
-            color: rgba(255, 255, 255, 0.3);
-        }
 
-        /* ===== 主内容（登录后显示） ===== */
         .app-content {
             display: none;
         }
@@ -1119,7 +1088,6 @@
             display: block;
         }
 
-        /* ===== 权限提示 ===== */
         .permission-banner {
             background: rgba(255, 183, 77, 0.08);
             border: 1px solid rgba(255, 183, 77, 0.08);
@@ -1131,7 +1099,6 @@
             text-align: center;
         }
 
-        /* ===== 响应式 ===== */
         @media (max-width: 640px) {
             .stats-grid {
                 grid-template-columns: repeat(3, 1fr);
@@ -1205,13 +1172,10 @@
             </div>
             <div class="form-group">
                 <label>🔒 密码</label>
-                <input type="password" id="loginPassword" placeholder="请输入密码" value="admin123">
+                <input type="password" id="loginPassword" placeholder="请输入密码">
             </div>
             <button class="btn-login" id="loginBtn">🚀 登录系统</button>
             <div class="login-error" id="loginError">❌ 用户名或密码错误</div>
-            <div class="login-hint">
-                💡 默认账号：<span>admin / admin123</span> <span>staff / staff123</span> <span>guest / guest123</span>
-            </div>
         </div>
     </div>
 
@@ -1220,7 +1184,6 @@
     <!-- ============================================================ -->
     <div class="app-content" id="appContent">
 
-        <!-- ===== 头部 ===== -->
         <div class="header">
             <h1>📦 CELL LA 25</h1>
             <div class="badge-group">
@@ -1234,7 +1197,6 @@
             </div>
         </div>
 
-        <!-- ===== 统计卡片 ===== -->
         <div class="stats-grid">
             <div class="stat-item"><div class="label">📱 产品数</div><div class="value" id="totalProductos">0</div></div>
             <div class="stat-item"><div class="label">📦 总库存</div><div class="value success" id="totalUnidades">0</div></div>
@@ -1243,12 +1205,10 @@
             <div class="stat-item"><div class="label">📤 今日出库</div><div class="value danger" id="totalOut">0</div></div>
         </div>
 
-        <!-- ===== 权限提示 ===== -->
         <div class="permission-banner" id="permissionBanner">
             ⚠️ 当前为 <strong id="roleDisplay">管理员</strong> 权限 · 可管理所有功能
         </div>
 
-        <!-- ===== Tab 导航 ===== -->
         <div class="tab-bar">
             <button class="tab active" data-tab="tabStock">📦 库存</button>
             <button class="tab" data-tab="tabImei">📱 IMEI 出库</button>
@@ -1258,9 +1218,6 @@
             <button class="tab" data-tab="tabAdd">➕ 添加</button>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- Tab 1: 库存 -->
-        <!-- ============================================================ -->
         <div class="tab-content active" id="tabStock">
             <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.04);">
                 ⚠️ <strong style="color:#fdbb2d;">只认 15 位纯数字（IMEI）</strong> · 点击 ✏️ 编辑购入价
@@ -1285,9 +1242,6 @@
             <div id="productosContainer" class="productos-list" style="display:none;"></div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- Tab 2: IMEI 出库 -->
-        <!-- ============================================================ -->
         <div class="tab-content" id="tabImei">
             <div class="card">
                 <div class="card-title">📱 IMEI 出库</div>
@@ -1309,36 +1263,28 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- Tab 3: 报表 -->
-        <!-- ============================================================ -->
         <div class="tab-content" id="tabReport">
             <div class="report-grid">
-                <!-- 总览 -->
                 <div class="report-card">
                     <div class="report-title">📦 总库存</div>
                     <div class="report-value" id="reportTotalStock">0</div>
                     <div class="report-sub" id="reportTotalProducts">共 0 个产品</div>
                 </div>
-                <!-- 总利润 -->
                 <div class="report-card">
                     <div class="report-title">💰 总利润</div>
                     <div class="report-value" id="reportTotalProfit">B/.0.00</div>
                     <div class="report-sub" id="reportProfitUnits">基于已售产品</div>
                 </div>
-                <!-- 库存预警 -->
                 <div class="report-card">
                     <div class="report-title">⚠️ 库存预警</div>
                     <div class="report-value" id="reportAlertCount">0</div>
                     <div class="report-sub" id="reportAlertList">库存低于 3 台</div>
                     <div class="report-list" id="reportAlertItems"></div>
                 </div>
-                <!-- 品牌排行 -->
                 <div class="report-card">
                     <div class="report-title">🏷️ 品牌销量排行</div>
                     <div class="report-list" id="reportBrandRank"></div>
                 </div>
-                <!-- 月度出入库趋势 -->
                 <div class="report-card" style="grid-column: 1 / -1;">
                     <div class="report-title">📈 月度出入库趋势</div>
                     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
@@ -1365,9 +1311,6 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- Tab 4: 批量操作 -->
-        <!-- ============================================================ -->
         <div class="tab-content" id="tabBatch">
             <div class="card">
                 <div class="card-title">📂 批量导入/导出</div>
@@ -1384,9 +1327,6 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- Tab 5: 日志 -->
-        <!-- ============================================================ -->
         <div class="tab-content" id="tabLog">
             <div class="card">
                 <div class="card-title">📜 操作日志 <span style="font-weight:400;font-size:12px;color:rgba(255,255,255,0.2);margin-left:auto;" id="logCount">共 0 条</span></div>
@@ -1394,9 +1334,6 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- Tab 6: 添加产品 -->
-        <!-- ============================================================ -->
         <div class="tab-content" id="tabAdd">
             <div class="card">
                 <div class="card-title">➕ 扫码添加产品</div>
@@ -1419,10 +1356,8 @@
             </div>
         </div>
 
-        <!-- ===== Toast ===== -->
         <div class="toast" id="toast"></div>
 
-        <!-- ===== 底部 ===== -->
         <div class="footer" style="text-align:center;padding:16px 0 4px 0;font-size:11px;color:rgba(255,255,255,0.15);">
             <div class="version-area" style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:4px;">
                 <span class="version-label" style="font-weight:700;color:rgba(255,255,255,0.2);font-size:13px;background:rgba(255,255,255,0.03);padding:2px 16px;border-radius:20px;" id="footerVersion">📌 v3.0.0</span>
@@ -1432,7 +1367,6 @@
             <div style="margin-top:4px;">实时数据 · CELL LA 25 · 专业版</div>
         </div>
 
-        <!-- ===== 新增产品弹窗 ===== -->
         <div class="modal-overlay" id="addProductModal">
             <div class="modal-box">
                 <div class="modal-title">🆕 扫码发现新产品 <span class="badge-new">请完善信息</span></div>
@@ -1452,7 +1386,6 @@
             </div>
         </div>
 
-        <!-- ===== 编辑购入价弹窗 ===== -->
         <div class="modal-overlay" id="editCostoModal">
             <div class="modal-box">
                 <div class="modal-title">✏️ 编辑购入价</div>
@@ -1465,7 +1398,6 @@
 
     </div>
 
-    <!-- ============================================================ -->
     <script>
         // ============================================================
         //  配置
@@ -1474,10 +1406,10 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhydXd4Y3FlZGhvZ3NlcXBiY2lvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzUyNzExMywiZXhwIjoyMDk5MTAzMTEzfQ.VfnKr375IEpv83neEhQ9h5mLgpknIp1pyZjDaG1jCOw';
 
         // ============================================================
-        //  用户权限系统
+        //  用户权限系统（管理员密码已改为 cell29677898）
         // ============================================================
         const USERS = {
-            admin: { password: 'admin123', role: 'admin', label: '管理员' },
+            admin: { password: 'cell29677898', role: 'admin', label: '管理员' },
             staff: { password: 'staff123', role: 'staff', label: '员工' },
             guest: { password: 'guest123', role: 'guest', label: '访客' }
         };
@@ -1485,7 +1417,6 @@
         let currentUser = null;
         let currentRole = 'guest';
 
-        // 权限检查
         function hasPermission(action) {
             if (currentRole === 'admin') return true;
             if (currentRole === 'staff') {
@@ -1527,9 +1458,6 @@
             }
         }
 
-        // ============================================================
-        //  登录逻辑
-        // ============================================================
         function doLogin(username, password) {
             const user = USERS[username];
             if (user && user.password === password) {
@@ -1556,9 +1484,8 @@
             document.getElementById('appContent').classList.remove('active');
             document.getElementById('loginPage').classList.add('active');
             document.getElementById('loginUsername').value = 'admin';
-            document.getElementById('loginPassword').value = 'admin123';
+            document.getElementById('loginPassword').value = '';
             toast('👋 已退出登录', 'success');
-            // 停止摄像头
             if (scannerActive) stopCameraScanner();
         }
 
@@ -1609,9 +1536,6 @@
             return res.json();
         }
 
-        // ============================================================
-        //  加载数据
-        // ============================================================
         async function cargarProductos() {
             try {
                 const data = await supabaseFetch('/rest/v1/productos?select=*');
@@ -1642,9 +1566,6 @@
 
         function esIMEIValido(codigo) { return /^\d{15}$/.test(codigo); }
 
-        // ============================================================
-        //  核心：创建产品
-        // ============================================================
         async function crearProducto(codigo, nombre, marca, precio, costo, stock, ram, rom) {
             if (!checkPermission('add', '无法添加产品')) return false;
             if (!nombre || !nombre.trim()) { toast('⚠️ 请填写产品名称', 'error'); return false; }
@@ -1680,9 +1601,6 @@
             } catch (e) { toast('❌ 创建失败: ' + e.message, 'error'); return false; }
         }
 
-        // ============================================================
-        //  编辑购入价
-        // ============================================================
         function abrirEditCosto(nombre, ram, rom, costoActual) {
             if (!checkPermission('edit_costo', '无法编辑购入价')) return;
             editCostoTarget = { nombre, ram, rom };
@@ -1740,9 +1658,6 @@
             editCostoTarget = null;
         }
 
-        // ============================================================
-        //  核心：出入库
-        // ============================================================
         async function ejecutarOperacion(codigo, cantidad, tipo, source = '') {
             if (!checkPermission(tipo === 'IN' ? 'in' : 'out', '无法' + (tipo === 'IN' ? '入库' : '出库'))) return false;
             if (!codigo || cantidad <= 0) { toast('⚠️ 请输入编码和数量', 'error'); return false; }
@@ -1881,9 +1796,6 @@
             }
         }
 
-        // ============================================================
-        //  批量导入导出
-        // ============================================================
         function exportCSV() {
             if (!checkPermission('export', '无法导出')) return;
             if (productos.length === 0) { toast('⚠️ 没有数据可导出', 'warning'); return; }
@@ -1938,7 +1850,6 @@
                     const lines = text.split('\n').filter(l => l.trim());
                     if (lines.length < 2) { toast('⚠️ CSV 文件为空或格式错误', 'error'); return; }
                     const headers = lines[0].split(',').map(h => h.trim());
-                    const expected = ['codigo', 'nombre', 'precio', 'costo', 'stock', 'ram', 'rom', 'marca'];
                     let imported = 0,
                         failed = 0;
                     for (let i = 1; i < lines.length; i++) {
@@ -1991,9 +1902,6 @@
             reader.readAsText(file);
         }
 
-        // ============================================================
-        //  扫码处理
-        // ============================================================
         function handleScannedCode(code, source = '') {
             if (!code || code.length < 3) return;
             code = code.trim();
@@ -2047,9 +1955,6 @@
             if (source === 'camera') { stopCameraScanner(); }
         }
 
-        // ============================================================
-        //  渲染函数
-        // ============================================================
         function renderProductos() {
             const container = document.getElementById('productosContainer');
             const loading = document.getElementById('loading');
@@ -2210,9 +2115,6 @@
             renderProductos();
         }
 
-        // ============================================================
-        //  统计 & 报表
-        // ============================================================
         function renderStats() {
             const total = productos.length;
             const totalUds = productos.reduce((s, p) => s + p.stock, 0);
@@ -2230,17 +2132,14 @@
             document.getElementById('totalIn').textContent = ins;
             document.getElementById('totalOut').textContent = outs;
 
-            // 报表
             renderReports();
         }
 
         function renderReports() {
-            // 总库存
             const totalStock = productos.reduce((s, p) => s + p.stock, 0);
             document.getElementById('reportTotalStock').textContent = totalStock;
             document.getElementById('reportTotalProducts').textContent = '共 ' + productos.length + ' 个产品';
 
-            // 总利润（已售出 = 出库的 IMEI）
             const outImeis = imeiRecords.filter(r => r.status === 'OUT');
             let totalProfit = 0;
             outImeis.forEach(r => {
@@ -2252,7 +2151,6 @@
             document.getElementById('reportTotalProfit').textContent = 'B/.' + totalProfit.toFixed(2);
             document.getElementById('reportProfitUnits').textContent = '基于 ' + outImeis.length + ' 台已售设备';
 
-            // 库存预警
             const alerts = productos.filter(p => p.stock <= (p.minimo || 3));
             document.getElementById('reportAlertCount').textContent = alerts.length;
             const alertItems = document.getElementById('reportAlertItems');
@@ -2264,7 +2162,6 @@
                 ).join('');
             }
 
-            // 品牌排行
             const brandMap = {};
             productos.forEach(p => {
                 const brand = p.marca || '其他';
@@ -2281,7 +2178,6 @@
                 ).join('');
             }
 
-            // 月度统计
             const now = new Date();
             const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
             const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
@@ -2374,9 +2270,6 @@
             return { label: '中等', class: 'medio' };
         }
 
-        // ============================================================
-        //  弹窗
-        // ============================================================
         function mostrarModalCrear(codigo) {
             document.getElementById('modalCodigo').value = codigo;
             document.getElementById('modalNombre').value = '';
@@ -2394,9 +2287,6 @@
             isModalOpen = false;
         }
 
-        // ============================================================
-        //  Tab 切换
-        // ============================================================
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -2407,9 +2297,6 @@
             });
         });
 
-        // ============================================================
-        //  摄像头扫码
-        // ============================================================
         function startCameraScanner() {
             const container = document.getElementById('scanner-container');
             const view = document.getElementById('scanner-view');
@@ -2495,9 +2382,6 @@
             if (quaggaRunning) { try { Quagga.stop(); } catch (e) {} }
         });
 
-        // ============================================================
-        //  Toast
-        // ============================================================
         function toast(msg, tipo) {
             const el = document.getElementById('toast');
             el.textContent = msg;
@@ -2643,14 +2527,12 @@
                 if (e.target === this) cerrarModal();
             });
 
-            // ===== 编辑购入价弹窗 =====
             document.getElementById('editCostoCancel').addEventListener('click', cerrarEditCosto);
             document.getElementById('editCostoConfirm').addEventListener('click', guardarEditCosto);
             document.getElementById('editCostoModal').addEventListener('click', function(e) {
                 if (e.target === this) cerrarEditCosto();
             });
 
-            // ===== 批量操作 =====
             document.getElementById('exportBtn').addEventListener('click', exportCSV);
             document.getElementById('exportImeiBtn').addEventListener('click', exportImeiCSV);
             document.getElementById('importBtn').addEventListener('click', function() {
@@ -2696,9 +2578,6 @@
             console.log('✅ CELL LA 25 v' + currentVersion + ' 已启动 - 专业版');
         }
 
-        // ============================================================
-        //  启动：检查登录状态
-        // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             const savedUser = localStorage.getItem('cell_la25_user');
             if (savedUser && USERS[savedUser]) {
@@ -2713,14 +2592,12 @@
                 document.getElementById('appContent').classList.remove('active');
             }
 
-            // 登录按钮
             document.getElementById('loginBtn').addEventListener('click', function() {
                 const username = document.getElementById('loginUsername').value.trim();
                 const password = document.getElementById('loginPassword').value.trim();
                 doLogin(username, password);
             });
 
-            // 回车登录
             document.getElementById('loginPassword').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     const username = document.getElementById('loginUsername').value.trim();
@@ -2734,7 +2611,6 @@
                 }
             });
 
-            // 退出登录
             document.getElementById('logoutBtn').addEventListener('click', doLogout);
         });
     </script>
