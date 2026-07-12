@@ -454,9 +454,12 @@
         .imei-detail-list {
             margin-top: 10px;
             padding-top: 10px;
-            border-top: 1px dashed #e9edf4;
+            border-top: 1px solid #e9edf4;
             width: 100%;
             display: none;
+            background: #f8f9fc;
+            border-radius: 8px;
+            padding: 10px 12px;
         }
         .imei-detail-list.open {
             display: block;
@@ -465,15 +468,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4px 8px;
-            font-size: 12px;
-            border-bottom: 1px solid #f5f6f8;
+            padding: 6px 8px;
+            font-size: 13px;
+            border-bottom: 1px solid #f0f2f5;
             flex-wrap: wrap;
             gap: 4px;
         }
+        .imei-detail-item:last-child {
+            border-bottom: none;
+        }
         .imei-detail-item .status-badge-sm {
             font-weight: 700;
-            padding: 1px 10px;
+            padding: 2px 10px;
             border-radius: 12px;
             font-size: 10px;
         }
@@ -742,6 +748,20 @@
             padding: 2px 16px;
             border-radius: 20px;
         }
+        .footer .version-area .btn-upgrade {
+            padding: 4px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #fdbb2d;
+            color: #0b1a33;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .footer .version-area .btn-upgrade:active {
+            transform: scale(0.95);
+        }
         @media (max-width: 640px) {
             .stats-grid {
                 grid-template-columns: repeat(3, 1fr);
@@ -845,9 +865,7 @@
         <button class="tab" data-tab="tabAdd">➕ 添加产品</button>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- Tab 1: 库存 -->
-    <!-- ============================================================ -->
+    <!-- ===== Tab 1: 库存 ===== -->
     <div class="tab-content active" id="tabStock">
         <div style="background:#fff3cd;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#856404;border:1px solid #ffc107;">
             ⚠️ <strong>只认 15 位纯数字（IMEI）</strong> · 扫码自动记录 IMEI
@@ -876,9 +894,7 @@
         <div id="productosContainer" class="productos-list" style="display:none;"></div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- Tab 2: IMEI 出库 -->
-    <!-- ============================================================ -->
+    <!-- ===== Tab 2: IMEI 出库 ===== -->
     <div class="tab-content" id="tabImei">
         <div class="card">
             <div class="card-title">📱 IMEI 出库</div>
@@ -907,9 +923,7 @@
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- Tab 3: 日志 -->
-    <!-- ============================================================ -->
+    <!-- ===== Tab 3: 日志 ===== -->
     <div class="tab-content" id="tabLog">
         <div class="card">
             <div class="card-title">
@@ -922,9 +936,7 @@
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- Tab 4: 添加产品 -->
-    <!-- ============================================================ -->
+    <!-- ===== Tab 4: 添加产品 ===== -->
     <div class="tab-content" id="tabAdd">
         <div class="card">
             <div class="card-title">➕ 扫码添加产品</div>
@@ -940,7 +952,7 @@
             </div>
             <div style="margin-bottom:10px;">
                 <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📦 产品名称</label>
-                <input type="text" id="manualNombre" placeholder="例如：HONOR X5c" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
+                <input type="text" id="manualNombre" placeholder="例如：REDMI 15" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
             </div>
             <div class="form-row" style="margin-bottom:10px;">
                 <div style="flex:1;">
@@ -989,7 +1001,7 @@
             </div>
             <div class="form-group">
                 <label>📦 产品名称 <span style="color:#b21f1f;">*</span></label>
-                <input type="text" id="modalNombre" placeholder="例如：HONOR X5c" autofocus>
+                <input type="text" id="modalNombre" placeholder="例如：REDMI 15" autofocus>
             </div>
             <div class="form-row" style="margin-bottom:14px;gap:10px;">
                 <div style="flex:1;">
@@ -1038,7 +1050,7 @@
     <div class="footer">
         <div class="version-area">
             <span class="version-label" id="footerVersion">📌 v2.0.4</span>
-            <button class="btn-upgrade" id="btnUpgradeVersion" style="padding:4px 16px;border:none;border-radius:20px;background:#fdbb2d;color:#0b1a33;font-weight:700;font-size:11px;cursor:pointer;">⬆ 升级版本 (+0.1)</button>
+            <button class="btn-upgrade" id="btnUpgradeVersion">⬆ 升级版本 (+0.1)</button>
             <span style="font-size:10px;color:#b0b8c8;">手动升级</span>
         </div>
         <div style="margin-top:4px;">实时数据 · CELL LA 25 · IMEI 自动记录</div>
@@ -1062,7 +1074,7 @@
         let quaggaInit = false;
         let quaggaRunning = false;
         let filteredProductos = [];
-        let expandedProduct = null; // 当前展开的产品编码
+        let expandedProduct = null;
 
         // ============================================================
         //  版本管理（手动升级）
@@ -1144,9 +1156,6 @@
             }
         }
 
-        // ============================================================
-        //  检查是否合法的 15 位纯数字
-        // ============================================================
         function esIMEIValido(codigo) {
             return /^\d{15}$/.test(codigo);
         }
@@ -1282,7 +1291,7 @@
         }
 
         // ============================================================
-        //  ⭐ IMEI 出库
+        //  IMEI 出库
         // ============================================================
         async function imeiOut(imei) {
             if (!imei || imei.length < 8) { toast('⚠️ 请输入有效的 IMEI (15位数字)', 'error'); return; }
@@ -1358,7 +1367,7 @@
         }
 
         // ============================================================
-        //  ⭐ 扫码处理（自动记录 IMEI）
+        //  扫码处理
         // ============================================================
         function handleScannedCode(code, source = '') {
             if (!code || code.length < 3) return;
@@ -1378,7 +1387,7 @@
             const imeiExistente = imeiRecords.find(r => r.imei === code);
 
             if (existente) {
-                // ⭐ 产品存在，检查 IMEI 是否已记录，没有则自动添加
+                // 产品存在，IMEI 不存在则自动补录
                 if (!imeiExistente) {
                     toast('📱 自动记录 IMEI...', 'success');
                     supabaseFetch('/rest/v1/imei_records', {
@@ -1496,11 +1505,11 @@
                             <button class="btn-sm success" onclick="ejecutarOperacion('${p.codigo}',1,'IN','按钮')">+1</button>
                             <button class="btn-sm danger" onclick="ejecutarOperacion('${p.codigo}',1,'OUT','按钮')">-1</button>
                             <button class="btn-sm danger" onclick="eliminarProducto('${p.codigo}')" style="background:#b21f1f;">🗑️</button>
-                            <button class="imei-detail-toggle" onclick="toggleImeiDetail('${p.codigo}')">${isExpanded ? '收起' : '展开'} IMEI</button>
+                            <button class="imei-detail-toggle" onclick="event.stopPropagation();toggleImeiDetail('${p.codigo}')">${isExpanded ? '收起' : '展开'} IMEI</button>
                         </div>
                         <div class="imei-detail-list ${isExpanded ? 'open' : ''}">
                             ${productImeis.length === 0 ? '<div style="color:#8896b0;font-size:12px;padding:4px 0;">暂无 IMEI 记录</div>' : ''}
-                            ${productImeis.slice(0, 20).map(im => `
+                            ${productImeis.slice(0, 30).map(im => `
                                 <div class="imei-detail-item">
                                     <span>
                                         <span class="status-badge-sm ${im.status === 'IN' ? 'in' : 'out'}">${im.status === 'IN' ? '✅ 已入库' : '📤 已出库'}</span>
@@ -1509,7 +1518,7 @@
                                     <span class="imei-time-sm">${im.created_at ? new Date(im.created_at).toLocaleString('zh-CN', { hour12: false }) : ''}</span>
                                 </div>
                             `).join('')}
-                            ${productImeis.length > 20 ? `<div style="color:#8896b0;font-size:11px;padding:4px 0;">... 还有 ${productImeis.length - 20} 条</div>` : ''}
+                            ${productImeis.length > 30 ? `<div style="color:#8896b0;font-size:11px;padding:4px 0;">... 还有 ${productImeis.length - 30} 条</div>` : ''}
                         </div>
                     </div>
                 `;
