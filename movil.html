@@ -351,9 +351,7 @@
             padding: 14px 16px;
             border: 1px solid #e9edf4;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
+            flex-direction: column;
             transition: 0.15s;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
             cursor: pointer;
@@ -364,38 +362,52 @@
         }
         .producto-card .info {
             flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 12px;
         }
         .producto-card .info .nombre {
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 700;
             color: #0b1a33;
+            min-width: 100px;
         }
         .producto-card .info .codigo {
             font-size: 12px;
             color: #8896b0;
             font-family: monospace;
-            margin-top: 2px;
         }
         .producto-card .info .specs {
             font-size: 12px;
             color: #0b1a33;
-            margin-top: 2px;
             background: #eef2f8;
             display: inline-block;
             padding: 2px 10px;
             border-radius: 12px;
         }
         .producto-card .info .meta {
-            font-size: 11px;
-            color: #8896b0;
-            margin-top: 2px;
+            font-size: 13px;
+            color: #0b1a33;
+            font-weight: 600;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .producto-card .info .meta .stock-count {
+            color: #0f7b3a;
+        }
+        .producto-card .info .meta .imei-count {
+            color: #b27c1a;
         }
         .producto-card .actions {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
             align-items: center;
-            margin-left: 8px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #eef2f8;
         }
         .producto-card .actions .btn-sm {
             padding: 4px 12px;
@@ -416,38 +428,21 @@
         .producto-card .actions .btn-sm:active {
             transform: scale(0.95);
         }
+        .producto-card .actions .imei-detail-toggle {
+            font-size: 11px;
+            color: #0b1a33;
+            background: #eef2f8;
+            padding: 2px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+        }
+        .producto-card .actions .imei-detail-toggle:active {
+            transform: scale(0.95);
+        }
         .producto-card .stock-area {
-            text-align: right;
-            flex-shrink: 0;
-            margin-left: 12px;
-        }
-        .producto-card .stock-area .stock {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        .producto-card .stock-area .stock.alto {
-            color: #0f7b3a;
-        }
-        .producto-card .stock-area .stock.medio {
-            color: #b27c1a;
-        }
-        .producto-card .stock-area .stock.bajo {
-            color: #b21f1f;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        .producto-card .stock-area .stock-label {
-            font-size: 10px;
-            color: #8896b0;
-            text-transform: uppercase;
-        }
-        @keyframes pulse {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.4;
-            }
+            display: none;
         }
 
         /* ===== IMEI 展开列表 ===== */
@@ -500,19 +495,6 @@
         .imei-detail-item .imei-time-sm {
             color: #8896b0;
             font-size: 10px;
-        }
-        .imei-detail-toggle {
-            font-size: 11px;
-            color: #0b1a33;
-            background: #eef2f8;
-            padding: 2px 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            border: none;
-            font-weight: 600;
-        }
-        .imei-detail-toggle:active {
-            transform: scale(0.95);
         }
 
         .imei-list {
@@ -829,7 +811,7 @@
         <div class="badge-group">
             <span class="badge" id="syncStatus">🔄</span>
             <span class="badge">🔫📷 双模</span>
-            <span class="badge version" id="headerVersion">v2.0.4</span>
+            <span class="badge version" id="headerVersion">v2.1.0</span>
         </div>
     </div>
 
@@ -868,7 +850,7 @@
     <!-- ===== Tab 1: 库存 ===== -->
     <div class="tab-content active" id="tabStock">
         <div style="background:#fff3cd;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#856404;border:1px solid #ffc107;">
-            ⚠️ <strong>只认 15 位纯数字（IMEI）</strong> · 扫码自动记录 IMEI
+            ⚠️ <strong>只认 15 位纯数字（IMEI）</strong> · 同型号自动合并显示总库存
         </div>
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="🔫 扫码枪 / 搜索产品..." autofocus>
@@ -952,7 +934,7 @@
             </div>
             <div style="margin-bottom:10px;">
                 <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📦 产品名称</label>
-                <input type="text" id="manualNombre" placeholder="例如：REDMI 15" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
+                <input type="text" id="manualNombre" placeholder="例如：HONOR X5D" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
             </div>
             <div class="form-row" style="margin-bottom:10px;">
                 <div style="flex:1;">
@@ -1001,7 +983,7 @@
             </div>
             <div class="form-group">
                 <label>📦 产品名称 <span style="color:#b21f1f;">*</span></label>
-                <input type="text" id="modalNombre" placeholder="例如：REDMI 15" autofocus>
+                <input type="text" id="modalNombre" placeholder="例如：HONOR X5D" autofocus>
             </div>
             <div class="form-row" style="margin-bottom:14px;gap:10px;">
                 <div style="flex:1;">
@@ -1049,11 +1031,11 @@
     <!-- ===== 底部 ===== -->
     <div class="footer">
         <div class="version-area">
-            <span class="version-label" id="footerVersion">📌 v2.0.4</span>
+            <span class="version-label" id="footerVersion">📌 v2.1.0</span>
             <button class="btn-upgrade" id="btnUpgradeVersion">⬆ 升级版本 (+0.1)</button>
             <span style="font-size:10px;color:#b0b8c8;">手动升级</span>
         </div>
-        <div style="margin-top:4px;">实时数据 · CELL LA 25 · IMEI 自动记录</div>
+        <div style="margin-top:4px;">实时数据 · CELL LA 25 · 同型号合并显示总库存</div>
     </div>
 
     <script>
@@ -1080,7 +1062,7 @@
         //  版本管理（手动升级）
         // ============================================================
         const VERSION_KEY = 'cell_la25_version_v2';
-        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v2.0.4';
+        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v2.1.0';
 
         function updateVersionDisplay() {
             document.getElementById('headerVersion').textContent = currentVersion;
@@ -1090,8 +1072,8 @@
         function bumpVersion() {
             const parts = currentVersion.replace('v', '').split('.');
             let major = parseInt(parts[0]) || 2;
-            let minor = parseInt(parts[1]) || 0;
-            let patch = parseInt(parts[2]) || 4;
+            let minor = parseInt(parts[1]) || 1;
+            let patch = parseInt(parts[2]) || 0;
             patch += 1;
             if (patch >= 10) { patch = 0;
                 minor += 1; if (minor >= 10) { minor = 0;
@@ -1161,7 +1143,7 @@
         }
 
         // ============================================================
-        //  ⭐ 核心：创建产品（自动写入 IMEI）
+        //  核心：创建产品（自动写入 IMEI）
         // ============================================================
         async function crearProducto(codigo, nombre, precio, stock, ram, rom) {
             if (!nombre || !nombre.trim()) { toast('⚠️ 请填写产品名称', 'error'); return false; }
@@ -1169,8 +1151,10 @@
                 toast('⚠️ 编码必须是 15 位纯数字！当前 ' + codigo.length + ' 位', 'error');
                 return false;
             }
-            if (productos.some(p => p.codigo === codigo)) {
-                toast('⚠️ 编码已存在: ' + codigo, 'error');
+            // 检查该名称是否已存在（不检查编码，因为编码是唯一的IMEI）
+            const existente = productos.find(p => p.codigo === codigo);
+            if (existente) {
+                toast('⚠️ 该 IMEI 已存在: ' + codigo, 'error');
                 return false;
             }
             const specs = ram + ' + ' + rom;
@@ -1188,7 +1172,7 @@
                 // 1. 创建产品
                 await supabaseFetch('/rest/v1/productos', { method: 'POST', body: JSON.stringify(data) });
 
-                // ⭐ 2. 同时把 IMEI 写入 imei_records 表
+                // 2. 同时把 IMEI 写入 imei_records 表
                 const imeiData = {
                     imei: String(codigo).trim(),
                     producto_codigo: String(codigo).trim(),
@@ -1220,7 +1204,7 @@
         }
 
         // ============================================================
-        //  ⭐ 核心：出入库（自动同步 IMEI）
+        //  核心：出入库（自动同步 IMEI）
         // ============================================================
         async function ejecutarOperacion(codigo, cantidad, tipo, source = '') {
             if (!codigo || cantidad <= 0) { toast('⚠️ 请输入编码和数量', 'error'); return false; }
@@ -1249,7 +1233,7 @@
                 p.stock = nuevoStock;
                 productos[idx] = p;
 
-                // ⭐ 2. 同步 IMEI 状态
+                // 2. 同步 IMEI 状态
                 const imeiStatus = tipo === 'IN' ? 'IN' : 'OUT';
                 const existImei = imeiRecords.find(r => r.imei === codigo);
                 if (existImei) {
@@ -1338,27 +1322,32 @@
         }
 
         // ============================================================
-        //  删除产品
+        //  删除产品（按名称删除所有同型号）
         // ============================================================
-        async function eliminarProducto(codigo) {
-            if (!confirm('⚠️ 确定要删除产品 ' + codigo + ' 吗？\n将同时删除该产品的所有 IMEI 记录！')) return;
+        async function eliminarProducto(nombre) {
+            if (!confirm('⚠️ 确定要删除所有 "' + nombre + '" 产品吗？\n将同时删除该型号的所有 IMEI 记录！')) return;
             try {
-                const imeis = imeiRecords.filter(r => r.producto_codigo === codigo);
-                for (const im of imeis) {
-                    await supabaseFetch('/rest/v1/imei_records?imei=eq.' + im.imei, { method: 'DELETE' });
+                // 找到所有该名称的产品
+                const toDelete = productos.filter(p => p.nombre === nombre);
+                for (const p of toDelete) {
+                    // 删除 IMEI
+                    const imeis = imeiRecords.filter(r => r.producto_codigo === p.codigo);
+                    for (const im of imeis) {
+                        await supabaseFetch('/rest/v1/imei_records?imei=eq.' + im.imei, { method: 'DELETE' });
+                    }
+                    // 删除产品
+                    await supabaseFetch('/rest/v1/productos?codigo=eq.' + p.codigo, { method: 'DELETE' });
                 }
-                await supabaseFetch('/rest/v1/productos?codigo=eq.' + codigo, { method: 'DELETE' });
-                const p = productos.find(pr => pr.codigo === codigo);
                 await cargarProductos();
                 await cargarImeiRecords();
                 operaciones.unshift({
                     tipo: 'DELETE',
-                    msg: '🗑️ 删除产品: ' + (p ? p.nombre : codigo) + ' (' + codigo + ')',
+                    msg: '🗑️ 删除产品: ' + nombre + ' (共 ' + toDelete.length + ' 台)',
                     time: new Date().toLocaleTimeString('zh-CN', { hour12: false })
                 });
                 if (operaciones.length > 100) operaciones.pop();
                 renderLog();
-                toast('🗑️ 产品已删除: ' + (p ? p.nombre : codigo), 'success');
+                toast('🗑️ 已删除 ' + nombre + ' 共 ' + toDelete.length + ' 台', 'success');
                 return true;
             } catch (e) {
                 toast('❌ 删除失败: ' + e.message, 'error');
@@ -1387,7 +1376,6 @@
             const imeiExistente = imeiRecords.find(r => r.imei === code);
 
             if (existente) {
-                // 产品存在，IMEI 不存在则自动补录
                 if (!imeiExistente) {
                     toast('📱 自动记录 IMEI...', 'success');
                     supabaseFetch('/rest/v1/imei_records', {
@@ -1405,18 +1393,10 @@
                 }
                 toast('✅ 已找到: ' + existente.nombre + ' (库存: ' + existente.stock + ')', 'success');
                 filteredProductos = productos.filter(p =>
-                    p.codigo === code || p.nombre.toLowerCase().includes(code.toLowerCase())
+                    p.nombre.toLowerCase().includes(code.toLowerCase()) ||
+                    p.codigo.includes(code)
                 );
                 renderProductos();
-                const cards = document.querySelectorAll('.producto-card');
-                cards.forEach(card => {
-                    card.classList.remove('highlight');
-                    if (card.textContent.includes(code)) {
-                        card.classList.add('highlight');
-                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        setTimeout(() => card.classList.remove('highlight'), 2500);
-                    }
-                });
                 document.getElementById('searchInput').value = '';
                 document.querySelector('.tab[data-tab="tabStock"]')?.click();
             } else if (imeiExistente && imeiExistente.status === 'IN') {
@@ -1443,7 +1423,145 @@
         }
 
         // ============================================================
-        //  渲染函数
+        //  ⭐ 核心：渲染分组后的产品列表
+        // ============================================================
+        function renderProductos() {
+            const container = document.getElementById('productosContainer');
+            const loading = document.getElementById('loading');
+
+            // 按产品名称分组
+            const grouped = {};
+            const list = filteredProductos.length ? filteredProductos : productos;
+
+            if (list.length === 0) {
+                container.innerHTML =
+                    `<div style="text-align:center;padding:30px 0;color:#8896b0;"><span style="font-size:40px;display:block;margin-bottom:10px;">📭</span>${productos.length === 0 ? '暂无产品，扫码添加吧' : '未找到匹配结果'}</div>`;
+                container.style.display = 'block';
+                loading.style.display = 'none';
+                return;
+            }
+
+            // 分组
+            list.forEach(p => {
+                if (!grouped[p.nombre]) {
+                    grouped[p.nombre] = {
+                        nombre: p.nombre,
+                        specs: p.specs || (p.ram ? p.ram + ' + ' + p.rom : ''),
+                        codigos: [],
+                        precio: p.precio || 0,
+                        minimo: p.minimo || 3,
+                        imeis: []
+                    };
+                }
+                grouped[p.nombre].codigos.push(p.codigo);
+                // 收集该产品下所有 IMEI
+                const imeis = imeiRecords.filter(r => r.producto_codigo === p.codigo);
+                grouped[p.nombre].imeis.push(...imeis);
+            });
+
+            // 计算总库存（已入库的 IMEI 数量）
+            Object.keys(grouped).forEach(key => {
+                const g = grouped[key];
+                g.totalStock = g.imeis.filter(r => r.status === 'IN').length;
+                g.totalImei = g.imeis.length;
+                // 去重 IMEI（防止同一个 IMEI 被重复计算）
+                const uniqueImeis = {};
+                g.imeis.forEach(im => { uniqueImeis[im.imei] = im; });
+                g.uniqueImeis = Object.values(uniqueImeis);
+                g.totalStock = g.uniqueImeis.filter(r => r.status === 'IN').length;
+                g.totalImei = g.uniqueImeis.length;
+            });
+
+            // 渲染
+            let html = '';
+            Object.values(grouped).forEach(g => {
+                const status = getStockStatus(g.totalStock, g.minimo || 3);
+                const isExpanded = expandedProduct === g.nombre;
+
+                html += `
+                    <div class="producto-card" data-nombre="${g.nombre}" onclick="toggleImeiDetail('${g.nombre}')">
+                        <div class="info">
+                            <div class="nombre">📱 ${g.nombre}</div>
+                            ${g.specs ? `<span class="specs">🧠 ${g.specs}</span>` : ''}
+                            <div class="meta">
+                                <span class="stock-count">📦 库存: ${g.totalStock} 台</span>
+                                <span class="imei-count">📱 IMEI: ${g.totalImei} 个</span>
+                                <span style="font-size:12px;color:#8896b0;font-weight:400;">💰 B/.${g.precio.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <div class="stock-area" style="display:none;">
+                            <div class="stock ${status.class}">${g.totalStock}</div>
+                            <div class="stock-label">${status.label}</div>
+                        </div>
+                        <div class="actions" onclick="event.stopPropagation();">
+                            <button class="btn-sm success" onclick="ejecutarOperacionPorNombre('${g.nombre}',1,'IN','按钮')">📥 +1</button>
+                            <button class="btn-sm danger" onclick="ejecutarOperacionPorNombre('${g.nombre}',1,'OUT','按钮')">📤 -1</button>
+                            <button class="btn-sm danger" onclick="eliminarProducto('${g.nombre}')" style="background:#b21f1f;">🗑️</button>
+                            <button class="imei-detail-toggle" onclick="event.stopPropagation();toggleImeiDetail('${g.nombre}')">
+                                ${isExpanded ? '收起' : '展开'} IMEI (${g.totalImei})
+                            </button>
+                        </div>
+                        <div class="imei-detail-list ${isExpanded ? 'open' : ''}">
+                            ${g.uniqueImeis.length === 0 ? '<div style="color:#8896b0;font-size:12px;padding:4px 0;">暂无 IMEI 记录</div>' : ''}
+                            ${g.uniqueImeis.slice(0, 30).map(im => {
+                                const p = productos.find(pr => pr.codigo === im.producto_codigo);
+                                return `
+                                    <div class="imei-detail-item">
+                                        <span>
+                                            <span class="status-badge-sm ${im.status === 'IN' ? 'in' : 'out'}">
+                                                ${im.status === 'IN' ? '✅ 已入库' : '📤 已出库'}
+                                            </span>
+                                            <span class="imei-code-sm">${im.imei}</span>
+                                            ${p ? `<span style="color:#8896b0;font-size:11px;">${p.nombre}</span>` : ''}
+                                        </span>
+                                        <span class="imei-time-sm">${im.created_at ? new Date(im.created_at).toLocaleString('zh-CN', { hour12: false }) : ''}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                            ${g.uniqueImeis.length > 30 ? `<div style="color:#8896b0;font-size:11px;padding:4px 0;">... 还有 ${g.uniqueImeis.length - 30} 条</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            container.style.display = 'flex';
+            loading.style.display = 'none';
+        }
+
+        // ============================================================
+        //  按名称执行出入库（找到第一个可用 IMEI）
+        // ============================================================
+        async function ejecutarOperacionPorNombre(nombre, cantidad, tipo, source = '') {
+            // 找到该名称下所有产品
+            const products = productos.filter(p => p.nombre === nombre);
+            if (products.length === 0) {
+                toast('⚠️ 未找到产品: ' + nombre, 'error');
+                return;
+            }
+
+            if (tipo === 'IN') {
+                // 入库：需要扫码 IMEI，不能直接批量入库
+                toast('📱 请扫码 IMEI 入库', 'warning');
+                return;
+            }
+
+            if (tipo === 'OUT') {
+                // 出库：找到该名称下第一个已入库的 IMEI
+                const imeis = imeiRecords.filter(r =>
+                    r.producto_codigo === products[0].codigo && r.status === 'IN'
+                );
+                if (imeis.length === 0) {
+                    toast('❌ 没有可出库的 IMEI', 'error');
+                    return;
+                }
+                const imei = imeis[0].imei;
+                await imeiOut(imei);
+            }
+        }
+
+        // ============================================================
+        //  其他渲染函数
         // ============================================================
         function renderStats() {
             const total = productos.length;
@@ -1458,74 +1576,13 @@
             document.getElementById('totalOut').textContent = outs;
         }
 
-        function toggleImeiDetail(codigo) {
-            if (expandedProduct === codigo) {
+        function toggleImeiDetail(nombre) {
+            if (expandedProduct === nombre) {
                 expandedProduct = null;
             } else {
-                expandedProduct = codigo;
+                expandedProduct = nombre;
             }
             renderProductos();
-        }
-
-        function renderProductos() {
-            const container = document.getElementById('productosContainer');
-            const loading = document.getElementById('loading');
-            const list = filteredProductos.length ? filteredProductos : productos;
-            if (list.length === 0) {
-                container.innerHTML =
-                    `<div style="text-align:center;padding:30px 0;color:#8896b0;"><span style="font-size:40px;display:block;margin-bottom:10px;">📭</span>${productos.length === 0 ? '暂无产品，扫码添加吧' : '未找到匹配结果'}</div>`;
-                container.style.display = 'block';
-                loading.style.display = 'none';
-                return;
-            }
-            let html = '';
-            list.forEach(p => {
-                const status = getStockStatus(p.stock, p.minimo || 3);
-                const productImeis = imeiRecords.filter(r => r.producto_codigo === p.codigo);
-                const inCount = productImeis.filter(r => r.status === 'IN').length;
-                const specs = p.specs || (p.ram ? p.ram + ' + ' + p.rom : '');
-                const isExpanded = expandedProduct === p.codigo;
-
-                html += `
-                    <div class="producto-card" data-codigo="${p.codigo}" onclick="toggleImeiDetail('${p.codigo}')">
-                        <div class="info">
-                            <div class="nombre">${p.nombre}</div>
-                            <div class="codigo">${p.codigo}</div>
-                            ${specs ? `<div class="specs">🧠 ${specs}</div>` : ''}
-                            <div class="meta">
-                                📦 库存: ${p.stock} 台
-                                <span style="margin-left:10px;">📱 IMEI: ${inCount} 个</span>
-                            </div>
-                        </div>
-                        <div class="stock-area">
-                            <div class="stock ${status.class}">${p.stock}</div>
-                            <div class="stock-label">${status.label}</div>
-                        </div>
-                        <div class="actions" onclick="event.stopPropagation();">
-                            <button class="btn-sm success" onclick="ejecutarOperacion('${p.codigo}',1,'IN','按钮')">+1</button>
-                            <button class="btn-sm danger" onclick="ejecutarOperacion('${p.codigo}',1,'OUT','按钮')">-1</button>
-                            <button class="btn-sm danger" onclick="eliminarProducto('${p.codigo}')" style="background:#b21f1f;">🗑️</button>
-                            <button class="imei-detail-toggle" onclick="event.stopPropagation();toggleImeiDetail('${p.codigo}')">${isExpanded ? '收起' : '展开'} IMEI</button>
-                        </div>
-                        <div class="imei-detail-list ${isExpanded ? 'open' : ''}">
-                            ${productImeis.length === 0 ? '<div style="color:#8896b0;font-size:12px;padding:4px 0;">暂无 IMEI 记录</div>' : ''}
-                            ${productImeis.slice(0, 30).map(im => `
-                                <div class="imei-detail-item">
-                                    <span>
-                                        <span class="status-badge-sm ${im.status === 'IN' ? 'in' : 'out'}">${im.status === 'IN' ? '✅ 已入库' : '📤 已出库'}</span>
-                                        <span class="imei-code-sm">${im.imei}</span>
-                                    </span>
-                                    <span class="imei-time-sm">${im.created_at ? new Date(im.created_at).toLocaleString('zh-CN', { hour12: false }) : ''}</span>
-                                </div>
-                            `).join('')}
-                            ${productImeis.length > 30 ? `<div style="color:#8896b0;font-size:11px;padding:4px 0;">... 还有 ${productImeis.length - 30} 条</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-            container.style.display = 'flex';
-            loading.style.display = 'none';
         }
 
         function renderImeiList() {
@@ -1589,6 +1646,24 @@
             if (stock <= (minimo || 3)) return { label: '临界', class: 'bajo' };
             if (stock >= 10) return { label: '充足', class: 'alto' };
             return { label: '中等', class: 'medio' };
+        }
+
+        // ============================================================
+        //  搜索过滤
+        // ============================================================
+        function aplicarFiltro(query) {
+            const q = query.toLowerCase().trim();
+            if (!q) {
+                filteredProductos = [];
+                renderProductos();
+                return;
+            }
+            // 按产品名称或编码搜索
+            filteredProductos = productos.filter(p =>
+                p.nombre.toLowerCase().includes(q) ||
+                p.codigo.includes(q)
+            );
+            renderProductos();
         }
 
         // ============================================================
@@ -1914,7 +1989,7 @@
             }, 45000);
 
             setTimeout(() => { document.getElementById('searchInput').focus(); }, 400);
-            console.log('✅ CELL LA 25 v' + currentVersion + ' 已启动');
+            console.log('✅ CELL LA 25 v' + currentVersion + ' 已启动 - 同型号合并显示');
         });
     </script>
 </body>
