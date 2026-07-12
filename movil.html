@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <title>📦 CELL LA 25 · 全网最全</title>
+    <!-- 引入 QuaggaJS 用于手机摄像头扫码 -->
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js">
     </script>
     <style>
@@ -750,7 +751,7 @@
         <div class="badge-group">
             <span class="badge" id="syncStatus">🔄</span>
             <span class="badge">🔫📷 双模</span>
-            <span class="badge version" id="headerVersion">v2.3.0</span>
+            <span class="badge version" id="headerVersion">v2.4.0</span>
         </div>
     </div>
 
@@ -791,7 +792,6 @@
     <!-- ============================================================ -->
     <div class="tab-content active" id="tabStock">
 
-        <!-- ⚠️ 扫码提示 -->
         <div style="background:#fff3cd;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#856404;border:1px solid #ffc107;">
             ⚠️ <strong>只认 15 位纯数字（IMEI）</strong> · 其他一律提示“请扫描 15 位纯数字”
         </div>
@@ -870,14 +870,20 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- Tab 4: 添加产品 -->
+    <!-- Tab 4: 添加产品（含手机扫码按钮） -->
     <!-- ============================================================ -->
     <div class="tab-content" id="tabAdd">
         <div class="card">
-            <div class="card-title">➕ 添加新产品</div>
+            <div class="card-title">➕ 扫码添加产品</div>
+            <button class="btn-camera" id="cameraScanBtnAdd" style="width:100%;padding:14px;border:none;border-radius:12px;background:#0b1a33;color:white;font-size:16px;font-weight:700;cursor:pointer;touch-action:manipulation;margin-bottom:12px;">
+                📷 手机扫码 (15位IMEI)
+            </button>
+            <div style="background:#e9edf4;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#8896b0;text-align:center;">
+                💡 扫码后自动识别 15 位 IMEI，新码自动弹出添加窗口
+            </div>
             <div style="margin-bottom:10px;">
                 <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📱 产品编码 (15位IMEI)</label>
-                <input type="text" id="manualCodigo" placeholder="输入 15 位 IMEI 作为产品编码" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
+                <input type="text" id="manualCodigo" placeholder="扫码或手动输入 15 位 IMEI" style="width:100%;padding:12px 14px;border:1.5px solid #e2e7f0;border-radius:10px;font-size:15px;outline:none;">
             </div>
             <div style="margin-bottom:10px;">
                 <label style="display:block;font-size:12px;font-weight:600;color:#8896b0;margin-bottom:4px;text-transform:uppercase;">📦 产品名称</label>
@@ -978,7 +984,7 @@
     <!-- ===== 底部 ===== -->
     <div class="footer">
         <div class="version-area">
-            <span class="version-label" id="footerVersion">📌 v2.3.0</span>
+            <span class="version-label" id="footerVersion">📌 v2.4.0</span>
             <span style="font-size:10px;color:#b0b8c8;">部署后自动 +0.1</span>
         </div>
         <div style="margin-top:4px;">实时数据 · CELL LA 25 · 只认 15 位纯数字（IMEI）</div>
@@ -999,12 +1005,13 @@
         let operaciones = [];
         let quaggaInit = false;
         let isModalOpen = false;
+        let currentScanSource = 'stock'; // 'stock' or 'add'
 
         // ============================================================
         //  版本管理
         // ============================================================
         const VERSION_KEY = 'cell_la25_version_v2';
-        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v2.3.0';
+        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v2.4.0';
 
         function updateVersionDisplay() {
             document.getElementById('headerVersion').textContent = currentVersion;
@@ -1014,7 +1021,7 @@
         function bumpVersion() {
             const parts = currentVersion.replace('v', '').split('.');
             let major = parseInt(parts[0]) || 2;
-            let minor = parseInt(parts[1]) || 3;
+            let minor = parseInt(parts[1]) || 4;
             let patch = parseInt(parts[2]) || 0;
             patch += 1;
             if (patch >= 10) { patch = 0;
@@ -1091,7 +1098,6 @@
         // ============================================================
         async function crearProducto(codigo, nombre, precio, stock, ram, rom) {
             if (!nombre || !nombre.trim()) { toast('⚠️ 请填写产品名称', 'error'); return false; }
-            // ⭐ 只认 15 位纯数字
             if (!esIMEIValido(codigo)) {
                 toast('⚠️ 编码必须是 15 位纯数字！当前 ' + codigo.length + ' 位', 'error');
                 return false;
@@ -1157,7 +1163,6 @@
 
         async function ejecutarOperacion(codigo, cantidad, tipo, source = '') {
             if (!codigo || cantidad <= 0) { toast('⚠️ 请输入编码和数量', 'error'); return false; }
-            // ⭐ 只认 15 位纯数字
             if (!esIMEIValido(codigo)) {
                 toast('⚠️ 只认 15 位纯数字！当前 ' + codigo.length + ' 位', 'error');
                 return false;
@@ -1200,7 +1205,6 @@
         async function imeiOut(imei) {
             if (!imei || imei.length < 8) { toast('⚠️ 请输入有效的 IMEI (15位数字)', 'error'); return; }
             imei = imei.trim();
-            // ⭐ IMEI 出库也只认 15 位纯数字
             if (!/^\d{15}$/.test(imei)) {
                 toast('⚠️ IMEI 必须是 15 位纯数字！当前 ' + imei.length + ' 位', 'error');
                 return;
@@ -1248,11 +1252,8 @@
             if (!code || code.length < 3) return;
             code = code.trim();
 
-            // ⭐ 检查是否为 15 位纯数字
             if (!esIMEIValido(code)) {
-                // 提示用户
                 toast('⚠️ 只认 15 位纯数字！当前 ' + code.length + ' 位', 'warning');
-                // 清空输入框
                 document.getElementById('searchInput').value = '';
                 if (source === 'camera') {
                     stopCameraScanner();
@@ -1262,15 +1263,13 @@
 
             // ===== 15 位纯数字处理 =====
             document.getElementById('searchInput').value = code;
+            // 如果是从添加产品页扫码，也填入手动添加的编码框
+            document.getElementById('manualCodigo').value = code;
 
-            // 先检查是否已存在该产品
             const existente = productos.find(p => p.codigo === code);
-
-            // 检查是否已存在该 IMEI 记录（用于出库）
             const imeiExistente = imeiRecords.find(r => r.imei === code);
 
             if (existente) {
-                // 产品存在 → 正常出入库
                 toast('✅ 已找到: ' + existente.nombre + ' (库存: ' + existente.stock + ')', 'success');
                 filteredProductos = productos.filter(p =>
                     p.codigo === code || p.nombre.toLowerCase().includes(code.toLowerCase())
@@ -1286,12 +1285,12 @@
                     }
                 });
                 document.getElementById('searchInput').value = '';
+                // 切换到库存 Tab
+                document.querySelector('.tab[data-tab="tabStock"]')?.click();
             } else if (imeiExistente && imeiExistente.status === 'IN') {
-                // IMEI 存在且已入库 → 自动跳转 IMEI 出库
                 toast('📱 识别为 IMEI，跳转出库...', 'success');
                 document.querySelector('.tab[data-tab="tabImei"]')?.click();
                 document.getElementById('imeiInput').value = code;
-                // 显示预览
                 const preview = document.getElementById('imeiPreview');
                 document.getElementById('previewImei').textContent = code;
                 const p = productos.find(pr => pr.codigo === imeiExistente.producto_codigo);
@@ -1304,7 +1303,6 @@
                 toast('⚠️ IMEI ' + code + ' 已出库', 'warning');
                 document.getElementById('searchInput').value = '';
             } else {
-                // 新产品 → 弹窗创建
                 toast('🆕 新编码: ' + code + '，请完善信息', 'success');
                 setTimeout(() => mostrarModalCrear(code), 300);
             }
@@ -1467,7 +1465,7 @@
         });
 
         // ============================================================
-        //  摄像头扫码
+        //  摄像头扫码（共用）
         // ============================================================
         function startCameraScanner() {
             const container = document.getElementById('scanner-container');
@@ -1475,6 +1473,9 @@
             container.classList.add('active');
             document.getElementById('cameraScanBtn').textContent = '⏹ 停止扫码';
             document.getElementById('cameraScanBtn').classList.add('scanning');
+            // 同时改变添加页的按钮文字
+            document.getElementById('cameraScanBtnAdd').textContent = '⏹ 停止扫码';
+            document.getElementById('cameraScanBtnAdd').classList.add('scanning');
 
             if (quaggaInit) { Quagga.start(); return; }
 
@@ -1494,6 +1495,8 @@
                     container.classList.remove('active');
                     document.getElementById('cameraScanBtn').textContent = '📷 手机扫码';
                     document.getElementById('cameraScanBtn').classList.remove('scanning');
+                    document.getElementById('cameraScanBtnAdd').textContent = '📷 手机扫码 (15位IMEI)';
+                    document.getElementById('cameraScanBtnAdd').classList.remove('scanning');
                     return;
                 }
                 quaggaInit = true;
@@ -1513,6 +1516,8 @@
             document.getElementById('scanner-container').classList.remove('active');
             document.getElementById('cameraScanBtn').textContent = '📷 手机扫码';
             document.getElementById('cameraScanBtn').classList.remove('scanning');
+            document.getElementById('cameraScanBtnAdd').textContent = '📷 手机扫码 (15位IMEI)';
+            document.getElementById('cameraScanBtnAdd').classList.remove('scanning');
         }
 
         // ============================================================
@@ -1543,7 +1548,7 @@
             cargarProductos();
             cargarImeiRecords();
 
-            // ===== 扫码枪输入（只认15位纯数字） =====
+            // ===== 扫码枪输入 =====
             const searchInput = document.getElementById('searchInput');
             searchInput.addEventListener('input', function() {
                 const val = this.value.trim();
@@ -1600,7 +1605,7 @@
                 searchInput.focus();
             });
 
-            // ===== 摄像头扫码 =====
+            // ===== 摄像头扫码（库存页） =====
             document.getElementById('cameraScanBtn').addEventListener('click', function() {
                 if (document.getElementById('scanner-container').classList.contains('active')) {
                     stopCameraScanner();
@@ -1608,6 +1613,16 @@
                     startCameraScanner();
                 }
             });
+
+            // ===== 摄像头扫码（添加产品页） =====
+            document.getElementById('cameraScanBtnAdd').addEventListener('click', function() {
+                if (document.getElementById('scanner-container').classList.contains('active')) {
+                    stopCameraScanner();
+                } else {
+                    startCameraScanner();
+                }
+            });
+
             document.getElementById('closeScanner').addEventListener('click', stopCameraScanner);
 
             // ===== IMEI 出库 =====
