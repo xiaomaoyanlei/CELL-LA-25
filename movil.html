@@ -779,11 +779,13 @@
             -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
             padding: 28px;
-            max-width: 440px;
+            max-width: 480px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.06);
             animation: modalIn 0.25s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         @keyframes modalIn {
             0% {
@@ -983,6 +985,87 @@
             display: none;
         }
 
+        /* ===== IMEI 搜索下拉 ===== */
+        .imei-search-wrapper {
+            position: relative;
+            flex: 2;
+        }
+        .imei-search-wrapper input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255, 255, 255, 0.03);
+            color: #e8edf5;
+            outline: none;
+            transition: 0.2s;
+        }
+        .imei-search-wrapper input:focus {
+            border-color: rgba(253, 187, 45, 0.3);
+            box-shadow: 0 0 0 3px rgba(253, 187, 45, 0.04);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .imei-search-wrapper input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+        .imei-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(20, 25, 40, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            margin-top: 4px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .imei-suggestions.show {
+            display: block;
+        }
+        .imei-suggestions .suggestion-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.15s;
+            font-size: 13px;
+        }
+        .imei-suggestions .suggestion-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .imei-suggestions .suggestion-item .sug-imei {
+            font-family: monospace;
+            font-weight: 600;
+            color: #e8edf5;
+        }
+        .imei-suggestions .suggestion-item .sug-product {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 12px;
+        }
+        .imei-suggestions .suggestion-item .sug-status {
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .imei-suggestions .suggestion-item .sug-status.in {
+            background: rgba(15, 123, 58, 0.2);
+            color: #4caf50;
+        }
+        .imei-suggestions .suggestion-item .sug-status.out {
+            background: rgba(178, 31, 31, 0.2);
+            color: #ef5350;
+        }
+
         /* ===== 登录页 ===== */
         .login-page {
             display: none;
@@ -1120,6 +1203,7 @@
             .modal-box {
                 padding: 20px;
                 margin: 10px;
+                max-width: 100%;
             }
             .tab-bar .tab {
                 font-size: 12px;
@@ -1146,6 +1230,11 @@
             }
             .login-box {
                 padding: 24px;
+            }
+            .imei-suggestions .suggestion-item {
+                font-size: 12px;
+                padding: 8px 12px;
+                flex-wrap: wrap;
             }
         }
         @media (max-width: 400px) {
@@ -1189,7 +1278,7 @@
             <div class="badge-group">
                 <span class="badge" id="syncStatus">🔄</span>
                 <span class="badge">🔫📷 双模</span>
-                <span class="badge version" id="headerVersion">v3.0.0</span>
+                <span class="badge version" id="headerVersion">v3.1.0</span>
                 <span class="badge role" id="roleBadge">👤 admin</span>
                 <span class="user-actions">
                     <button class="btn-sm" id="logoutBtn">🚪 退出</button>
@@ -1220,7 +1309,7 @@
 
         <div class="tab-content active" id="tabStock">
             <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.04);">
-                ⚠️ <strong style="color:#fdbb2d;">只认 15 位纯数字（IMEI）</strong> · 点击 ✏️ 编辑购入价
+                ⚠️ <strong style="color:#fdbb2d;">只认 15 位纯数字（IMEI）</strong> · 点击 ✏️ 编辑完整信息
             </div>
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="🔫 扫码枪 / 搜索产品..." autofocus>
@@ -1244,13 +1333,16 @@
 
         <div class="tab-content" id="tabImei">
             <div class="card">
-                <div class="card-title">📱 IMEI 出库</div>
-                <div style="background:rgba(178,31,31,0.08);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#ef5350;border:1px solid rgba(178,31,31,0.08);">📌 扫描或输入 <strong>15 位 IMEI</strong> 号进行出库</div>
+                <div class="card-title">📱 IMEI 出库 <span class="sub">支持模糊搜索</span></div>
+                <div style="background:rgba(178,31,31,0.08);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#ef5350;border:1px solid rgba(178,31,31,0.08);">📌 搜索或输入 <strong>IMEI</strong> 号进行出库 · 支持模糊匹配</div>
                 <div class="form-row">
-                    <input type="text" id="imeiInput" placeholder="扫描或输入 15 位 IMEI 号" style="flex:2;">
+                    <div class="imei-search-wrapper">
+                        <input type="text" id="imeiInput" placeholder="🔍 搜索 IMEI / 产品名称..." autocomplete="off">
+                        <div class="imei-suggestions" id="imeiSuggestions"></div>
+                    </div>
                     <button class="btn danger" id="imeiOutBtn">📤 IMEI 出库</button>
                 </div>
-                <div class="form-hint">💡 只认 15 位纯数字 IMEI</div>
+                <div class="form-hint">💡 输入任意数字或产品名自动匹配 · 点击建议项快速填充</div>
                 <div style="margin-top:10px;background:rgba(255,255,255,0.02);border-radius:8px;padding:10px;font-size:13px;color:rgba(255,255,255,0.4);display:none;" id="imeiPreview">
                     📱 IMEI: <strong id="previewImei" style="color:#e8edf5;"></strong><br>
                     📦 产品: <span id="previewProducto">—</span><br>
@@ -1360,13 +1452,14 @@
 
         <div class="footer" style="text-align:center;padding:16px 0 4px 0;font-size:11px;color:rgba(255,255,255,0.15);">
             <div class="version-area" style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:4px;">
-                <span class="version-label" style="font-weight:700;color:rgba(255,255,255,0.2);font-size:13px;background:rgba(255,255,255,0.03);padding:2px 16px;border-radius:20px;" id="footerVersion">📌 v3.0.0</span>
+                <span class="version-label" style="font-weight:700;color:rgba(255,255,255,0.2);font-size:13px;background:rgba(255,255,255,0.03);padding:2px 16px;border-radius:20px;" id="footerVersion">📌 v3.1.0</span>
                 <button class="btn-upgrade" id="btnUpgradeVersion" style="padding:4px 16px;border:none;border-radius:20px;background:rgba(253,187,45,0.06);color:#fdbb2d;font-weight:700;font-size:11px;cursor:pointer;">⬆ 升级版本 (+0.1)</button>
                 <span style="font-size:10px;color:rgba(255,255,255,0.1);">手动升级</span>
             </div>
-            <div style="margin-top:4px;">实时数据 · CELL LA 25 · 专业版</div>
+            <div style="margin-top:4px;">实时数据 · CELL LA 25 · 专业版 v3.1</div>
         </div>
 
+        <!-- ===== 新增产品模态框 ===== -->
         <div class="modal-overlay" id="addProductModal">
             <div class="modal-box">
                 <div class="modal-title">🆕 扫码发现新产品 <span class="badge-new">请完善信息</span></div>
@@ -1386,13 +1479,23 @@
             </div>
         </div>
 
-        <div class="modal-overlay" id="editCostoModal">
+        <!-- ===== 编辑产品完整信息模态框 ===== -->
+        <div class="modal-overlay" id="editProductModal">
             <div class="modal-box">
-                <div class="modal-title">✏️ 编辑购入价</div>
-                <div class="form-group"><label>📦 产品</label><input type="text" id="editCostoNombre" readonly style="background:rgba(255,255,255,0.02);font-weight:700;color:rgba(255,255,255,0.4);"></div>
-                <div class="form-group"><label>🧠 配置</label><input type="text" id="editCostoSpecs" readonly style="background:rgba(255,255,255,0.02);color:rgba(255,255,255,0.3);"></div>
-                <div class="form-group"><label>📦 购入价 (B/.)</label><input type="number" id="editCostoValue" placeholder="0.00" step="0.01" min="0"></div>
-                <div class="modal-actions"><button class="btn-cancel" id="editCostoCancel">取消</button><button class="btn-confirm" id="editCostoConfirm">✅ 保存</button></div>
+                <div class="modal-title">✏️ 编辑产品 <span class="badge-new">完整信息</span></div>
+                <div class="form-group"><label>📱 编码 (IMEI)</label><input type="text" id="editCodigo" readonly style="background:rgba(255,255,255,0.02);font-weight:700;color:rgba(255,255,255,0.4);"></div>
+                <div class="form-group"><label>📦 产品名称 <span style="color:#ef5350;">*</span></label><input type="text" id="editNombre" placeholder="产品名称"></div>
+                <div class="form-group"><label>🏷️ 品牌</label><input type="text" id="editMarca" placeholder="品牌"></div>
+                <div class="form-row" style="margin-bottom:14px;gap:10px;">
+                    <div style="flex:1;"><label style="display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:2px;text-transform:uppercase;">🧠 RAM</label><select id="editRam" style="width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.06);border-radius:10px;font-size:14px;background:rgba(255,255,255,0.03);color:#e8edf5;outline:none;"><option value="2GB">2GB</option><option value="3GB">3GB</option><option value="4GB">4GB</option><option value="6GB">6GB</option><option value="8GB" selected>8GB</option><option value="12GB">12GB</option><option value="16GB">16GB</option></select></div>
+                    <div style="flex:1;"><label style="display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:2px;text-transform:uppercase;">💾 ROM</label><select id="editRom" style="width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.06);border-radius:10px;font-size:14px;background:rgba(255,255,255,0.03);color:#e8edf5;outline:none;"><option value="32GB">32GB</option><option value="64GB">64GB</option><option value="128GB" selected>128GB</option><option value="256GB">256GB</option><option value="512GB">512GB</option><option value="1TB">1TB</option></select></div>
+                </div>
+                <div class="form-row" style="margin-bottom:14px;gap:10px;">
+                    <div style="flex:1;"><label style="display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:2px;text-transform:uppercase;">💰 售价 (B/.)</label><input type="number" id="editPrecio" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.06);border-radius:10px;font-size:14px;background:rgba(255,255,255,0.03);color:#e8edf5;outline:none;"></div>
+                    <div style="flex:1;"><label style="display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:2px;text-transform:uppercase;">📦 购入价 (B/.)</label><input type="number" id="editCosto" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.06);border-radius:10px;font-size:14px;background:rgba(255,255,255,0.03);color:#e8edf5;outline:none;"></div>
+                </div>
+                <div class="form-group"><label>📊 库存数量</label><input type="number" id="editStock" placeholder="0" min="0"></div>
+                <div class="modal-actions"><button class="btn-cancel" id="editProductCancel">取消</button><button class="btn-confirm" id="editProductConfirm">💾 保存修改</button></div>
             </div>
         </div>
 
@@ -1406,7 +1509,7 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhydXd4Y3FlZGhvZ3NlcXBiY2lvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzUyNzExMywiZXhwIjoyMDk5MTAzMTEzfQ.VfnKr375IEpv83neEhQ9h5mLgpknIp1pyZjDaG1jCOw';
 
         // ============================================================
-        //  用户权限系统（管理员密码已改为 cell29677898）
+        //  用户权限系统
         // ============================================================
         const USERS = {
             admin: { password: 'cell29677898', role: 'admin', label: '管理员' },
@@ -1420,7 +1523,7 @@
         function hasPermission(action) {
             if (currentRole === 'admin') return true;
             if (currentRole === 'staff') {
-                const staffAllowed = ['view', 'in', 'out', 'imei_out', 'add', 'edit_costo'];
+                const staffAllowed = ['view', 'in', 'out', 'imei_out', 'add', 'edit'];
                 return staffAllowed.includes(action);
             }
             if (currentRole === 'guest') {
@@ -1501,10 +1604,10 @@
         let quaggaRunning = false;
         let filteredProductos = [];
         let expandedProduct = null;
-        let editCostoTarget = null;
+        let editTarget = null;
 
         const VERSION_KEY = 'cell_la25_version_v3';
-        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v3.0.0';
+        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v3.1.0';
 
         function updateVersionDisplay() {
             document.getElementById('headerVersion').textContent = currentVersion;
@@ -1566,6 +1669,11 @@
 
         function esIMEIValido(codigo) { return /^\d{15}$/.test(codigo); }
 
+        // ============================================================
+        //  核心功能
+        // ============================================================
+
+        // --- 创建产品 ---
         async function crearProducto(codigo, nombre, marca, precio, costo, stock, ram, rom) {
             if (!checkPermission('add', '无法添加产品')) return false;
             if (!nombre || !nombre.trim()) { toast('⚠️ 请填写产品名称', 'error'); return false; }
@@ -1601,63 +1709,87 @@
             } catch (e) { toast('❌ 创建失败: ' + e.message, 'error'); return false; }
         }
 
-        function abrirEditCosto(nombre, ram, rom, costoActual) {
-            if (!checkPermission('edit_costo', '无法编辑购入价')) return;
-            editCostoTarget = { nombre, ram, rom };
-            document.getElementById('editCostoNombre').value = nombre;
-            document.getElementById('editCostoSpecs').value = ram + ' + ' + rom;
-            document.getElementById('editCostoValue').value = costoActual || 0;
-            document.getElementById('editCostoModal').classList.add('active');
+        // --- 编辑产品（完整信息） ---
+        function abrirEditProducto(codigo) {
+            if (!checkPermission('edit', '无法编辑产品')) return;
+            const p = productos.find(pr => pr.codigo === codigo);
+            if (!p) { toast('❌ 产品不存在', 'error'); return; }
+            editTarget = p;
+            document.getElementById('editCodigo').value = p.codigo;
+            document.getElementById('editNombre').value = p.nombre;
+            document.getElementById('editMarca').value = p.marca || '';
+            document.getElementById('editRam').value = p.ram || '8GB';
+            document.getElementById('editRom').value = p.rom || '128GB';
+            document.getElementById('editPrecio').value = p.precio || 0;
+            document.getElementById('editCosto').value = p.costo || 0;
+            document.getElementById('editStock').value = p.stock || 0;
+            document.getElementById('editProductModal').classList.add('active');
             isModalOpen = true;
-            setTimeout(() => document.getElementById('editCostoValue').focus(), 300);
+            setTimeout(() => document.getElementById('editNombre').focus(), 300);
         }
 
-        async function guardarEditCosto() {
-            const { nombre, ram, rom } = editCostoTarget;
-            const nuevoCosto = parseFloat(document.getElementById('editCostoValue').value) || 0;
+        async function guardarEditProducto() {
+            if (!editTarget) return;
+            const codigo = editTarget.codigo;
+            const nombre = document.getElementById('editNombre').value.trim();
+            const marca = document.getElementById('editMarca').value.trim();
+            const ram = document.getElementById('editRam').value;
+            const rom = document.getElementById('editRom').value;
+            const precio = parseFloat(document.getElementById('editPrecio').value) || 0;
+            const costo = parseFloat(document.getElementById('editCosto').value) || 0;
+            const stock = parseInt(document.getElementById('editStock').value) || 0;
+
+            if (!nombre) { toast('⚠️ 请填写产品名称', 'error');
+                document.getElementById('editNombre').focus(); return; }
 
             try {
-                const toUpdate = productos.filter(p =>
-                    p.nombre === nombre &&
-                    (p.ram || '8GB') === ram &&
-                    (p.rom || '128GB') === rom
-                );
+                const specs = ram + ' + ' + rom;
+                const updates = { nombre, marca, precio, costo, stock, ram, rom, specs };
+                await supabaseFetch('/rest/v1/productos?codigo=eq.' + codigo, {
+                    method: 'PATCH',
+                    body: JSON.stringify(updates)
+                });
 
-                for (const p of toUpdate) {
-                    await supabaseFetch('/rest/v1/productos?codigo=eq.' + p.codigo, {
+                // 更新本地数据
+                const idx = productos.findIndex(p => p.codigo === codigo);
+                if (idx !== -1) {
+                    productos[idx] = { ...productos[idx], ...updates };
+                }
+
+                // 更新IMEI记录中的产品名
+                const imeis = imeiRecords.filter(r => r.producto_codigo === codigo);
+                for (const im of imeis) {
+                    await supabaseFetch('/rest/v1/imei_records?imei=eq.' + im.imei, {
                         method: 'PATCH',
-                        body: JSON.stringify({ costo: nuevoCosto })
+                        body: JSON.stringify({ producto_nombre: nombre })
                     });
+                    im.producto_nombre = nombre;
                 }
 
-                for (const p of toUpdate) {
-                    p.costo = nuevoCosto;
-                }
-
-                cerrarEditCosto();
-                await cargarProductos();
+                cerrarEditProducto();
+                await cargarImeiRecords();
                 renderAll();
 
                 operaciones.unshift({
                     tipo: 'EDIT',
-                    msg: '✏️ 修改购入价: ' + nombre + ' ' + ram + ' + ' + rom + ' → B/.' + nuevoCosto.toFixed(2),
+                    msg: '✏️ 编辑产品: ' + codigo + ' → ' + nombre + ' ' + specs,
                     time: new Date().toLocaleTimeString('zh-CN', { hour12: false })
                 });
                 if (operaciones.length > 100) operaciones.pop();
                 renderLog();
-
-                toast('✅ 购入价已更新: B/.' + nuevoCosto.toFixed(2), 'success');
+                toast('✅ 产品已更新: ' + nombre, 'success');
             } catch (e) {
                 toast('❌ 更新失败: ' + e.message, 'error');
             }
         }
 
-        function cerrarEditCosto() {
-            document.getElementById('editCostoModal').classList.remove('active');
+        function cerrarEditProducto() {
+            document.getElementById('editProductModal').classList.remove('active');
             isModalOpen = false;
-            editCostoTarget = null;
+            editTarget = null;
         }
 
+        // --- 执行出入库 ---
         async function ejecutarOperacion(codigo, cantidad, tipo, source = '') {
             if (!checkPermission(tipo === 'IN' ? 'in' : 'out', '无法' + (tipo === 'IN' ? '入库' : '出库'))) return false;
             if (!codigo || cantidad <= 0) { toast('⚠️ 请输入编码和数量', 'error'); return false; }
@@ -1697,6 +1829,7 @@
             } catch (e) { toast('❌ 操作失败: ' + e.message, 'error'); return false; }
         }
 
+        // --- IMEI 出库 ---
         async function imeiOut(imei) {
             if (!checkPermission('imei_out', '无法进行 IMEI 出库')) return;
             if (!imei || imei.length < 8) { toast('⚠️ 请输入有效的 IMEI (15位数字)', 'error'); return; }
@@ -1727,37 +1860,65 @@
                 toast('✅ IMEI ' + imei + ' 出库成功', 'success');
                 document.getElementById('imeiInput').value = '';
                 document.getElementById('imeiPreview').style.display = 'none';
+                document.getElementById('imeiSuggestions').classList.remove('show');
                 return true;
             } catch (e) { toast('❌ IMEI 出库失败: ' + e.message, 'error'); return false; }
         }
 
-        async function eliminarProducto(codigo) {
-            if (!checkPermission('delete', '无法删除产品')) return;
-            if (!confirm('⚠️ 确定要删除产品 ' + codigo + ' 吗？\n将同时删除该产品的所有 IMEI 记录！')) return;
-            try {
-                const imeis = imeiRecords.filter(r => r.producto_codigo === codigo);
-                for (const im of imeis) {
-                    await supabaseFetch('/rest/v1/imei_records?imei=eq.' + im.imei, { method: 'DELETE' });
-                }
-                await supabaseFetch('/rest/v1/productos?codigo=eq.' + codigo, { method: 'DELETE' });
-                const p = productos.find(pr => pr.codigo === codigo);
-                await cargarProductos();
-                await cargarImeiRecords();
-                operaciones.unshift({
-                    tipo: 'DELETE',
-                    msg: '🗑️ 删除产品: ' + (p ? p.nombre : codigo) + ' (' + codigo + ')',
-                    time: new Date().toLocaleTimeString('zh-CN', { hour12: false })
-                });
-                if (operaciones.length > 100) operaciones.pop();
-                renderLog();
-                toast('🗑️ 产品已删除: ' + (p ? p.nombre : codigo), 'success');
-                return true;
-            } catch (e) {
-                toast('❌ 删除失败: ' + e.message, 'error');
-                return false;
+        // --- IMEI 模糊搜索 ---
+        function searchImei(query) {
+            if (!query || query.length < 1) {
+                document.getElementById('imeiSuggestions').classList.remove('show');
+                return;
+            }
+            const q = query.toLowerCase().trim();
+            const results = imeiRecords.filter(r =>
+                r.imei.includes(q) ||
+                (r.producto_nombre && r.producto_nombre.toLowerCase().includes(q)) ||
+                (r.producto_codigo && r.producto_codigo.includes(q))
+            ).slice(0, 15);
+
+            const container = document.getElementById('imeiSuggestions');
+            if (results.length === 0) {
+                container.innerHTML = '<div style="padding:10px 14px;color:rgba(255,255,255,0.2);font-size:13px;">未找到匹配的 IMEI</div>';
+                container.classList.add('show');
+                return;
+            }
+
+            let html = '';
+            results.forEach(r => {
+                const p = productos.find(pr => pr.codigo === r.producto_codigo);
+                const statusLabel = r.status === 'IN' ? '✅ 可出库' : '📤 已出库';
+                const statusClass = r.status === 'IN' ? 'in' : 'out';
+                html += `
+                    <div class="suggestion-item" onclick="selectImeiSuggestion('${r.imei}')">
+                        <span class="sug-imei">${r.imei}</span>
+                        <span class="sug-product">${r.producto_nombre || r.producto_codigo}</span>
+                        <span class="sug-status ${statusClass}">${statusLabel}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            container.classList.add('show');
+        }
+
+        function selectImeiSuggestion(imei) {
+            document.getElementById('imeiInput').value = imei;
+            document.getElementById('imeiSuggestions').classList.remove('show');
+            // 触发预览
+            const record = imeiRecords.find(r => r.imei === imei);
+            if (record) {
+                const preview = document.getElementById('imeiPreview');
+                document.getElementById('previewImei').textContent = imei;
+                const p = productos.find(pr => pr.codigo === record.producto_codigo);
+                document.getElementById('previewProducto').textContent = p ? p.nombre : record.producto_codigo;
+                document.getElementById('previewStatus').textContent = record.status === 'IN' ? '✅ 可出库' : '📤 已出库';
+                document.getElementById('previewStatus').style.color = record.status === 'IN' ? '#4caf50' : '#ef5350';
+                preview.style.display = 'block';
             }
         }
 
+        // --- 删除产品 ---
         async function eliminarProductoPorGrupo(groupKey) {
             if (!checkPermission('delete', '无法删除产品')) return;
             const parts = groupKey.split('|');
@@ -1796,6 +1957,7 @@
             }
         }
 
+        // --- 导出/导入 ---
         function exportCSV() {
             if (!checkPermission('export', '无法导出')) return;
             if (productos.length === 0) { toast('⚠️ 没有数据可导出', 'warning'); return; }
@@ -1902,6 +2064,9 @@
             reader.readAsText(file);
         }
 
+        // ============================================================
+        //  扫描处理
+        // ============================================================
         function handleScannedCode(code, source = '') {
             if (!code || code.length < 3) return;
             code = code.trim();
@@ -1945,6 +2110,7 @@
                 document.getElementById('previewStatus').style.color = '#4caf50';
                 preview.style.display = 'block';
                 document.getElementById('searchInput').value = '';
+                document.getElementById('imeiSuggestions').classList.remove('show');
             } else if (imeiExistente && imeiExistente.status === 'OUT') {
                 toast('⚠️ IMEI ' + code + ' 已出库', 'warning');
                 document.getElementById('searchInput').value = '';
@@ -1954,6 +2120,10 @@
             }
             if (source === 'camera') { stopCameraScanner(); }
         }
+
+        // ============================================================
+        //  渲染函数
+        // ============================================================
 
         function renderProductos() {
             const container = document.getElementById('productosContainer');
@@ -2014,7 +2184,6 @@
             const canEdit = isAdmin || isStaff;
 
             sortedGroups.forEach(g => {
-                const status = getStockStatus(g.totalStock, g.minimo || 3);
                 const isExpanded = expandedProduct === g.groupKey;
 
                 html += `
@@ -2033,7 +2202,7 @@
                         <div class="actions" onclick="event.stopPropagation();">
                             <button class="btn-sm success ${!canEdit ? 'disabled' : ''}" onclick="${canEdit ? `ejecutarOperacionPorGrupo('${g.groupKey}',1,'IN','按钮')` : 'toast(\'⚠️ 权限不足\',\'warning\')'}">📥 +1</button>
                             <button class="btn-sm danger ${!canEdit ? 'disabled' : ''}" onclick="${canEdit ? `ejecutarOperacionPorGrupo('${g.groupKey}',1,'OUT','按钮')` : 'toast(\'⚠️ 权限不足\',\'warning\')'}">📤 -1</button>
-                            ${isAdmin ? `<button class="btn-sm primary" onclick="abrirEditCosto('${g.nombre}','${g.ram}','${g.rom}',${g.costo})">✏️ 编辑购入价</button>` : ''}
+                            ${isAdmin ? `<button class="btn-sm primary" onclick="abrirEditProducto('${g.codigos[0]}')">✏️ 编辑</button>` : ''}
                             ${isAdmin ? `<button class="btn-sm danger" onclick="eliminarProductoPorGrupo('${g.groupKey}')" style="background:rgba(178,31,31,0.3);color:#ef5350;">🗑️</button>` : ''}
                             <button class="imei-detail-toggle" onclick="event.stopPropagation();toggleImeiDetail('${g.groupKey}')">
                                 ${isExpanded ? '收起' : '展开'} IMEI (${g.totalImei})
@@ -2287,16 +2456,9 @@
             isModalOpen = false;
         }
 
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById(this.dataset.tab).classList.add('active');
-                if (scannerActive) { stopCameraScanner(); }
-            });
-        });
-
+        // ============================================================
+        //  Camera Scanner
+        // ============================================================
         function startCameraScanner() {
             const container = document.getElementById('scanner-container');
             const view = document.getElementById('scanner-view');
@@ -2398,6 +2560,7 @@
             cargarProductos();
             cargarImeiRecords();
 
+            // --- 搜索框 ---
             const searchInput = document.getElementById('searchInput');
             searchInput.addEventListener('input', function() {
                 const val = this.value.trim();
@@ -2423,6 +2586,7 @@
                 }
             });
 
+            // --- 快捷按钮 ---
             document.getElementById('btnQuickIn').addEventListener('click', function() {
                 const codigo = document.getElementById('searchInput').value.trim();
                 if (!codigo) { toast('⚠️ 请先扫码或输入编码', 'error'); return; }
@@ -2446,6 +2610,7 @@
                 searchInput.focus();
             });
 
+            // --- 摄像头 ---
             document.getElementById('cameraScanBtn').addEventListener('click', function() {
                 if (scannerActive) { stopCameraScanner(); } else { startCameraScanner(); }
             });
@@ -2454,35 +2619,36 @@
             });
             document.getElementById('closeScanner').addEventListener('click', stopCameraScanner);
 
+            // --- IMEI 出库 ---
             document.getElementById('imeiOutBtn').addEventListener('click', function() {
                 const imei = document.getElementById('imeiInput').value.trim();
                 imeiOut(imei);
             });
-            document.getElementById('imeiInput').addEventListener('input', function() {
+
+            // --- IMEI 模糊搜索 ---
+            const imeiInput = document.getElementById('imeiInput');
+            imeiInput.addEventListener('input', function() {
                 const val = this.value.trim();
-                if (val.length >= 8) {
-                    const record = imeiRecords.find(r => r.imei === val);
-                    const preview = document.getElementById('imeiPreview');
-                    document.getElementById('previewImei').textContent = val;
-                    if (record) {
-                        const p = productos.find(pr => pr.codigo === record.producto_codigo);
-                        document.getElementById('previewProducto').textContent = p ? p.nombre : record
-                            .producto_codigo;
-                        document.getElementById('previewStatus').textContent = record.status === 'IN' ? '✅ 可出库' :
-                            '📤 已出库';
-                        document.getElementById('previewStatus').style.color = record.status === 'IN' ? '#4caf50' :
-                            '#ef5350';
-                    } else {
-                        document.getElementById('previewProducto').textContent = '❌ 未找到';
-                        document.getElementById('previewStatus').textContent = '⚠️ 未入库，无法出库';
-                        document.getElementById('previewStatus').style.color = '#ef5350';
-                    }
-                    preview.style.display = 'block';
+                if (val.length >= 1) {
+                    searchImei(val);
                 } else {
+                    document.getElementById('imeiSuggestions').classList.remove('show');
                     document.getElementById('imeiPreview').style.display = 'none';
                 }
             });
+            imeiInput.addEventListener('focus', function() {
+                const val = this.value.trim();
+                if (val.length >= 1) {
+                    searchImei(val);
+                }
+            });
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.imei-search-wrapper')) {
+                    document.getElementById('imeiSuggestions').classList.remove('show');
+                }
+            });
 
+            // --- 手动添加 ---
             document.getElementById('manualAddBtn').addEventListener('click', function() {
                 const codigo = document.getElementById('manualCodigo').value.trim();
                 const nombre = document.getElementById('manualNombre').value.trim();
@@ -2501,6 +2667,7 @@
                 });
             });
 
+            // --- 模态框 ---
             document.getElementById('modalConfirm').addEventListener('click', async function() {
                 const codigo = document.getElementById('modalCodigo').value.trim();
                 const nombre = document.getElementById('modalNombre').value.trim();
@@ -2527,12 +2694,14 @@
                 if (e.target === this) cerrarModal();
             });
 
-            document.getElementById('editCostoCancel').addEventListener('click', cerrarEditCosto);
-            document.getElementById('editCostoConfirm').addEventListener('click', guardarEditCosto);
-            document.getElementById('editCostoModal').addEventListener('click', function(e) {
-                if (e.target === this) cerrarEditCosto();
+            // --- 编辑产品 ---
+            document.getElementById('editProductCancel').addEventListener('click', cerrarEditProducto);
+            document.getElementById('editProductConfirm').addEventListener('click', guardarEditProducto);
+            document.getElementById('editProductModal').addEventListener('click', function(e) {
+                if (e.target === this) cerrarEditProducto();
             });
 
+            // --- 批量操作 ---
             document.getElementById('exportBtn').addEventListener('click', exportCSV);
             document.getElementById('exportImeiBtn').addEventListener('click', exportImeiCSV);
             document.getElementById('importBtn').addEventListener('click', function() {
@@ -2545,6 +2714,7 @@
                 }
             });
 
+            // --- 版本升级 ---
             document.getElementById('btnUpgradeVersion').addEventListener('click', function() {
                 const oldVersion = currentVersion;
                 const newVersion = bumpVersion();
@@ -2558,6 +2728,18 @@
                 toast('✅ 版本升级到 ' + newVersion, 'success');
             });
 
+            // --- Tab 切换 ---
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                    if (scannerActive) { stopCameraScanner(); }
+                });
+            });
+
+            // --- 键盘快捷键 ---
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'F1') { e.preventDefault();
                     document.getElementById('btnQuickIn').click(); }
@@ -2565,11 +2747,15 @@
                     document.getElementById('btnQuickOut').click(); }
                 if (e.key === 'F3') { e.preventDefault();
                     document.getElementById('cameraScanBtn').click(); }
-                if (e.key === 'Escape' && isModalOpen) { cerrarModal();
-                    document.getElementById('searchInput').focus(); }
+                if (e.key === 'Escape' && isModalOpen) { 
+                    if (document.getElementById('addProductModal').classList.contains('active')) cerrarModal();
+                    if (document.getElementById('editProductModal').classList.contains('active')) cerrarEditProducto();
+                    document.getElementById('searchInput').focus(); 
+                }
                 if (e.key === 'Escape' && scannerActive) { stopCameraScanner(); }
             });
 
+            // --- 定时刷新 ---
             setInterval(() => {
                 cargarProductos();
                 cargarImeiRecords();
@@ -2578,6 +2764,9 @@
             console.log('✅ CELL LA 25 v' + currentVersion + ' 已启动 - 专业版');
         }
 
+        // ============================================================
+        //  DOM 加载完成
+        // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             const savedUser = localStorage.getItem('cell_la25_user');
             if (savedUser && USERS[savedUser]) {
