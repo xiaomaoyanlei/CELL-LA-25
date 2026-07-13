@@ -280,6 +280,20 @@
             color: #fdbb2d;
         }
 
+        /* ===== 搜索提示标签 ===== */
+        .search-hint {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.15);
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .search-hint span {
+            color: rgba(253, 187, 45, 0.5);
+        }
+
         .camera-area {
             background: rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(10px);
@@ -1312,13 +1326,16 @@
 
         <div class="tab-content active" id="tabStock">
             <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.04);">
-                ⚠️ <strong style="color:#fdbb2d;">只认 15 位纯数字（IMEI）</strong> · 点击 ✏️ 编辑完整信息
+                🔍 <strong style="color:#fdbb2d;">支持名称/IMEI/品牌/配置搜索</strong> · 点击 ✏️ 编辑完整信息
             </div>
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔫 扫码枪 / 搜索产品..." autofocus>
+                <input type="text" id="searchInput" placeholder="🔍 搜索产品名称 / IMEI / 品牌 / 配置..." autofocus>
                 <button class="btn success" id="btnQuickIn">📥 +1</button>
                 <button class="btn danger" id="btnQuickOut">📤 -1</button>
                 <button class="btn gray" id="clearBtn">✕</button>
+            </div>
+            <div style="text-align:left;padding:0 4px 10px 4px;">
+                <span class="search-hint">💡 支持搜索：<span>产品名称</span> · <span>IMEI</span> · <span>品牌</span> · <span>RAM/ROM</span></span>
             </div>
             <div class="camera-area">
                 <button class="btn-camera" id="cameraScanBtn">📷 手机扫码</button>
@@ -2313,7 +2330,8 @@
                 p.codigo.includes(q) ||
                 (p.marca || '').toLowerCase().includes(q) ||
                 (p.ram || '').toLowerCase().includes(q) ||
-                (p.rom || '').toLowerCase().includes(q)
+                (p.rom || '').toLowerCase().includes(q) ||
+                (p.specs || '').toLowerCase().includes(q)
             );
             renderProductos();
         }
@@ -2574,7 +2592,8 @@
                 const val = this.value.trim();
                 clearTimeout(this._scanTimer);
                 this._scanTimer = setTimeout(() => {
-                    if (val.length >= 3) {
+                    if (val.length >= 3 && /^\d+$/.test(val)) {
+                        // 纯数字且>=3位 → 尝试扫码
                         handleScannedCode(val, 'gun');
                     } else if (val.length === 0) {
                         filteredProductos = [];
@@ -2589,7 +2608,11 @@
                     e.preventDefault();
                     const val = this.value.trim();
                     if (val.length >= 3) {
-                        handleScannedCode(val, 'gun');
+                        if (/^\d+$/.test(val)) {
+                            handleScannedCode(val, 'gun');
+                        } else {
+                            aplicarFiltro(val);
+                        }
                     }
                 }
             });
