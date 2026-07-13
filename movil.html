@@ -635,44 +635,6 @@
             font-size: 10px;
         }
 
-        .imei-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .imei-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-            font-size: 13px;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-        .imei-item .status-badge {
-            font-weight: 700;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 10px;
-        }
-        .imei-item .status-badge.in {
-            background: rgba(15, 123, 58, 0.2);
-            color: #4caf50;
-        }
-        .imei-item .status-badge.out {
-            background: rgba(178, 31, 31, 0.2);
-            color: #ef5350;
-        }
-        .imei-item .imei-code {
-            font-family: monospace;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.6);
-        }
-        .imei-item .imei-time {
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 11px;
-        }
-
         .log-item {
             display: flex;
             justify-content: space-between;
@@ -1349,10 +1311,7 @@
                     📌 状态: <span id="previewStatus" style="font-weight:700;">—</span>
                 </div>
             </div>
-            <div class="card">
-                <div class="card-title">📋 IMEI 记录 <span style="font-weight:400;font-size:12px;color:rgba(255,255,255,0.2);margin-left:auto;" id="imeiCount">共 0 条</span></div>
-                <div class="imei-list" id="imeiList"><div style="color:rgba(255,255,255,0.2);font-size:13px;text-align:center;padding:16px 0;">暂无 IMEI 记录</div></div>
-            </div>
+            <!-- IMEI 记录卡片已移除 -->
         </div>
 
         <div class="tab-content" id="tabReport">
@@ -1662,7 +1621,6 @@
                 const data = await supabaseFetch('/rest/v1/imei_records?select=*&order=created_at.desc&limit=500');
                 imeiRecords = data || [];
                 document.getElementById('totalImei').textContent = imeiRecords.length;
-                renderImeiList();
                 return true;
             } catch (e) { imeiRecords = []; return false; }
         }
@@ -1750,13 +1708,11 @@
                     body: JSON.stringify(updates)
                 });
 
-                // 更新本地数据
                 const idx = productos.findIndex(p => p.codigo === codigo);
                 if (idx !== -1) {
                     productos[idx] = { ...productos[idx], ...updates };
                 }
 
-                // 更新IMEI记录中的产品名
                 const imeis = imeiRecords.filter(r => r.producto_codigo === codigo);
                 for (const im of imeis) {
                     await supabaseFetch('/rest/v1/imei_records?imei=eq.' + im.imei, {
@@ -1905,7 +1861,6 @@
         function selectImeiSuggestion(imei) {
             document.getElementById('imeiInput').value = imei;
             document.getElementById('imeiSuggestions').classList.remove('show');
-            // 触发预览
             const record = imeiRecords.find(r => r.imei === imei);
             if (record) {
                 const preview = document.getElementById('imeiPreview');
@@ -2372,35 +2327,6 @@
             renderProductos();
         }
 
-        function renderImeiList() {
-            const list = document.getElementById('imeiList');
-            const count = document.getElementById('imeiCount');
-            count.textContent = '共 ' + imeiRecords.length + ' 条';
-            if (imeiRecords.length === 0) {
-                list.innerHTML =
-                    '<div style="color:rgba(255,255,255,0.2);font-size:13px;text-align:center;padding:16px 0;">暂无 IMEI 记录</div>';
-                return;
-            }
-            let html = '';
-            imeiRecords.slice(0, 50).forEach(r => {
-                const statusLabel = r.status === 'IN' ? '已入库' : '已出库';
-                const cls = r.status === 'IN' ? 'in' : 'out';
-                const time = r.updated_at || r.created_at || '';
-                const displayTime = time ? new Date(time).toLocaleString('zh-CN', { hour12: false }) : '';
-                html += `
-                    <div class="imei-item">
-                        <span>
-                            <span class="status-badge ${cls}">${statusLabel}</span>
-                            <span class="imei-code">${r.imei}</span>
-                            <span style="color:rgba(255,255,255,0.2);font-size:12px;">${r.producto_nombre || r.producto_codigo}</span>
-                        </span>
-                        <span class="imei-time">${displayTime}</span>
-                    </div>
-                `;
-            });
-            list.innerHTML = html;
-        }
-
         function renderLog() {
             const list = document.getElementById('logList');
             const count = document.getElementById('logCount');
@@ -2428,7 +2354,6 @@
         function renderAll() {
             renderStats();
             renderProductos();
-            renderImeiList();
             renderLog();
         }
 
