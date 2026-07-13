@@ -635,6 +635,43 @@
             font-size: 10px;
         }
 
+        /* ===== 出库记录列表 ===== */
+        .out-record-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .out-record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .out-record-item .record-imei {
+            font-family: monospace;
+            font-weight: 600;
+            color: #e8edf5;
+        }
+        .out-record-item .record-product {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+        }
+        .out-record-item .record-time {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 11px;
+        }
+        .out-record-item .record-badge {
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            background: rgba(178, 31, 31, 0.2);
+            color: #ef5350;
+        }
+
         .log-item {
             display: flex;
             justify-content: space-between;
@@ -1198,6 +1235,9 @@
                 padding: 8px 12px;
                 flex-wrap: wrap;
             }
+            .out-record-item {
+                font-size: 12px;
+            }
         }
         @media (max-width: 400px) {
             .stats-grid {
@@ -1240,7 +1280,7 @@
             <div class="badge-group">
                 <span class="badge" id="syncStatus">🔄</span>
                 <span class="badge">🔫📷 双模</span>
-                <span class="badge version" id="headerVersion">v3.1.0</span>
+                <span class="badge version" id="headerVersion">v3.2.0</span>
                 <span class="badge role" id="roleBadge">👤 admin</span>
                 <span class="user-actions">
                     <button class="btn-sm" id="logoutBtn">🚪 退出</button>
@@ -1253,7 +1293,7 @@
             <div class="stat-item"><div class="label">📦 总库存</div><div class="value success" id="totalUnidades">0</div></div>
             <div class="stat-item"><div class="label">📋 IMEI 总数</div><div class="value warning" id="totalImei">0</div></div>
             <div class="stat-item"><div class="label">📥 今日入库</div><div class="value success" id="totalIn">0</div></div>
-            <div class="stat-item"><div class="label">📤 今日出库</div><div class="value danger" id="totalOut">0</div></div>
+            <div class="stat-item"><div class="label">📤 总出库</div><div class="value danger" id="totalOut">0</div></div>
         </div>
 
         <div class="permission-banner" id="permissionBanner">
@@ -1263,6 +1303,7 @@
         <div class="tab-bar">
             <button class="tab active" data-tab="tabStock">📦 库存</button>
             <button class="tab" data-tab="tabImei">📱 IMEI 出库</button>
+            <button class="tab" data-tab="tabOutRecords">📤 出库记录</button>
             <button class="tab" data-tab="tabReport">📊 报表</button>
             <button class="tab" data-tab="tabBatch">📂 批量</button>
             <button class="tab" data-tab="tabLog">📜 日志</button>
@@ -1311,7 +1352,19 @@
                     📌 状态: <span id="previewStatus" style="font-weight:700;">—</span>
                 </div>
             </div>
-            <!-- IMEI 记录卡片已移除 -->
+        </div>
+
+        <!-- ===== 出库记录标签页 ===== -->
+        <div class="tab-content" id="tabOutRecords">
+            <div class="card">
+                <div class="card-title">📤 所有出库记录 <span class="sub">按时间倒序</span></div>
+                <div style="background:rgba(15,123,58,0.06);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#4caf50;border:1px solid rgba(15,123,58,0.06);">
+                    📊 总计出库: <strong id="outTotalCount">0</strong> 台
+                </div>
+                <div class="out-record-list" id="outRecordList">
+                    <div style="color:rgba(255,255,255,0.2);font-size:13px;text-align:center;padding:16px 0;">暂无出库记录</div>
+                </div>
+            </div>
         </div>
 
         <div class="tab-content" id="tabReport">
@@ -1411,11 +1464,11 @@
 
         <div class="footer" style="text-align:center;padding:16px 0 4px 0;font-size:11px;color:rgba(255,255,255,0.15);">
             <div class="version-area" style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:4px;">
-                <span class="version-label" style="font-weight:700;color:rgba(255,255,255,0.2);font-size:13px;background:rgba(255,255,255,0.03);padding:2px 16px;border-radius:20px;" id="footerVersion">📌 v3.1.0</span>
+                <span class="version-label" style="font-weight:700;color:rgba(255,255,255,0.2);font-size:13px;background:rgba(255,255,255,0.03);padding:2px 16px;border-radius:20px;" id="footerVersion">📌 v3.2.0</span>
                 <button class="btn-upgrade" id="btnUpgradeVersion" style="padding:4px 16px;border:none;border-radius:20px;background:rgba(253,187,45,0.06);color:#fdbb2d;font-weight:700;font-size:11px;cursor:pointer;">⬆ 升级版本 (+0.1)</button>
                 <span style="font-size:10px;color:rgba(255,255,255,0.1);">手动升级</span>
             </div>
-            <div style="margin-top:4px;">实时数据 · CELL LA 25 · 专业版 v3.1</div>
+            <div style="margin-top:4px;">实时数据 · CELL LA 25 · 专业版 v3.2</div>
         </div>
 
         <!-- ===== 新增产品模态框 ===== -->
@@ -1566,7 +1619,7 @@
         let editTarget = null;
 
         const VERSION_KEY = 'cell_la25_version_v3';
-        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v3.1.0';
+        let currentVersion = localStorage.getItem(VERSION_KEY) || 'v3.2.0';
 
         function updateVersionDisplay() {
             document.getElementById('headerVersion').textContent = currentVersion;
@@ -1621,6 +1674,7 @@
                 const data = await supabaseFetch('/rest/v1/imei_records?select=*&order=created_at.desc&limit=500');
                 imeiRecords = data || [];
                 document.getElementById('totalImei').textContent = imeiRecords.length;
+                renderOutRecords();
                 return true;
             } catch (e) { imeiRecords = []; return false; }
         }
@@ -1631,7 +1685,6 @@
         //  核心功能
         // ============================================================
 
-        // --- 创建产品 ---
         async function crearProducto(codigo, nombre, marca, precio, costo, stock, ram, rom) {
             if (!checkPermission('add', '无法添加产品')) return false;
             if (!nombre || !nombre.trim()) { toast('⚠️ 请填写产品名称', 'error'); return false; }
@@ -1667,7 +1720,6 @@
             } catch (e) { toast('❌ 创建失败: ' + e.message, 'error'); return false; }
         }
 
-        // --- 编辑产品（完整信息） ---
         function abrirEditProducto(codigo) {
             if (!checkPermission('edit', '无法编辑产品')) return;
             const p = productos.find(pr => pr.codigo === codigo);
@@ -1745,7 +1797,6 @@
             editTarget = null;
         }
 
-        // --- 执行出入库 ---
         async function ejecutarOperacion(codigo, cantidad, tipo, source = '') {
             if (!checkPermission(tipo === 'IN' ? 'in' : 'out', '无法' + (tipo === 'IN' ? '入库' : '出库'))) return false;
             if (!codigo || cantidad <= 0) { toast('⚠️ 请输入编码和数量', 'error'); return false; }
@@ -1785,7 +1836,6 @@
             } catch (e) { toast('❌ 操作失败: ' + e.message, 'error'); return false; }
         }
 
-        // --- IMEI 出库 ---
         async function imeiOut(imei) {
             if (!checkPermission('imei_out', '无法进行 IMEI 出库')) return;
             if (!imei || imei.length < 8) { toast('⚠️ 请输入有效的 IMEI (15位数字)', 'error'); return; }
@@ -1821,7 +1871,6 @@
             } catch (e) { toast('❌ IMEI 出库失败: ' + e.message, 'error'); return false; }
         }
 
-        // --- IMEI 模糊搜索 ---
         function searchImei(query) {
             if (!query || query.length < 1) {
                 document.getElementById('imeiSuggestions').classList.remove('show');
@@ -1873,7 +1922,38 @@
             }
         }
 
-        // --- 删除产品 ---
+        // --- 渲染出库记录 ---
+        function renderOutRecords() {
+            const outRecords = imeiRecords.filter(r => r.status === 'OUT');
+            const list = document.getElementById('outRecordList');
+            const count = document.getElementById('outTotalCount');
+            count.textContent = outRecords.length;
+
+            if (outRecords.length === 0) {
+                list.innerHTML = '<div style="color:rgba(255,255,255,0.2);font-size:13px;text-align:center;padding:16px 0;">暂无出库记录</div>';
+                return;
+            }
+
+            let html = '';
+            outRecords.slice(0, 100).forEach(r => {
+                const time = r.updated_at || r.created_at || '';
+                const displayTime = time ? new Date(time).toLocaleString('zh-CN', { hour12: false }) : '';
+                html += `
+                    <div class="out-record-item">
+                        <span>
+                            <span class="record-imei">${r.imei}</span>
+                            <span class="record-product">${r.producto_nombre || r.producto_codigo}</span>
+                        </span>
+                        <span>
+                            <span class="record-badge">📤 已出库</span>
+                            <span class="record-time">${displayTime}</span>
+                        </span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
         async function eliminarProductoPorGrupo(groupKey) {
             if (!checkPermission('delete', '无法删除产品')) return;
             const parts = groupKey.split('|');
@@ -1912,7 +1992,6 @@
             }
         }
 
-        // --- 导出/导入 ---
         function exportCSV() {
             if (!checkPermission('export', '无法导出')) return;
             if (productos.length === 0) { toast('⚠️ 没有数据可导出', 'warning'); return; }
@@ -2251,12 +2330,15 @@
                 return date === today;
             });
             const ins = todayRecords.filter(r => r.status === 'IN').length;
-            const outs = todayRecords.filter(r => r.status === 'OUT').length;
+
+            // 总出库 = 所有 status === 'OUT'
+            const outs = imeiRecords.filter(r => r.status === 'OUT').length;
 
             document.getElementById('totalIn').textContent = ins;
             document.getElementById('totalOut').textContent = outs;
 
             renderReports();
+            renderOutRecords();
         }
 
         function renderReports() {
@@ -2355,6 +2437,7 @@
             renderStats();
             renderProductos();
             renderLog();
+            renderOutRecords();
         }
 
         function getStockStatus(stock, minimo) {
